@@ -53,56 +53,53 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ===== Header ============================================================== */
 .masthead {
-  background: var(--espresso);
-  color: #EFE9DF;
-  border-bottom: 3px solid var(--gold);
+  background: #FFFFFF;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
 }
 .masthead-inner {
   max-width: 1340px; margin: 0 auto;
-  padding: 18px 32px 16px;
+  padding: 20px 32px 18px;
   display: flex; align-items: center; gap: 18px;
 }
-.brand { display: flex; align-items: center; gap: 14px; }
-.brand-mark {
-  width: 34px; height: 34px; flex: 0 0 34px;
-  border: 1.5px solid var(--gold);
-  display: grid; place-items: center;
-  font-family: var(--serif); font-size: 16px; color: var(--gold);
-  transform: rotate(45deg);
+.brand { display: flex; align-items: baseline; gap: 12px; }
+.jpm-wordmark {
+  font-family: var(--serif); font-weight: 700; font-size: 24px;
+  letter-spacing: -0.01em; color: #3A2A1C; line-height: 1;
 }
-.brand-mark span { transform: rotate(-45deg); }
-.brand-text { line-height: 1.15; }
-.brand-name {
-  font-family: var(--serif); font-size: 18px; letter-spacing: 0.02em; color: #F4EEE3;
+.jpm-sub {
+  font-family: var(--sans); font-size: 10.5px; font-weight: 600;
+  letter-spacing: 0.24em; text-transform: uppercase; color: #8A6F4E;
+  position: relative; padding-left: 13px;
 }
-.brand-sub {
-  font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
-  color: var(--gold); margin-top: 3px;
+.jpm-sub::before {
+  content: ""; position: absolute; left: 0; top: 1px; bottom: 1px;
+  width: 1px; background: var(--line-strong);
 }
 .masthead-meta {
-  margin-left: auto; text-align: right; font-size: 11px; color: #B9AE9C;
+  margin-left: auto; text-align: right; font-size: 11px; color: var(--ink-faint);
   letter-spacing: 0.04em;
 }
-.masthead-meta strong { color: #E7DFD0; font-weight: 600; }
+.masthead-meta strong { color: var(--ink); font-weight: 600; }
 
 /* ===== Tabs =============================================================== */
 .tabs {
-  background: var(--espresso-2);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--line);
 }
 .tabs-inner {
   max-width: 1340px; margin: 0 auto; padding: 0 32px;
   display: flex; gap: 4px;
 }
 .tab {
-  background: none; border: none; color: #C7BCA9;
+  background: none; border: none; color: var(--ink-soft);
   padding: 14px 22px 13px;
   font-size: 13px; letter-spacing: 0.07em;
   border-bottom: 2px solid transparent;
   transition: color .15s, border-color .15s;
 }
-.tab:hover { color: #F1E9DB; }
-.tab.active { color: #FBF6EC; border-bottom-color: var(--gold); }
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--ink); border-bottom-color: var(--bronze); }
 
 /* ===== Layout shell ======================================================= */
 .view { max-width: 1340px; margin: 0 auto; padding: 28px 32px 80px; }
@@ -408,8 +405,8 @@ button { font-family: inherit; cursor: pointer; }
 .pt-placeholder .big { font-family: var(--serif); font-size: 17px; color: var(--ink-soft); margin-bottom: 8px; }
 
 /* ===== Portfolio report page ============================================ */
-.back-link { color: #C7BCA9; font-size: 12px; letter-spacing: 0.06em; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-.back-link:hover { color: #F1E9DB; }
+.back-link { color: var(--ink-soft); font-size: 12px; letter-spacing: 0.06em; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.back-link:hover { color: var(--bronze-deep); }
 .report-masthead { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 24px; }
 .report-masthead .eyebrow { display: block; margin-bottom: 8px; }
 .report-masthead h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 8px; font-weight: 700; }
