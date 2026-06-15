@@ -540,6 +540,8 @@ button { font-family: inherit; cursor: pointer; }
 }
 #morganFab:hover { background: var(--espresso-2); }
 .morgan-spark { color: var(--gold); }
+/* ID selectors beat the UA [hidden] rule, so make hiding explicit */
+#morganPanel[hidden], #morganFab[hidden] { display: none !important; }
 #morganPanel {
   position: fixed; right: 22px; bottom: 22px; z-index: 71;
   width: 380px; max-width: calc(100vw - 32px); height: 540px; max-height: calc(100vh - 44px);
