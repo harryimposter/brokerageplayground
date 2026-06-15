@@ -110,23 +110,8 @@
     </div>`;
   }
 
-  /* Next Best Action: score a client's mapped ideas by goal-gap × conviction × suitability */
-  const CONV_W = { "High": 3, "Medium-High": 2, "Medium": 1 };
-  function ideaScore(idea, client) {
-    const imp = window.SEED.THEME_IMPACT[idea.themeId] || { bucket: "Growth" };
-    const curB = bucketAlloc(client.split);
-    const gap = Math.max(0, (client.goals.target[imp.bucket] || 0) - (curB[imp.bucket] || 0)); // underweight = need
-    const conv = CONV_W[idea.conviction] || 1;
-    const allOtc = (idea.structures || []).every(s => window.SEED.isOtcOption(s));
-    const suit = (client.classification === "Retail" && allOtc) ? 0.4 : 1; // retail-blocked ideas score low
-    return { score: (gap + 1) * conv * suit, gap, bucket: imp.bucket, retailBlocked: client.classification === "Retail" && allOtc };
-  }
-  function rankIdeas(ideas, client) {
-    return ideas.map(i => ({ idea: i, ...ideaScore(i, client) })).sort((a, b) => b.score - a.score);
-  }
-
   window.BPCharts = {
     PALETTE, donut, legend, splitSegments, bucketAlloc, bucketSegments,
-    bucketForClass, applyTrade, targetDistance, fundingBar, ideaScore, rankIdeas
+    bucketForClass, applyTrade, targetDistance, fundingBar
   };
 })();

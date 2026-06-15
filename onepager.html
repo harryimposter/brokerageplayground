@@ -52,6 +52,7 @@
 
   <script src="data.js"></script>
   <script src="charts.js"></script>
+  <script src="scanner.js"></script>
   <script>
   (function () {
     "use strict";
@@ -81,18 +82,16 @@
         gaps.map(g => `${g.d > 0 ? "a little heavier in" : "lighter in"} ${g.key.toLowerCase()}`).join(" and ") + "."
       : "The portfolio is well aligned with the long-term plan we set together.";
 
-    // top 3 recommendations, client-facing
-    const ranked = BPCharts.rankIdeas(SEED.ideas.filter(i => (i.clients || []).some(x => x.id === c.id)), c).slice(0, 3);
-    const recs = ranked.map((r, i) => {
-      const idea = r.idea;
-      const why = (idea.clients.find(x => x.id === c.id) || {}).why || "";
-      return `<div class="op-rec">
+    // top 3 recommendations, client-facing (scanner findings first, then matched ideas)
+    const rec = window.Scanner.recommendations(c);
+    const ranked = rec.all.slice(0, 3);
+    const recs = ranked.map((it, i) => `
+      <div class="op-rec">
         <div class="op-rec-meta">Recommendation ${i + 1}${i === 0 ? " · we suggest leading here" : ""}</div>
-        <h3>${esc(idea.title)}</h3>
-        <p>${esc(why)}</p>
-        <div class="op-rec-how"><b>How we'd implement:</b> ${esc((idea.structures || []).join(", "))}.</div>
-      </div>`;
-    }).join("");
+        <h3>${esc(it.title)}</h3>
+        <p>${esc(it.rationale)}</p>
+        <div class="op-rec-how"><b>How we'd implement:</b> ${esc((it.structures || []).join(", "))}.${it.retailBlocked ? ` <span style="color:var(--neg)">(complex — we'd use a non-complex alternative for your account)</span>` : ""}</div>
+      </div>`).join("");
 
     document.getElementById("sheet").innerHTML = `
       <div class="op-letterhead">
