@@ -221,7 +221,7 @@
       return `<div class="book-row" data-client="${esc(c.id)}">
         <div class="br-client">${avatar(c.name)}<div><div class="nm">${esc(c.name)}</div><div class="rl">${esc(c.relationship)}</div></div></div>
         <div class="br-aum">${esc(fmtAum(c))}</div>
-        <div class="br-risk">${esc(c.risk)}</div>
+        <div class="br-risk">${esc(c.risk)}<br><span class="class-pill ${c.classification.toLowerCase()}">${esc(c.classification)}</span></div>
         <div class="br-themes">${themes}</div>
         <div class="br-ideas"><span class="n">${nIdeas}</span> <span class="lbl">ideas</span></div>
       </div>`;
@@ -285,13 +285,21 @@
         <div class="cd-head-top">
           ${avatar(c.name)}
           <div>
-            <h2>${esc(c.name)}</h2>
+            <h2>${esc(c.name)} <span class="class-pill ${c.classification.toLowerCase()}">${esc(c.classification)}</span></h2>
             <div class="cd-rel">${esc(c.relationship)}</div>
           </div>
           <div class="cd-aum"><div class="k">Book AUM</div><div class="v">${esc(fmtAum(c))}</div></div>
         </div>
         <p class="cd-profile">${esc(c.profile)}</p>
         ${renderAllocBar(c.split)}
+        <div class="goal-strip">
+          <div class="goal-item"><div class="gk">Objective</div><div class="gv">${esc(c.goals.objective)}</div></div>
+          <div class="goal-item"><div class="gk">Horizon</div><div class="gv">${esc(c.goals.horizon)}</div></div>
+          <div class="goal-item"><div class="gk">Classification</div><div class="gv">${esc(c.mifid)}</div></div>
+        </div>
+        <div class="cd-actions">
+          <a class="view-port-btn" href="portfolio.html?client=${esc(c.id)}">View current portfolio ›</a>
+        </div>
       </div>
 
       <div class="agenda">
@@ -315,74 +323,167 @@
   }
 
   /* ====================== PRE-TRADE ANALYSIS ========================= */
+  const CUSTOM_STRUCTURES = ["Direct equity", "ETF / fund", "Covered calls", "Zero-cost collar",
+    "Buffered note", "Phoenix autocall", "Call spread", "Leveraged certificate", "Cash-secured puts"];
+
   function renderPretradeForm() {
     $("#ptClient").innerHTML = DATA.clients.map(c =>
-      `<option value="${esc(c.id)}">${esc(c.name)} · ${esc(fmtAum(c))}</option>`).join("");
+      `<option value="${esc(c.id)}">${esc(c.name)} · ${esc(c.classification)} · ${esc(fmtAum(c))}</option>`).join("");
     refreshPtIdeas();
     $("#ptClient").onchange = refreshPtIdeas;
-    $("#ptIdea").onchange = refreshPtStructures;
+    $("#ptIdea").onchange = () => { toggleCustom(); refreshPtStructures(); };
   }
+  function isCustom() { return $("#ptIdea").value === "__custom__"; }
+  function toggleCustom() { $("#ptCustom").hidden = !isCustom(); }
   function refreshPtIdeas() {
     const cid = $("#ptClient").value;
     const mapped = ideasForClient(cid);
     const others = DATA.ideas.filter(i => !mapped.includes(i));
     const opt = (i, tag) => `<option value="${esc(i.id)}">${esc(i.title)}${tag ? " — " + tag : ""}</option>`;
     $("#ptIdea").innerHTML =
+      `<option value="__custom__">＋ Custom / ad-hoc trade…</option>` +
       (mapped.length ? `<optgroup label="Mapped to this client">${mapped.map(i => opt(i, "fits")).join("")}</optgroup>` : "") +
       `<optgroup label="Other ideas">${others.map(i => opt(i)).join("")}</optgroup>`;
+    toggleCustom();
     refreshPtStructures();
   }
   function refreshPtStructures() {
-    const idea = ideaById($("#ptIdea").value);
-    $("#ptStructure").innerHTML = (idea && idea.structures || ["Direct equity"]).map(s =>
-      `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+    const list = isCustom() ? CUSTOM_STRUCTURES : ((ideaById($("#ptIdea").value) || {}).structures || ["Direct equity"]);
+    $("#ptStructure").innerHTML = list.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+  }
+
+  /* move `amt`% into a goal bucket, funded from Liquidity then largest other bucket */
+  function moveToBucket(buckets, target, amt) {
+    const b = Object.assign({}, buckets);
+    const fromLiq = Math.min(amt, b.Liquidity || 0);
+    let rem = amt - fromLiq;
+    b.Liquidity = (b.Liquidity || 0) - fromLiq;
+    if (rem > 0.0001) {
+      const cand = Object.keys(b).filter(k => k !== target && k !== "Liquidity").sort((x, y) => b[y] - b[x])[0];
+      if (cand) b[cand] = Math.max(0, b[cand] - rem);
+    }
+    b[target] = (b[target] || 0) + amt;
+    return b;
   }
 
   function runPretrade(e) {
     e.preventDefault();
     const c = clientById($("#ptClient").value);
-    const idea = ideaById($("#ptIdea").value);
+    if (!c) return;
     const structure = $("#ptStructure").value;
-    const notional = parseFloat($("#ptNotional").value) || 0;
-    if (!c || !idea) return;
+    const notional = Math.max(0, parseFloat($("#ptNotional").value) || 0);
 
-    const mapped = (idea.clients || []).some(x => x.id === c.id);
-    const why = (idea.clients.find(x => x.id === c.id) || {}).why;
-    const theme = themeById(idea.themeId);
+    // resolve the trade target (idea or custom)
+    let label, assetClass, bucket, theme, mapped = false, why = null, deskView;
+    if (isCustom()) {
+      label = ($("#ptCustomName").value.trim() || "Ad-hoc trade");
+      assetClass = $("#ptCustomClass").value;
+      bucket = SEED.ASSET_BUCKET[assetClass] || "Growth";
+      theme = "Custom";
+      deskView = `Ad-hoc trade — no house view on file. Expressed as ${structure}.`;
+    } else {
+      const idea = ideaById($("#ptIdea").value);
+      if (!idea) return;
+      const imp = SEED.THEME_IMPACT[idea.themeId] || { assetClass: "Equity", bucket: "Growth" };
+      label = idea.title; assetClass = imp.assetClass; bucket = imp.bucket;
+      theme = (themeById(idea.themeId) || {}).name || "";
+      mapped = (idea.clients || []).some(x => x.id === c.id);
+      why = (idea.clients.find(x => x.id === c.id) || {}).why;
+      deskView = `${idea.conviction} conviction · ${idea.horizon} horizon. Preferred expression: ${structure}.`;
+    }
 
-    // crude but illustrative checks
+    /* ---- portfolio impact (asset-class lens) ---- */
+    const curSplit = c.split;
+    const { split: postSplit, funding } = BPCharts.applyTrade(curSplit, assetClass, notional);
+    // stable colour per label across both donuts
+    const labels = [...new Set([...Object.keys(curSplit), ...Object.keys(postSplit)].map(k => k.replace(/_/g, " ")))];
+    const colorOf = (lab) => BPCharts.PALETTE[labels.indexOf(lab) % BPCharts.PALETTE.length];
+    const segOf = (split) => Object.entries(split).map(([k, v]) => ({ label: k.replace(/_/g, " "), value: v, color: colorOf(k.replace(/_/g, " ")) }));
+    const curSeg = segOf(curSplit), postSeg = segOf(postSplit);
+
+    /* ---- goal impact (bucket lens) ---- */
+    const curB = BPCharts.bucketAlloc(curSplit);
+    const postB = moveToBucket(curB, bucket, notional);
+    const target = c.goals.target;
+    const before = BPCharts.targetDistance(curB, target);
+    const after = BPCharts.targetDistance(postB, target);
+    const closer = after < before - 0.05, neutral = Math.abs(after - before) <= 0.05;
+    const moveMag = Math.abs(before - after).toFixed(1);
+    const targetSeg = SEED.GOAL_BUCKETS.map(b => ({ label: b.key, value: target[b.key] || 0, color: b.color }));
+    const postBSeg = SEED.GOAL_BUCKETS.map(b => ({ label: b.key, value: postB[b.key] || 0, color: b.color }));
+    const deltas = SEED.GOAL_BUCKETS.map(b => ({ key: b.key, d: (postB[b.key] || 0) - (curB[b.key] || 0) }));
+
+    /* ---- checks ---- */
     const checks = [];
+    const otc = c.classification === "Retail" && SEED.isOtcOption(structure);
+    checks.push(otc
+      ? { type: "warn", title: "Appropriateness — MiFID Retail blocks this", detail: `${c.name} is classified <b>${c.mifid}</b>. A <b>${esc(structure)}</b> is a complex / OTC-derivative product — Retail clients can't trade it without re-classification or a non-complex alternative (direct equity, ETF or fund).` }
+      : { type: "ok", title: "Appropriateness — cleared", detail: `${c.name} (${c.mifid}) can trade <b>${esc(structure)}</b>.` });
 
     checks.push(mapped
-      ? { type: "ok", title: "Suitability — fits the book", detail: why || "This idea is mapped to the client's mandate." }
-      : { type: "warn", title: "Suitability — not currently mapped", detail: `This idea isn't on ${esc(c.name)}'s mapped list. Confirm it fits the ${esc(c.risk).toLowerCase()} mandate before proceeding.` });
+      ? { type: "ok", title: "Suitability — fits the mandate", detail: why || "Mapped to the client's mandate." }
+      : { type: "info", title: "Suitability — confirm fit", detail: isCustom()
+          ? `Ad-hoc trade — confirm it fits ${c.name}'s ${c.risk.toLowerCase()} mandate and "${esc(c.goals.objective)}".`
+          : `Not on ${c.name}'s mapped list. Confirm it fits the ${c.risk.toLowerCase()} mandate.` });
 
-    const cashSeg = c.split.Cash || 0;
-    checks.push(notional > cashSeg
-      ? { type: "warn", title: "Funding — exceeds cash", detail: `Notional of ${notional}% is above the ${cashSeg}% cash sleeve. Funding requires trimming an existing position or a structured/financed entry.` }
-      : { type: "ok", title: "Funding — covered by cash", detail: `${notional}% sits within the ${cashSeg}% cash sleeve.` });
+    checks.push(funding.ok
+      ? { type: "ok", title: "Funding — covered by cash", detail: funding.text }
+      : { type: "warn", title: "Funding — exceeds cash", detail: funding.text });
 
     const top = (c.positions || [])[0];
-    if (top && top.weightPct >= 20) {
-      checks.push({ type: "warn", title: "Concentration flag", detail: `Largest position ${esc(top.name)} is ${top.weightPct}% of the book. Size this trade so it diversifies rather than compounds the concentration.` });
-    } else {
-      checks.push({ type: "ok", title: "Concentration — within range", detail: `Largest position is ${top ? top.weightPct : 0}% — adding ${notional}% keeps single-name risk in range.` });
-    }
+    checks.push(top && top.weightPct >= 20
+      ? { type: "warn", title: "Concentration flag", detail: `Largest position ${esc(top.name)} is ${top.weightPct}% of the book — size this so it diversifies rather than compounds the concentration.` }
+      : { type: "ok", title: "Concentration — within range", detail: `Largest position is ${top ? top.weightPct : 0}%; a ${notional}% sleeve-level trade keeps single-name risk in range.` });
 
-    if (c.ccy !== "USD") {
-      checks.push({ type: "info", title: "Currency", detail: `Book base is ${c.ccy}; most ideas are USD-denominated. Consider an FX overlay or ${c.ccy}-hedged sleeve on the new exposure.` });
-    }
+    checks.push({ type: closer ? "ok" : neutral ? "info" : "warn",
+      title: "Long-term goal alignment",
+      detail: `${c.name}'s objective: "${esc(c.goals.objective)}" (${esc(c.goals.horizon)}). This lifts the <b>${bucket}</b> sleeve and moves the book ${neutral ? "broadly neutrally vs" : (closer ? `~${moveMag}pts closer to` : `~${moveMag}pts further from`)} the strategic target.` });
 
-    checks.push({ type: "info", title: "Desk view", detail: `${esc(idea.conviction)} conviction · ${esc(idea.horizon)} horizon. Preferred expression here: ${esc(structure)}.` });
+    if (c.ccy !== "USD")
+      checks.push({ type: "info", title: "Currency", detail: `Book base is ${c.ccy}; most ideas are USD-denominated. Consider an FX overlay or ${c.ccy}-hedged sleeve.` });
 
+    checks.push({ type: "info", title: "Desk view", detail: deskView });
+
+    /* ---- render ---- */
+    const ico = (t) => t === "ok" ? "✓" : t === "warn" ? "!" : "i";
     $("#ptResult").innerHTML = `
       <div class="pt-result-head">
-        <span class="eyebrow">${esc(c.name)} · ${esc(theme ? theme.name : "")}</span>
-        <h3>${esc(idea.title)} — ${esc(structure)}, ${notional}% of book</h3>
+        <span class="eyebrow">${esc(c.name)} · ${esc(theme)} · ${esc(c.classification)}</span>
+        <h3>${esc(label)} — ${esc(structure)}, ${notional}% of book</h3>
       </div>
+
+      <div class="pt-section">
+        <span class="eyebrow">Impact on the portfolio</span>
+        <div class="pie-row">
+          <div class="pie-card"><div class="pc-t">Current allocation</div>${BPCharts.donut(curSeg)}${BPCharts.legend(curSeg)}</div>
+          <div class="pie-card"><div class="pc-t">After this trade</div>${BPCharts.donut(postSeg)}${BPCharts.legend(postSeg)}</div>
+        </div>
+      </div>
+
+      <div class="pt-section">
+        <span class="eyebrow">Impact on long-term goals</span>
+        <div class="pie-row">
+          <div class="pie-card"><div class="pc-t">Strategic target</div>${BPCharts.donut(targetSeg)}${BPCharts.legend(targetSeg)}</div>
+          <div class="pie-card"><div class="pc-t">Book after trade</div>${BPCharts.donut(postBSeg)}${BPCharts.legend(postBSeg)}</div>
+        </div>
+        <div class="pt-verdict ${neutral ? "toward" : (closer ? "toward" : "away")}">
+          <span class="vch">${neutral ? "≈" : (closer ? "✓" : "▲")}</span>
+          <div>${neutral
+            ? `Broadly neutral for ${esc(c.name)}'s strategic target.`
+            : (closer
+              ? `Moves the book <b>~${moveMag}pts closer</b> to ${esc(c.name)}'s strategic target.`
+              : `Moves the book <b>~${moveMag}pts further</b> from ${esc(c.name)}'s strategic target — size with care.`)}</div>
+        </div>
+        <div class="pt-delta-row">
+          ${deltas.map(d => `<span class="pt-delta">${d.key} <b class="${d.d > 0 ? "up" : d.d < 0 ? "dn" : ""}">${d.d > 0 ? "+" : ""}${d.d.toFixed(1)}</b></span>`).join("")}
+        </div>
+      </div>
+
+      <a class="pt-portfolio-link" href="portfolio.html?client=${esc(c.id)}">View ${esc(c.name)}'s current portfolio ›</a>
+
       <div class="pt-checks">
         ${checks.map(ck => `<div class="pt-check ${ck.type}">
-          <span class="ico">${ck.type === "ok" ? "✓" : ck.type === "warn" ? "!" : "i"}</span>
+          <span class="ico">${ico(ck.type)}</span>
           <div><div class="ck-title">${ck.title}</div><div class="ck-detail">${ck.detail}</div></div>
         </div>`).join("")}
       </div>`;
@@ -537,6 +638,21 @@
     // overlay closes drawer + modal
     $("#overlay").addEventListener("click", () => { closeDrawer(); closeModal(); });
     document.addEventListener("keydown", e => { if (e.key === "Escape") { closeDrawer(); closeModal(); } });
+
+    // deep links from the portfolio page (?tab=&client=&idea=)
+    const p = new URLSearchParams(location.search);
+    const qTab = p.get("tab"), qClient = p.get("client"), qIdea = p.get("idea");
+    if (qIdea && ideaById(qIdea)) {
+      switchTab("ideas");
+      activeThemeId = ideaById(qIdea).themeId;
+      renderThemes(); renderIdeaPanel();
+      openIdeaDrawer(qIdea);
+    } else if (qTab === "book") {
+      switchTab("book");
+      if (qClient && clientById(qClient)) selectClient(qClient);
+    } else if (qTab === "pretrade") {
+      switchTab("pretrade");
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);

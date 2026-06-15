@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio — Brokerage Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="brand">
+        <div class="brand-mark"><span>B</span></div>
+        <div class="brand-text">
+          <div class="brand-name">Brokerage Playground</div>
+          <div class="brand-sub">Private Bank · Investment Desk</div>
+        </div>
+      </div>
+      <div class="masthead-meta">
+        <a class="back-link" id="backLink" href="index.html">‹ Back to Advisor Book</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="view" id="report"></main>
+
+  <script src="data.js"></script>
+  <script src="charts.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const params = new URLSearchParams(location.search);
+    const id = params.get("client") || (SEED.clients[0] && SEED.clients[0].id);
+    const c = SEED.clients.find(x => x.id === id);
+    document.getElementById("backLink").href = "index.html?tab=book&client=" + encodeURIComponent(id);
+
+    if (!c) { document.getElementById("report").innerHTML = "<p>Client not found.</p>"; return; }
+
+    const sym = c.ccy === "EUR" ? "€" : c.ccy === "GBP" ? "£" : "$";
+    const fmtAum = sym + c.aum.toFixed(1) + "m";
+    const ideasFor = SEED.ideas.filter(i => (i.clients || []).some(x => x.id === c.id));
+    const themeName = (tid) => (SEED.themes.find(t => t.id === tid) || {}).name || "";
+    const convClass = (cv) => "conv-" + String(cv).toLowerCase().replace(/[^a-z]/g, "");
+
+    // glance
+    const top = (c.positions || []).slice().sort((a, b) => b.weightPct - a.weightPct)[0] || {};
+    const cashPct = c.split.Cash || 0;
+
+    // allocation
+    const allocSeg = BPCharts.splitSegments(c.split);
+
+    // goal buckets: current vs target
+    const curB = BPCharts.bucketAlloc(c.split);
+    const target = c.goals.target;
+    const curBSeg = SEED.GOAL_BUCKETS.map(b => ({ label: b.key, value: curB[b.key] || 0, color: b.color }));
+    const tgtSeg = SEED.GOAL_BUCKETS.map(b => ({ label: b.key, value: target[b.key] || 0, color: b.color }));
+    const dist = BPCharts.targetDistance(curB, target);
+    const onTarget = dist <= 16; // sum of abs diffs across 4 buckets
+    const gaps = SEED.GOAL_BUCKETS.map(b => ({ key: b.key, color: b.color, d: (curB[b.key] || 0) - (target[b.key] || 0) }))
+      .filter(g => Math.abs(g.d) >= 4)
+      .sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
+    const gapText = gaps.length
+      ? "Currently " + gaps.map(g => `${g.d > 0 ? "over" : "under"}weight <b>${g.key}</b> (${g.d > 0 ? "+" : ""}${g.d.toFixed(0)}pts)`).join(", ") + " vs target."
+      : "Broadly aligned with the strategic target.";
+
+    // holdings
+    const holdings = (c.positions || []).slice().sort((a, b) => b.weightPct - a.weightPct).map(p => `
+      <tr>
+        <td><div class="h-name">${esc(p.name)}</div><div class="h-tick">${esc(p.ticker)}</div>
+            ${p.note ? `<div class="h-note">${esc(p.note)}</div>` : ""}</td>
+        <td class="h-cls">${esc(p.assetClass)}</td>
+        <td class="r h-wt">${p.weightPct}%</td>
+      </tr>`).join("");
+
+    // recommended ideas (advisor view)
+    const recos = ideasFor.map(idea => {
+      const why = (idea.clients.find(x => x.id === c.id) || {}).why || "";
+      return `<div class="rec-idea" data-href="index.html?tab=ideas&idea=${esc(idea.id)}">
+        <div class="rec-idea-top">
+          <span class="tag ${convClass(idea.conviction)}">${esc(idea.conviction)}</span>
+          <span class="rec-title">${esc(idea.title)}</span>
+          <span class="rec-theme">${esc(themeName(idea.themeId))}</span>
+        </div>
+        <p class="rec-why">${esc(why)}</p>
+      </div>`;
+    }).join("") || `<p class="rec-why">No ideas currently mapped.</p>`;
+
+    document.getElementById("report").innerHTML = `
+      <div class="report-masthead">
+        <span class="eyebrow">${esc(c.ccy)} base · ${esc(c.mifid)}</span>
+        <h1>${esc(c.name)} <span style="font-weight:400;color:var(--ink-faint)">/ Portfolio</span></h1>
+        <div class="rm-meta"><b>${esc(fmtAum)}</b> across ${(c.positions || []).length} holdings · ${esc(c.goals.objective)} · ${esc(c.goals.horizon)}</div>
+      </div>
+
+      <div class="report-glance">
+        <div class="glance-cell"><div class="k">Book AUM</div><div class="v">${esc(fmtAum)}</div></div>
+        <div class="glance-cell"><div class="k">Holdings</div><div class="v">${(c.positions || []).length}</div></div>
+        <div class="glance-cell"><div class="k">Largest position</div><div class="v">${top.weightPct || 0}% <small>${esc(top.ticker || top.name || "—")}</small></div></div>
+        <div class="glance-cell"><div class="k">Cash</div><div class="v">${cashPct}%</div></div>
+        <div class="glance-cell"><div class="k">Risk</div><div class="v" style="font-size:15px">${esc(c.risk)}</div></div>
+      </div>
+
+      <div class="report-section">
+        <h2>Allocation</h2>
+        <div class="report-two">
+          <div class="pie-card"><div class="pc-t">By asset class</div>${BPCharts.donut(allocSeg, { size: 150 })}${BPCharts.legend(allocSeg)}</div>
+          <div class="panel">
+            <div class="panel-head"><h3>Strategic target vs current</h3></div>
+            <div class="panel-body">
+              <div class="pie-row" style="grid-template-columns:1fr 1fr">
+                <div class="pie-card" style="border:none;padding:6px"><div class="pc-t">Target</div>${BPCharts.donut(tgtSeg, { size: 116, thickness: 18 })}</div>
+                <div class="pie-card" style="border:none;padding:6px"><div class="pc-t">Current</div>${BPCharts.donut(curBSeg, { size: 116, thickness: 18 })}</div>
+              </div>
+              <div class="pt-verdict ${onTarget ? "toward" : "away"}" style="margin-top:6px">
+                <span class="vch">${onTarget ? "✓" : "▲"}</span>
+                <div>${gapText}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-section">
+        <h2>Long-term goals</h2>
+        <div class="report-two">
+          <div class="agenda" style="margin:0">
+            <span class="eyebrow">Objective</span>
+            <p>${esc(c.goals.objective)}. Horizon: ${esc(c.goals.horizon)}.</p>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Strategic target allocation</h3></div>
+            <div class="panel-body">
+              <ul class="target-list">
+                ${SEED.GOAL_BUCKETS.map(b => `<li>
+                  <span class="don-dot" style="background:${b.color}"></span>${b.key}
+                  <span class="tl-bar"><span class="tl-fill" style="width:${target[b.key] || 0}%;background:${b.color}"></span></span>
+                  <span class="tl-val">${target[b.key] || 0}% <span style="color:var(--ink-faint)">/ now ${Math.round(curB[b.key] || 0)}%</span></span>
+                </li>`).join("")}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-section">
+        <h2>Holdings</h2>
+        <table class="holdings-table">
+          <thead><tr><th>Position</th><th>Asset class</th><th class="r">Weight</th></tr></thead>
+          <tbody>${holdings}</tbody>
+        </table>
+      </div>
+
+      <div class="report-section">
+        <h2>Advisor view</h2>
+        <div class="agenda" style="margin-bottom:16px">
+          <span class="eyebrow">The desk's agenda for this book</span>
+          <p>${esc(c.summary)}</p>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Recommended ideas</h3><span class="rec-theme" style="margin-left:auto">${ideasFor.length} mapped</span></div>
+          <div class="panel-body">${recos}</div>
+        </div>
+      </div>`;
+
+    document.querySelectorAll(".rec-idea[data-href]").forEach(el =>
+      el.addEventListener("click", () => { location.href = el.dataset.href; }));
+  })();
+  </script>
+</body>
+</html>

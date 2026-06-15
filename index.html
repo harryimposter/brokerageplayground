@@ -108,6 +108,19 @@
             <label class="field-label">Idea</label>
             <select id="ptIdea"></select>
           </div>
+          <div class="pt-custom" id="ptCustom" hidden>
+            <div class="field">
+              <label class="field-label">Instrument / description</label>
+              <input id="ptCustomName" placeholder="e.g. Copper miners ETF" />
+            </div>
+            <div class="field">
+              <label class="field-label">Asset class</label>
+              <select id="ptCustomClass">
+                <option>Equity</option><option>Fixed Income</option><option>Commodity</option>
+                <option>Real Assets</option><option>Structured</option><option>Cash</option>
+              </select>
+            </div>
+          </div>
           <div class="field">
             <label class="field-label">Structure</label>
             <select id="ptStructure"></select>
@@ -135,6 +148,7 @@
   <div class="modal-card" id="modal" role="dialog" aria-modal="true"></div>
 
   <script src="data.js"></script>
+  <script src="charts.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

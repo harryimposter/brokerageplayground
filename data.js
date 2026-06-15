@@ -261,6 +261,13 @@ const SEED_CLIENTS = [
     aum: 38.0,
     relationship: "3-yr relationship · Entrepreneur · Aggressive growth",
     risk: "Aggressive",
+    classification: "Professional",
+    mifid: "MiFID Professional",
+    goals: {
+      objective: "Aggressive capital growth concentrated in the AI complex",
+      horizon: "Long-term · 10+ yrs",
+      target: { Growth: 80, Income: 5, Protection: 10, Liquidity: 5 }
+    },
     profile: "US tech founder, options-fluent. High single-stock concentration in the AI complex, minimal cash. Comfortable with autocalls, overwrites and leveraged certificates.",
     split: { Equity: 88, "Structured": 6, Cash: 4, "Fixed Income": 2 },
     positions: [
@@ -278,8 +285,15 @@ const SEED_CLIENTS = [
     name: "Aurora",
     ccy: "EUR",
     aum: 50.2,
-    relationship: "5-yr relationship · MiFID Professional · Growth + income",
+    relationship: "5-yr relationship · MiFID Retail · Growth + income",
     risk: "Growth, with income needs",
+    classification: "Retail",
+    mifid: "MiFID Retail",
+    goals: {
+      objective: "Grow the book while drawing income — and protect the concentrated MU gain",
+      horizon: "Long-term · 7–10 yrs",
+      target: { Growth: 55, Income: 25, Protection: 12, Liquidity: 8 }
+    },
     profile: "EMEA private-bank client, growth-oriented with income needs. Comfortable with structured products and derivatives overlays. Book is 72% USD against an EUR base.",
     split: { Equity: 71, "Fixed Income": 13.9, Commodity: 6, Cash: 10.1 },
     positions: [
@@ -300,6 +314,13 @@ const SEED_CLIENTS = [
     aum: 22.0,
     relationship: "11-yr relationship · Retiree · Income & preservation",
     risk: "Conservative income",
+    classification: "Retail",
+    mifid: "US Retail",
+    goals: {
+      objective: "Fund retirement income and preserve capital",
+      horizon: "Drawdown · 0–5 yrs",
+      target: { Growth: 25, Income: 50, Protection: 15, Liquidity: 10 }
+    },
     profile: "US retiree drawing income. Capital preservation first. Dividend equity, regulated utilities, treasuries and munis with a healthy cash buffer. Low appetite for single-stock risk.",
     split: { Equity: 46, "Fixed Income": 38, Real_Assets: 8, Cash: 8 },
     positions: [
@@ -319,6 +340,13 @@ const SEED_CLIENTS = [
     aum: 61.0,
     relationship: "7-yr relationship · Family office · Real assets",
     risk: "Growth, real-asset tilt",
+    classification: "Retail",
+    mifid: "MiFID Retail",
+    goals: {
+      objective: "Compound a real-asset core across cycles",
+      horizon: "Multi-generational · 10+ yrs",
+      target: { Growth: 40, Income: 20, Protection: 30, Liquidity: 10 }
+    },
     profile: "APAC family-office mandate, multi-currency (USD/SGD). Strong tilt to commodities, gold, energy and infrastructure. Comfortable with private markets and structured accumulators.",
     split: { Equity: 40, Commodity: 18, Real_Assets: 16, "Fixed Income": 14, Cash: 6, Private: 6 },
     positions: [
@@ -338,6 +366,13 @@ const SEED_CLIENTS = [
     aum: 29.0,
     relationship: "4-yr relationship · Executive · Balanced",
     risk: "Moderate",
+    classification: "Professional",
+    mifid: "MiFID Professional",
+    goals: {
+      objective: "Balanced growth with controlled drawdown",
+      horizon: "Long-term · 8–10 yrs",
+      target: { Growth: 55, Income: 30, Protection: 8, Liquidity: 7 }
+    },
     profile: "US corporate executive, balanced mandate. Mega-cap quality plus an index core. Wants AI exposure but is drawdown-sensitive — prefers buffered structures to naked single stocks.",
     split: { Equity: 64, "Fixed Income": 22, Structured: 9, Cash: 5 },
     positions: [
@@ -356,6 +391,13 @@ const SEED_CLIENTS = [
     aum: 44.0,
     relationship: "2-yr relationship · Tech operator · Thematic growth",
     risk: "Growth",
+    classification: "Professional",
+    mifid: "MiFID Professional",
+    goals: {
+      objective: "Own the AI build-out end to end",
+      horizon: "Long-term · 7–10 yrs",
+      target: { Growth: 70, Income: 15, Protection: 8, Liquidity: 7 }
+    },
     profile: "US tech operator running a thematic growth book around the AI build-out. Owns the whole supply chain — compute, memory, equipment and the power that feeds it. Comfortable with overwrites and certificates.",
     split: { Equity: 78, Structured: 8, "Real_Assets": 8, Cash: 6 },
     positions: [
@@ -375,6 +417,13 @@ const SEED_CLIENTS = [
     aum: 33.0,
     relationship: "9-yr relationship · Business owner · Value & income",
     risk: "Moderate, value tilt",
+    classification: "Retail",
+    mifid: "MiFID Retail",
+    goals: {
+      objective: "Durable income from diversified real assets",
+      horizon: "Long-term · 5–8 yrs",
+      target: { Growth: 45, Income: 35, Protection: 12, Liquidity: 8 }
+    },
     profile: "UK/US business owner, GBP/USD split. Value-and-income style with an energy overweight and real-asset income. Wants to keep the energy carry but diversify its cyclicality.",
     split: { Equity: 58, "Fixed Income": 20, Real_Assets: 13, Cash: 9 },
     positions: [
@@ -389,5 +438,61 @@ const SEED_CLIENTS = [
   }
 ];
 
-/* expose to app.js */
-window.SEED = { themes: SEED_THEMES, ideas: SEED_IDEAS, clients: SEED_CLIENTS };
+/* ---------------------------------------------------------------------------
+   Domain maps used by pre-trade impact + portfolio analytics.
+   THEME_IMPACT : which asset-class sleeve a theme's trade lands in, and the
+                  role ("goal bucket") it plays for the client's objectives.
+   BUCKET_OF    : maps any holding's asset class to a goal bucket so we can
+                  read a book against its strategic target.
+   GOAL_BUCKETS : canonical order + colour for the four goal buckets.
+   OTC / NON-COMPLEX keyword lists drive the MiFID Retail appropriateness flag.
+--------------------------------------------------------------------------- */
+const THEME_IMPACT = {
+  gold:      { assetClass: "Commodity",   bucket: "Protection" },
+  semis:     { assetClass: "Equity",      bucket: "Growth" },
+  infra:     { assetClass: "Real Assets", bucket: "Income" },
+  oil:       { assetClass: "Equity",      bucket: "Income" },
+  tech:      { assetClass: "Equity",      bucket: "Growth" },
+  utilities: { assetClass: "Utility",     bucket: "Income" },
+  earnings:  { assetClass: "Structured",  bucket: "Protection" }
+};
+
+const BUCKET_OF = {
+  "Equity": "Growth", "Equity ETF": "Growth", "Structured": "Growth", "Private": "Growth",
+  "Commodity": "Protection",
+  "Real Assets": "Income", "Real_Assets": "Income",
+  "Fixed Income": "Income", "Credit": "Income", "Muni": "Income", "Govt bond": "Income", "Utility": "Income",
+  "Cash": "Liquidity"
+};
+
+const GOAL_BUCKETS = [
+  { key: "Growth",     color: "#29211A" },
+  { key: "Income",     color: "#9A7B4F" },
+  { key: "Protection", color: "#3F6B4E" },
+  { key: "Liquidity",  color: "#C2A661" }
+];
+
+/* asset class a custom/ad-hoc instrument sits in -> goal bucket */
+const ASSET_BUCKET = {
+  "Equity": "Growth", "Fixed Income": "Income", "Commodity": "Protection",
+  "Real Assets": "Income", "Structured": "Protection", "Cash": "Liquidity"
+};
+
+/* MiFID appropriateness: complex / OTC-derivative structures vs non-complex */
+const OTC_KEYWORDS = ["collar","risk reversal","autocall","phoenix","buffered","range note",
+  "accumulator","reverse convertible","certificate","covered call","overwrite","call spread",
+  "cash-secured","seagull","prepaid","dcd","structured note","note"];
+const NONCOMPLEX_KEYWORDS = ["direct equity","equity etf","etf","index","basket","physical",
+  "etc","fund","gilt","bond","dividend basket","direct"];
+
+function isOtcOption(structure) {
+  const s = String(structure || "").toLowerCase();
+  if (NONCOMPLEX_KEYWORDS.some(k => s.includes(k))) return false;
+  return OTC_KEYWORDS.some(k => s.includes(k));
+}
+
+/* expose to app.js + portfolio.html */
+window.SEED = {
+  themes: SEED_THEMES, ideas: SEED_IDEAS, clients: SEED_CLIENTS,
+  THEME_IMPACT, BUCKET_OF, GOAL_BUCKETS, ASSET_BUCKET, isOtcOption
+};
