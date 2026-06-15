@@ -225,25 +225,23 @@
     return `<div class="alloc"><div class="alloc-bar">${segs}</div><div class="alloc-legend">${legend}</div></div>`;
   }
 
-  /* one recommendation row (scanner finding OR matched view idea) */
+  /* one recommendation tile (scanner finding OR matched view idea) */
   function recoItemHTML(it, isNba) {
-    const chips = (it.structures || []).slice(0, 4).map(s =>
+    const chips = (it.structures || []).slice(0, 3).map(s =>
       `<span class="struct-chip sm ${SEED.isOtcOption(s) && it.retailBlocked ? "blocked" : ""}">${esc(s)}</span>`).join("");
-    const blockNote = it.retailBlocked
-      ? `<div class="reco-alt">⚠️ Retail — complex/OTC. Alternative: ${esc(it.alt || "use a non-complex instrument")}.</div>` : "";
     const handle = it.source === "View" ? `data-idea="${esc(it.ideaId)}"` : `data-stage="1"`;
-    return `<div class="reco-item${isNba ? " is-nba" : ""}" ${handle}>
-      <div class="reco-top">
+    return `<article class="reco-card${isNba ? " is-nba" : ""}" ${handle}>
+      <div class="rc-top">
         ${isNba ? '<span class="nba-tag">Next best</span>' : ""}
         ${sourceTag(it.source)}
-        <span class="reco-title">${esc(it.title)}</span>
         ${it.conviction ? `<span class="tag ${convClass(it.conviction)}">${esc(it.conviction)}</span>` : ""}
-        ${it.bucket ? `<span class="reco-bucket">${esc(it.bucket)}</span>` : ""}
       </div>
-      <p class="reco-why">${esc(it.rationale)}</p>
-      <div class="reco-structs">${chips}</div>
-      ${blockNote}
-    </div>`;
+      <h4>${esc(it.title)}</h4>
+      <p class="rc-why">${esc(it.rationale)}</p>
+      <div class="rc-structs">${chips}</div>
+      ${it.retailBlocked ? `<div class="rc-alt">⚠️ Retail — alt: ${esc(it.alt || "non-complex instrument")}</div>` : ""}
+      <div class="rc-foot"><span class="rc-bucket">${esc(it.bucket || "")} role</span><span class="rc-cta">${it.source === "View" ? "View idea ›" : "Stage ›"}</span></div>
+    </article>`;
   }
 
   function renderClientDetail(c) {
@@ -255,7 +253,7 @@
     const groupsHTML = rec.groups.map(g => `
       <div class="reco-group">
         <div class="reco-group-head">${esc(g.assetClass)} <span class="reco-count">${g.items.length}</span></div>
-        ${g.items.map(it => recoItemHTML(it, nbaKey && (it.source === "View" ? it.ideaId : it.title) === nbaKey)).join("")}
+        <div class="reco-tiles">${g.items.map(it => recoItemHTML(it, nbaKey && (it.source === "View" ? it.ideaId : it.title) === nbaKey)).join("")}</div>
       </div>`).join("") || `<p class="reco-why" style="padding:12px 0">No recommendations — book is on plan.</p>`;
 
     const positions = (c.positions || []).map(p =>
@@ -322,10 +320,10 @@
       ${liabilities}`;
 
     // wire interactions
-    $$("#clientDetail .reco-item[data-idea]").forEach(el =>
+    $$("#clientDetail .reco-card[data-idea]").forEach(el =>
       el.addEventListener("click", () => openIdeaDrawer(el.dataset.idea)));
-    $$("#clientDetail .reco-item[data-stage]").forEach(el =>
-      el.addEventListener("click", () => stageFinding(c.id, el.querySelector(".reco-title").textContent)));
+    $$("#clientDetail .reco-card[data-stage]").forEach(el =>
+      el.addEventListener("click", () => stageFinding(c.id, el.querySelector("h4").textContent)));
     const banner = $("#clientDetail .nba-banner");
     if (banner) banner.addEventListener("click", () => stageNba(c.id, nba));
   }

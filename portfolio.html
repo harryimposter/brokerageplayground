@@ -79,17 +79,19 @@
         <td class="r h-wt">${p.weightPct}%</td>
       </tr>`).join("");
 
-    // advisor view — scanner findings + matched ideas
+    // advisor view — scanner findings + matched ideas, as tiles
     const rec = window.Scanner.recommendations(c);
-    const recos = rec.all.slice(0, 8).map(it => `
-      <div class="rec-idea" data-href="${it.source === "View" ? `index.html?tab=ideas&idea=${esc(it.ideaId)}` : `index.html?tab=book&client=${esc(c.id)}`}">
-        <div class="rec-idea-top">
+    const recos = rec.all.length ? `<div class="reco-tiles">` + rec.all.slice(0, 9).map(it => `
+      <article class="reco-card" data-href="${it.source === "View" ? `index.html?tab=ideas&idea=${esc(it.ideaId)}` : `index.html?tab=book&client=${esc(c.id)}`}">
+        <div class="rc-top">
           <span class="src-tag ${it.source === "Portfolio" ? "portfolio" : "view"}">${esc(it.source)}</span>
-          <span class="rec-title">${esc(it.title)}</span>
-          <span class="rec-theme">${esc(it.assetClass)}</span>
+          ${it.conviction ? `<span class="tag ${convClass(it.conviction)}">${esc(it.conviction)}</span>` : ""}
         </div>
-        <p class="rec-why">${esc(it.rationale)}</p>
-      </div>`).join("") || `<p class="rec-why">No recommendations — book is on plan.</p>`;
+        <h4>${esc(it.title)}</h4>
+        <p class="rc-why">${esc(it.rationale)}</p>
+        <div class="rc-structs">${(it.structures || []).slice(0, 3).map(s => `<span class="struct-chip sm">${esc(s)}</span>`).join("")}</div>
+        <div class="rc-foot"><span class="rc-bucket">${esc(it.assetClass)}</span><span class="rc-cta">${it.source === "View" ? "View idea ›" : "Open client ›"}</span></div>
+      </article>`).join("") + `</div>` : `<p class="rec-why">No recommendations — book is on plan.</p>`;
 
     document.getElementById("report").innerHTML = `
       <div class="report-masthead">
@@ -162,7 +164,7 @@
         </div>
       </div>`;
 
-    document.querySelectorAll(".rec-idea[data-href]").forEach(el =>
+    document.querySelectorAll(".reco-card[data-href]").forEach(el =>
       el.addEventListener("click", () => { location.href = el.dataset.href; }));
   })();
   </script>
