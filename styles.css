@@ -812,6 +812,49 @@ button.struct-chip.struct-toggle:focus-visible { outline: 2px solid var(--gold);
 
 .focus-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; align-items: start; }
 
+/* compact focus tiles (Today's Focus + Advisor-Book top-3) */
+.focus-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+.focus-tile {
+  display: block; width: 100%; text-align: left; cursor: pointer; font: inherit;
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 15px 16px; box-shadow: var(--shadow-card);
+  transition: transform .12s, box-shadow .15s, border-color .15s;
+}
+.focus-tile:hover { border-color: var(--bronze); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(41,33,26,.06), 0 12px 30px rgba(41,33,26,.09); }
+.focus-tile:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.ft-top { display: flex; gap: 12px; align-items: flex-start; }
+.ft-conv {
+  flex: none; font-family: var(--serif); font-size: 19px; font-weight: 700; line-height: 1;
+  width: 44px; height: 44px; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center; border: 1px solid var(--line-strong);
+}
+.ft-conv.conv-high { background: #EEF3EE; border-color: #BFD3C2; color: var(--pos); }
+.ft-conv.conv-medium { background: #F6EFE2; color: var(--warn); }
+.ft-conv.conv-watch { background: var(--cream-2); color: var(--ink-faint); }
+.ft-id { min-width: 0; flex: 1; }
+.ft-name { font-family: var(--serif); font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--ink); }
+.ft-tick { font-family: var(--sans); font-size: 10.5px; font-weight: 600; color: var(--bronze-deep); margin-left: 5px; }
+.ft-headline { font-size: 12px; color: var(--ink-soft); margin-top: 4px; line-height: 1.45; }
+.ft-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+.fc-tag.nolink { cursor: default; }
+.ft-count { margin-left: auto; font-size: 11px; color: var(--ink-faint); font-weight: 600; }
+.ft-tags .fcl-fit { margin-left: auto; font-size: 15px; padding: 2px 9px; }
+
+/* "see more ideas" reveal (Advisor Book) */
+.see-more-btn {
+  width: 100%; margin-top: 18px; background: none; border: 1px dashed var(--line-strong);
+  color: var(--bronze-deep); border-radius: var(--radius); padding: 12px; font-size: 13px;
+  letter-spacing: .03em; font-weight: 600; transition: background .12s, border-color .12s, color .12s;
+}
+.see-more-btn:hover { background: var(--cream); border-color: var(--bronze); color: var(--ink); }
+.see-more-btn.open { border-style: solid; }
+
+/* focus detail inside the shared side drawer */
+.drawer-sub { font-size: 12.5px; color: var(--ink-soft); margin: 7px 0 0; line-height: 1.45; }
+#drawer .fc-intel { grid-template-columns: 1fr 1fr; }
+#drawer .fc-conv-detail-open .fcd-head { font-size: 12px; color: var(--ink-soft); margin-bottom: 10px; }
+#drawer .fc-tags { margin-top: 0; }
+
 .focus-card {
   background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 20px 22px 18px; display: flex; flex-direction: column;

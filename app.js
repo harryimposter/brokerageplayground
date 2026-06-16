@@ -254,6 +254,13 @@
     const curBuckets = window.Scanner.bucketAlloc(c.split);
     const nbaKey = nba ? (nba.source === "View" ? nba.ideaId : nba.title) : null;
 
+    const top3 = topFocusIdeasForClient(c, 3);
+    const topIdeasHTML = top3.length ? `
+      <div class="panel" style="margin-top:18px">
+        <div class="panel-head"><h3>Top ideas for ${esc(c.name)}</h3><span class="rec-theme" style="margin-left:auto">today's focus · ranked for this book (conviction × fit)</span></div>
+        <div class="panel-body"><div class="focus-tiles">${top3.map(t => focusTileHTML(t.idea, { client: c, fit: t.fit })).join("")}</div></div>
+      </div>` : "";
+
     const groupsHTML = rec.groups.map(g => `
       <div class="reco-group">
         <div class="reco-group-head">${esc(g.assetClass)} <span class="reco-count">${g.items.length}</span></div>
@@ -312,6 +319,14 @@
 
       <div class="agenda"><span class="eyebrow">The desk's agenda for this book</span><p>${esc(c.summary)}</p></div>
 
+      ${topIdeasHTML}
+
+      <button class="see-more-btn" id="seeMoreIdeas" type="button" aria-expanded="false">See more ideas — all ${rec.all.length} recommendations by asset class ›</button>
+      <div class="panel" id="moreIdeasPanel" hidden style="margin-top:14px">
+        <div class="panel-head"><h3>Recommendations by asset class</h3><span class="rec-theme" style="margin-left:auto">${rec.findings.length} from the book · ${rec.viewItems.length} from Views</span></div>
+        <div class="panel-body reco-body">${groupsHTML}</div>
+      </div>
+
       <div class="panel" style="margin-top:18px">
         <div class="panel-head"><h3>Strategic allocation — now vs target</h3></div>
         <div class="panel-body">${BPCharts.goalTargetBar(c.goals.target, curBuckets)}</div>
@@ -323,11 +338,6 @@
       </details>
 
       <div class="panel" style="margin-top:18px">
-        <div class="panel-head"><h3>Recommendations by asset class</h3><span class="rec-theme" style="margin-left:auto">${rec.findings.length} from the book · ${rec.viewItems.length} from Views</span></div>
-        <div class="panel-body reco-body">${groupsHTML}</div>
-      </div>
-
-      <div class="panel" style="margin-top:18px">
         <div class="panel-head"><h3>Holdings</h3></div>
         <div class="panel-body">${positions || '<p class="pos-note" style="padding:12px 0">No positions on file.</p>'}</div>
       </div>
@@ -335,6 +345,17 @@
 
     // wire interactions
     window.EXPRESSIONS.wire($("#clientDetail"));
+    wireFocusTiles($("#clientDetail"));
+    const seeMore = $("#seeMoreIdeas"), morePanel = $("#moreIdeasPanel");
+    if (seeMore && morePanel) seeMore.addEventListener("click", () => {
+      const open = !morePanel.hidden;
+      morePanel.hidden = open;
+      seeMore.setAttribute("aria-expanded", String(!open));
+      seeMore.classList.toggle("open", !open);
+      seeMore.textContent = open
+        ? `See more ideas — all ${rec.all.length} recommendations by asset class ›`
+        : `Hide the full recommendation list ▲`;
+    });
     $$("#clientDetail .reco-card[data-idea]").forEach(el =>
       el.addEventListener("click", () => openIdeaDrawer(el.dataset.idea)));
     $$("#clientDetail .reco-card[data-stage]").forEach(el =>
@@ -722,83 +743,131 @@
     </details>`;
   }
 
-  function focusCardHTML(idea) {
-    const flags = window.MAPPING.flagClients(idea);
+  let FOCUS_BY_ID = {};
+  const fitTier = (fit) => fit >= 68 ? "Strong" : fit >= 50 ? "Good" : "Marginal";
+
+  /* compact tile — just the essentials; clicking opens the full side drawer */
+  function focusTileHTML(idea, opts) {
+    opts = opts || {};
     const conv = idea.conviction;
-    const intel = idea.kind === "earnings" ? earningsIntelHTML(idea) : macroIntelHTML(idea);
-    return `<article class="focus-card" data-fcard="${esc(idea.id)}">
-      <div class="fc-top">
-        <div class="fc-id">
-          <h3>${esc(idea.name)}${idea.ticker ? ` <span class="fc-tick">${esc(idea.ticker)}</span>` : ""}</h3>
-          <div class="fc-headline">${esc(idea.headline)}</div>
-        </div>
-        <div class="fc-conv ${convTierClass(conv.tier)}" data-conv role="button" tabindex="0" title="How the conviction score is built">
-          <div class="fc-conv-score">${conv.score}</div>
-          <div class="fc-conv-tier">${esc(conv.tier)} ›</div>
+    const theme = idea.themeId ? themeById(idea.themeId) : null;
+    const rightChip = opts.client
+      ? `<span class="fcl-fit ${fitTierClass(fitTier(opts.fit))}" title="Client-fit score for ${esc(opts.client.name)}">${opts.fit}<span class="fcl-fit-lbl">fit</span></span>`
+      : (() => { const n = window.MAPPING.flagClients(idea).length; return `<span class="ft-count">${n} book${n === 1 ? "" : "s"}</span>`; })();
+    return `<button type="button" class="focus-tile" data-ftile="${esc(idea.id)}"${opts.client ? ` data-fclient="${esc(opts.client.id)}"` : ""}>
+      <div class="ft-top">
+        <span class="ft-conv ${convTierClass(conv.tier)}" title="Conviction ${conv.score}/100 (${esc(conv.tier)})">${conv.score}</span>
+        <div class="ft-id">
+          <div class="ft-name">${esc(idea.name)}${idea.ticker ? ` <span class="ft-tick">${esc(idea.ticker)}</span>` : ""}</div>
+          <div class="ft-headline">${esc(idea.headline)}</div>
         </div>
       </div>
+      <div class="ft-tags">
+        <span class="fc-tag ${idea.kind === "earnings" ? "earn" : "macro"}">${idea.kind === "earnings" ? "Earnings" : "Ex-earnings"}</span>
+        ${idea.themeId ? `<span class="fc-tag theme nolink">${esc(theme ? theme.name : "House view")}</span>` : `<span class="fc-tag offtheme">Off-theme</span>`}
+        ${rightChip}
+      </div>
+    </button>`;
+  }
 
+  /* the full detail (everything from the old long card) — rendered into the drawer */
+  function focusDrawerInnerHTML(idea) {
+    const conv = idea.conviction;
+    const flags = window.MAPPING.flagClients(idea);
+    const intel = idea.kind === "earnings" ? earningsIntelHTML(idea) : macroIntelHTML(idea);
+    return `
       <div class="fc-tags">
         ${themeTagHTML(idea)}
-        ${idea.kind === "earnings" ? `<span class="fc-tag earn">Earnings</span>` : `<span class="fc-tag macro">Ex-earnings</span>`}
+        <span class="fc-tag ${idea.kind === "earnings" ? "earn" : "macro"}">${idea.kind === "earnings" ? "Earnings" : "Ex-earnings"}</span>
         <span class="fc-tag sector">${esc(idea.sector)}</span>
       </div>
       ${idea.offThemeWhy ? `<div class="fc-offwhy"><b>Off-theme —</b> ${esc(idea.offThemeWhy)}</div>` : ""}
 
-      <p class="fc-thesis">${esc(idea.thesis)}</p>
-
-      <div class="fc-conv-detail" hidden>
-        <div class="fcd-head">Conviction <b>${conv.score}/100</b> — four pillars (1–5 each):</div>
-        ${conv.pillars.map(pillarHTML).join("")}
+      <div class="drawer-section">
+        <span class="eyebrow">The idea</span>
+        <p class="fc-thesis">${esc(idea.thesis)}</p>
       </div>
 
-      ${intel}
-
-      <div class="fc-block">
-        <span class="fc-eyebrow">How we'd express it — tap any to see exactly how</span>
-        ${window.EXPRESSIONS.accordionHTML(idea.structures || [], { sector: idea.sector, assetClass: idea.assetClass, title: idea.name })}
-      </div>
-
-      <div class="fc-block">
-        <span class="fc-eyebrow">Flagged to ${flags.length} client${flags.length === 1 ? "" : "s"} · client-fit score</span>
-        <div class="fc-clients">
-          ${flags.length ? flags.map(f => focusClientHTML(idea, f)).join("") : `<p class="fcl-why" style="padding:6px 0">No client in the book is a strong fit right now (scored live against the Advisor Book).</p>`}
+      <div class="drawer-section">
+        <span class="eyebrow">Conviction ${conv.score}/100 · ${esc(conv.tier)}</span>
+        <div class="fc-conv-detail-open">
+          <div class="fcd-head">Four pillars (1–5 each):</div>
+          ${conv.pillars.map(pillarHTML).join("")}
         </div>
       </div>
 
-      ${factsHTML(idea)}
-    </article>`;
+      ${intel ? `<div class="drawer-section"><span class="eyebrow">${idea.kind === "earnings" ? "Earnings intelligence" : "The setup"}</span>${intel}</div>` : ""}
+
+      <div class="drawer-section">
+        <span class="eyebrow">How we'd express it — tap any to see exactly how</span>
+        ${window.EXPRESSIONS.accordionHTML(idea.structures || [], { sector: idea.sector, assetClass: idea.assetClass, title: idea.name })}
+      </div>
+
+      <div class="drawer-section">
+        <span class="eyebrow">Flagged to ${flags.length} client${flags.length === 1 ? "" : "s"} · client-fit score</span>
+        <div class="fc-clients">${flags.length ? flags.map(f => focusClientHTML(idea, f)).join("") : `<p class="fcl-why">No client in the book is a strong fit right now (scored live against the Advisor Book).</p>`}</div>
+      </div>
+
+      <div class="drawer-section">${factsHTML(idea)}</div>`;
+  }
+
+  /* open the full focus detail in the shared side drawer (same component as Views) */
+  function openFocusDrawer(ideaOrId) {
+    const idea = typeof ideaOrId === "string" ? FOCUS_BY_ID[ideaOrId] : ideaOrId;
+    if (!idea) return;
+    $("#drawer").innerHTML = `
+      <div class="drawer-head">
+        <button class="drawer-close" id="drawerClose" aria-label="Close">×</button>
+        <span class="eyebrow">${idea.kind === "earnings" ? "Earnings idea" : "Ex-earnings idea"} · ${esc(idea.sector)}</span>
+        <h2>${esc(idea.name)}${idea.ticker ? ` <span class="fc-tick">${esc(idea.ticker)}</span>` : ""}</h2>
+        <p class="drawer-sub">${esc(idea.headline)}</p>
+      </div>
+      <div class="drawer-body">${focusDrawerInnerHTML(idea)}</div>`;
+    const root = $("#drawer");
+    $("#drawerClose").addEventListener("click", closeDrawer);
+    window.EXPRESSIONS.wire(root);
+    $$(".fcl-expand", root).forEach(btn => btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const ax = btn.closest(".fc-client").querySelector(".fcl-axes");
+      if (ax) { ax.hidden = !ax.hidden; btn.classList.toggle("open", !ax.hidden); }
+    }));
+    $$(".fc-tag.theme[data-gotheme]", root).forEach(el => el.addEventListener("click", () => {
+      const id = el.dataset.gotheme; closeDrawer(); activeThemeId = id; switchTab("ideas"); renderThemes(); renderIdeaPanel();
+    }));
+    $("#overlay").classList.add("open");
+    root.classList.add("open");
+    root.setAttribute("aria-hidden", "false");
+  }
+
+  /* rank the daily focus ideas for one client by a conviction × client-fit blend */
+  function topFocusIdeasForClient(client, n) {
+    const TF = window.TODAY_FOCUS;
+    if (!TF) return [];
+    return (TF.earnings || []).concat(TF.exEarnings || []).map(idea => {
+      const fit = window.MAPPING.scoreIdeaForClient(idea, client).fit;
+      const conv = (idea.conviction && idea.conviction.score) || 0;
+      return { idea, fit, conv, blend: Math.round(0.45 * conv + 0.55 * fit) };
+    }).sort((a, b) => b.blend - a.blend).slice(0, n);
   }
 
   function renderFocus() {
     const TF = window.TODAY_FOCUS;
     if (!TF) return;
+    FOCUS_BY_ID = {};
+    (TF.earnings || []).concat(TF.exEarnings || []).forEach(i => { FOCUS_BY_ID[i.id] = i; });
     $("#focusAsOf").textContent = "as of " + fmtFocusDate(TF.asOf) + " " + TF.asOf.slice(0, 4);
     $("#focusSweepNote").innerHTML =
       `<span class="fsn-k">Market sweep</span> ${esc(TF.sweep.sources.join(" · "))}. <span class="fsn-rule">${esc(TF.sweep.rule)}</span>`;
-    $("#focusEarnings").innerHTML = (TF.earnings || []).map(focusCardHTML).join("");
-    $("#focusExEarnings").innerHTML = (TF.exEarnings || []).map(focusCardHTML).join("");
-    wireFocus($("#view-focus"));
+    $("#focusEarnings").innerHTML = (TF.earnings || []).map(i => focusTileHTML(i)).join("");
+    $("#focusExEarnings").innerHTML = (TF.exEarnings || []).map(i => focusTileHTML(i)).join("");
+    wireFocusTiles($("#view-focus"));
   }
 
-  function wireFocus(root) {
+  /* wire compact tiles (Today's Focus + Advisor-Book top-3) -> open the side drawer */
+  function wireFocusTiles(root) {
     if (!root) return;
-    window.EXPRESSIONS.wire(root);
-    // conviction breakdown toggle
-    $$(".fc-conv", root).forEach(el => el.addEventListener("click", () => {
-      const card = el.closest(".focus-card"); const d = card && card.querySelector(".fc-conv-detail");
-      if (d) { d.hidden = !d.hidden; el.classList.toggle("open", !d.hidden); }
-    }));
-    // client-fit axis breakdown toggle
-    $$(".fcl-expand", root).forEach(btn => btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const row = btn.closest(".fc-client"); const ax = row && row.querySelector(".fcl-axes");
-      if (ax) { ax.hidden = !ax.hidden; btn.classList.toggle("open", !ax.hidden); }
-    }));
-    // theme tag -> jump to Solutions Views theme
-    $$(".fc-tag.theme[data-gotheme]", root).forEach(el => el.addEventListener("click", () => {
-      activeThemeId = el.dataset.gotheme; switchTab("ideas"); renderThemes(); renderIdeaPanel();
-    }));
+    $$(".focus-tile[data-ftile]", root).forEach(btn =>
+      btn.addEventListener("click", () => openFocusDrawer(btn.dataset.ftile)));
   }
 
   /* ----------------------- rubric / methodology modal ----------------- */
