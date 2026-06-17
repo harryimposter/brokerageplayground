@@ -495,6 +495,7 @@ button.struct-chip.struct-toggle:focus-visible { outline: 2px solid var(--gold);
 .cd-frame { display: block; width: 100%; border: 0; background: var(--paper); border-radius: var(--radius); }
 .cd-frame.actions-frame { height: 330px; }
 .cd-frame.holdings-frame { height: 430px; }
+.cd-frame.views-frame { height: 360px; }
 
 /* holdings table — grouped by asset class */
 .hold-table { width: 100%; }

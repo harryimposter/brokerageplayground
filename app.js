@@ -533,8 +533,8 @@
         <section class="bb-sec bb-more">
           <button class="see-more-btn" id="seeMoreIdeas" type="button" aria-expanded="false">See all house-view ideas that fit — ${rec.viewItems.length} by asset class ›</button>
           <div class="panel" id="moreIdeasPanel" hidden style="margin-top:14px">
-            <div class="panel-head"><h3>House views that fit, by asset class</h3><span class="rec-theme" style="margin-left:auto">${rec.viewItems.length} standing ideas matched to this book</span></div>
-            <div class="panel-body reco-body">${viewGroupsHTML}</div>
+            <div class="panel-head"><h3>House views that fit, by asset class</h3><span class="rec-theme" style="margin-left:auto">${rec.viewItems.length} standing ideas matched to this book · scroll for more</span></div>
+            <div class="panel-body frame-host"><iframe class="cd-frame views-frame" id="viewsFrame" title="House views that fit, by asset class"></iframe></div>
           </div>
         </section>
       </div>
@@ -577,6 +577,24 @@
     // holdings iframe — static grouped table in its own scrollable document
     const holdingsFrame = $("#holdingsFrame");
     if (holdingsFrame) holdingsFrame.srcdoc = frameDoc(holdingsHTML);
+
+    // house-views (see-more) iframe — the full catalog grouped by asset class in
+    // its own scrollable document; wire the drawer / staging / expression handlers
+    // inside it after load, exactly like the actions iframe
+    const viewsFrame = $("#viewsFrame");
+    if (viewsFrame) {
+      viewsFrame.onload = () => {
+        const idoc = viewsFrame.contentDocument;
+        if (!idoc) return;
+        window.EXPRESSIONS.wire(idoc.body);
+        idoc.querySelectorAll(".reco-card[data-idea]").forEach(el =>
+          el.addEventListener("click", () => openIdeaDrawer(el.dataset.idea)));
+        idoc.querySelectorAll(".reco-card[data-stage]").forEach(el =>
+          el.addEventListener("click", () => stageFinding(c.id, el.querySelector("h4").textContent)));
+      };
+      viewsFrame.srcdoc = frameDoc(`<div class="reco-body" style="padding:0">${viewGroupsHTML}</div>`);
+    }
+
     const seeMore = $("#seeMoreIdeas"), morePanel = $("#moreIdeasPanel");
     if (seeMore && morePanel) seeMore.addEventListener("click", () => {
       const open = !morePanel.hidden;
