@@ -192,6 +192,24 @@
     </article>`;
   }
 
+  /* books the GLOBAL tradability gate suppressed for this view — surfaced with the
+     MiFID reason (Final Client-Fit = 0) instead of silently dropping them. */
+  function ideaSuppressedSectionHTML(idea) {
+    const supp = window.MAPPING.suppressedClients(idea);
+    if (!supp.length) return "";
+    return `<div class="drawer-section">
+      <span class="eyebrow">Not tradable · suppressed · ${supp.length}</span>
+      ${supp.map(s => `<div class="client-apply suppressed" data-goclient="${esc(s.client.id)}">
+        <div class="client-apply-top">
+          ${avatar(s.client.name)}
+          <span class="cname">${esc(s.client.name)}</span>
+          <span class="cmeta">${esc(fmtAum(s.client))} · ${esc(s.client.classification)}</span>
+        </div>
+        <p class="why supp">⚠️ ${esc(s.tradabilityReason)}</p>
+      </div>`).join("")}
+    </div>`;
+  }
+
   /* ----------------------- idea drawer -------------------------------- */
   function openIdeaDrawer(ideaId) {
     const idea = ideaById(ideaId);
@@ -238,6 +256,7 @@
           <span class="eyebrow">Which books this fits · ${clients.length}</span>
           ${clientCards}
         </div>
+        ${ideaSuppressedSectionHTML(idea)}
         <div class="drawer-section drawer-danger">
           <button class="del-btn" id="drawerDelIdea" type="button">✕ Delete this view</button>
         </div>
@@ -787,10 +806,12 @@
   const srcFlag = (tag) => `<span class="src-flag ${esc(tag)}">${esc(tag)}</span>`;
 
   function pillarHTML(p) {
+    // House-view fit is shown as a percentage (20% per level); the engine keeps the 1–5 integer.
+    const value = p.key === "houseview" ? `${p.score * 20}%` : `${p.score}/${p.max}`;
     return `<div class="pill-row">
       <span class="pl-k">${esc(p.label)}</span>
       <span class="pl-bar"><span style="width:${(p.score / p.max * 100).toFixed(0)}%"></span></span>
-      <span class="pl-sc">${p.score}/${p.max}</span>
+      <span class="pl-sc">${value}</span>
       <div class="pl-note">${esc(p.note)}</div>
     </div>`;
   }
@@ -800,7 +821,7 @@
       <span class="ax-k">${esc(a.label)}</span>
       <span class="ax-bar"><span style="width:${a.score}%"></span></span>
       <span class="ax-sc">${a.score}</span>
-      <span class="ax-w">× ${a.weight}</span>
+      <span class="ax-w">× ${(+a.weight).toFixed(2)}</span>
       <div class="ax-note">${esc(a.note)}</div>
     </div>`;
   }
@@ -820,6 +841,24 @@
         ${flag.axes.map(axisRowHTML).join("")}
         <div class="ax-total">Weighted client-fit score <b>${flag.fit}</b> / 100 — <a href="index.html?tab=book&client=${esc(c.id)}" class="ax-open">open ${esc(c.name)} in the Advisor Book ›</a></div>
       </div>
+    </div>`;
+  }
+
+  /* clients the GLOBAL tradability gate suppressed for this idea — surfaced with the
+     MiFID reason rather than silently dropped (Final Client-Fit = 0 for these). */
+  function suppressedClientsHTML(idea) {
+    const supp = window.MAPPING.suppressedClients(idea);
+    if (!supp.length) return "";
+    return `<div class="drawer-section">
+      <span class="eyebrow">Not tradable · suppressed for ${supp.length} client${supp.length === 1 ? "" : "s"}</span>
+      <div class="fc-suppressed">${supp.map(s => `
+        <div class="fc-supp-row" data-fclient="${esc(s.client.id)}">
+          ${avatar(s.client.name)}
+          <span class="fcl-name">${esc(s.client.name)}</span>
+          <span class="fcl-meta">${esc(s.client.classification)} · ${esc(fmtAum(s.client))}</span>
+          <span class="fcl-fit supp" title="Suppressed by the tradability gate">0<span class="fcl-fit-lbl">fit</span></span>
+          <p class="fcl-why supp">${esc(s.tradabilityReason)}</p>
+        </div>`).join("")}</div>
     </div>`;
   }
 
@@ -928,6 +967,8 @@
         <div class="fc-clients">${flags.length ? flags.map(f => focusClientHTML(idea, f)).join("") : `<p class="fcl-why">No client in the book is a strong fit right now (scored live against the Advisor Book).</p>`}</div>
       </div>
 
+      ${suppressedClientsHTML(idea)}
+
       <div class="drawer-section">${factsHTML(idea)}</div>
 
       <div class="drawer-section drawer-danger">
@@ -1033,9 +1074,9 @@
   const AXIS_DESC = {
     gap: "Gap fit: headroom from the book's current allocation in the idea's sector up to the strategic target peg — (target − current) ÷ target. Rewards books with room to add; zero once they're at or over the peg. Reads the same peg as the Affinity penalty.",
     holdings: "Affinity fit: recency-weighted sector affinity (λ=0.94 over a 24-month allocation history — has the book been building / sitting at the top of its range in the idea's sector) minus a penalty for being over the mandate's sector comfort limit (growth 25% / income 15% / preservation 10%).",
-    mandate: "Mandate & Risk = Tradability × (0.6 × Risk Suitability + 0.4 × Intent Fit). Tradability is binary — a Retail client can't trade an OTC natural expression (→ 0, axis stops). Risk Suitability matches the idea's vol / beta / structure to the mandate; Intent Fit matches the idea's goal type (appreciation / yield / protection) to the mandate's goal.",
-    concSector: "Concentration within the idea's sector — a Herfindahl diversification score of the book's in-sector holdings, (1 − HHI) × 100. Inverted for fit by default: a more concentrated sector position means a new name fits more (flip via PARAMS.concWithinSector.invertForFit). The breakdown shows both the raw diversification score and the fit contribution.",
-    houseview: "Does the client already participate in the Solutions Views theme behind the idea? Off-theme ideas score lower here."
+    mandate: "Mandate & Risk = 0.6 × Risk Suitability + 0.4 × Intent Fit. Risk Suitability matches the idea's vol / beta / structure to the mandate; Intent Fit matches the idea's goal type (appreciation / yield / protection) to the mandate's goal. (Tradability is no longer on this axis — it's now a global gate that multiplies the whole fit.)",
+    concSector: "Concentration within the idea's sector — a Herfindahl diversification score of the book's in-sector holdings, (1 − HHI) × 100. Inverted for fit by default: a more concentrated sector position means a new name fits more (flip via PARAMS.concWithinSector.invertForFit). The breakdown shows both the raw diversification score and the fit contribution."
+    // House-view fit is no longer a client-fit axis — it's the 4th conviction pillar (shown above).
   };
   function openRubric() {
     const R = (window.TODAY_FOCUS || {}).convictionRubric || { max_per_pillar: 5, pillars: [], tiers: [] };
@@ -1046,8 +1087,12 @@
         <p class="rub-p">Four pillars, each scored 1–${R.max_per_pillar}; the total is shown out of 100. ${R.tiers.map(t => `<b>${esc(t.key)}</b> ≥ ${t.min}`).join(" · ")}.</p>
         <div class="rub-list">${R.pillars.map(p => `<div class="rub-item"><div class="ri-k">${esc(p.label)}</div><div class="ri-d">${esc(p.desc)}</div></div>`).join("")}</div>
         <h3 class="rub-h">2 · Client-fit score — “how right for THIS client”</h3>
-        <p class="rub-p">Separate from conviction. Each idea is scored against every client across five axes; the weighted sum is the fit score (0–100). Weights are <b>flat</b> (fixed per axis, shown below). Open the per-axis breakdown on any flagged client to see each axis's score, weight and reasoning.</p>
-        <div class="rub-list">${window.MAPPING.AXES.map(a => `<div class="rub-item"><div class="ri-k">${esc(a.label)} <span class="ri-w">weight ${window.MAPPING.PARAMS.weights[a.key]}</span></div><div class="ri-d">${esc(AXIS_DESC[a.key] || "")}</div></div>`).join("")}</div>
+        <p class="rub-p">Separate from conviction. Each idea is scored against every client across four axes; the weighted sum is the fit score (0–100). Weights are <b>flat</b> (fixed per axis, shown below — the original five rescaled by 1/0.85 after House-view moved to conviction). Open the per-axis breakdown on any flagged client to see each axis's score, weight and reasoning.</p>
+        <div class="rub-list">${window.MAPPING.AXES.map(a => `<div class="rub-item"><div class="ri-k">${esc(a.label)} <span class="ri-w">weight ${(+window.MAPPING.PARAMS.weights[a.key]).toFixed(2)}</span></div><div class="ri-d">${esc(AXIS_DESC[a.key] || "")}</div></div>`).join("")}</div>
+        <div class="rub-gate">
+          <h3 class="rub-h">Global tradability gate — binary, applied last</h3>
+          <p class="rub-p"><b>Final Client-Fit = Tradability × (weighted sum of the four axes).</b> Tradability is binary (MiFID): if the client can't trade the idea's natural expression — e.g. a Retail client and an OTC derivative — Tradability is 0, so the fit is 0 and the idea is <b>suppressed</b> for that client (shown with the reason, not silently dropped). Otherwise it's 1 and passes the weighted sum straight through — the four weights already sum to 1.00, so nothing is re-normalised.</p>
+        </div>
         ${(() => { const P = window.MAPPING.PARAMS.affinity.comfort; return `
         <div class="rub-pegs">
           <h3 class="rub-h">Strategic target pegs — one shared constant</h3>

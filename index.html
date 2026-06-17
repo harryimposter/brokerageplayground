@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20260617a" />
 </head>
 <body>
 
@@ -195,13 +195,14 @@
   <aside class="drawer" id="drawer" aria-hidden="true"></aside>
   <div class="modal-card" id="modal" role="dialog" aria-modal="true"></div>
 
-  <script src="data.js"></script>
-  <script src="charts.js"></script>
-  <script src="scanner.js"></script>
-  <script src="expressions.js"></script>
-  <script src="mapping.js"></script>
-  <script src="today_focus.js"></script>
-  <script src="app.js"></script>
-  <script src="morgan.js"></script>
+  <!-- ?v= cache-buster: bump when JS/CSS changes so browsers fetch fresh (python http.server sends no Cache-Control) -->
+  <script src="data.js?v=20260617a"></script>
+  <script src="charts.js?v=20260617a"></script>
+  <script src="scanner.js?v=20260617a"></script>
+  <script src="expressions.js?v=20260617a"></script>
+  <script src="mapping.js?v=20260617a"></script>
+  <script src="today_focus.js?v=20260617a"></script>
+  <script src="app.js?v=20260617a"></script>
+  <script src="morgan.js?v=20260617a"></script>
 </body>
 </html>

@@ -40,7 +40,7 @@ RUBRIC = {
         {"key": "catalyst",  "label": "Catalyst clarity",      "desc": "Is there a dated, hard catalyst (a print, a meeting) or just a drift?"},
         {"key": "setup",     "label": "Setup & positioning",   "desc": "Technicals, valuation and how crowded / reset the trade is."},
         {"key": "pricing",   "label": "Risk / reward & pricing","desc": "How well priced the reward is versus the risk you take."},
-        {"key": "houseview", "label": "House-view fit",         "desc": "Alignment with the desk's Solutions Views (off-theme scores lower)."},
+        {"key": "houseview", "label": "House-view fit",         "desc": "Alignment with a standing desk house view — an idea-level property (moved here from client-fit). 5 core desk theme / direct expression · 4 on-theme · 3 thematically adjacent · 2 off-theme, tactical · 1 cuts against a house view. Shown in the UI as a percentage (20% per level)."},
     ],
     "tiers": [
         {"key": "High",   "min": 75, "label": "High conviction"},
@@ -56,6 +56,34 @@ def tier_for(score):
         if score >= t["min"]:
             return t["key"]
     return "Watch"
+
+
+# ---- Intent (add / protect / trim / income) ----------------------------------
+# Each idea declares an intent so the mapping engine can read concentration + P&L
+# through the right lens. Mirrors defaultIntent() in mapping.js for the fallback.
+ALLOWED_INTENTS = ("add", "protect", "trim", "income")
+
+
+def default_intent(idea):
+    bucket = idea.get("bucket")
+    if bucket == "Protection":
+        return "protect"
+    if bucket == "Income":
+        return "income"
+    if bucket == "Structured":
+        txt = (" ".join(idea.get("structures", [])) + " " + idea.get("headline", "")).lower()
+        return "protect" if any(k in txt for k in ("buffer", "protect", "collar", "capital-protected", "capital protected")) else "income"
+    return "add"  # Growth / default
+
+
+def ensure_intent(idea, warns):
+    intent = idea.get("intent")
+    if intent is None:
+        idea["intent"] = default_intent(idea)
+        warns.append(f"{idea['id']}: no intent declared — defaulted to '{idea['intent']}'")
+    elif intent not in ALLOWED_INTENTS:
+        warns.append(f"{idea['id']}: intent '{intent}' is not one of {ALLOWED_INTENTS}")
+    return idea
 
 
 def score_conviction(idea, warns):
@@ -102,6 +130,7 @@ def main():
         for idea in data.get(section, []):
             idea["kind"] = "earnings" if section == "earnings" else "ex-earnings"
             validate(idea, as_of, warns)
+            ensure_intent(idea, warns)
             score_conviction(idea, warns)
 
     data["convictionRubric"] = RUBRIC

@@ -9,6 +9,7 @@
   "earnings": [
     {
       "id": "mu-fq3",
+      "intent": "protect",
       "name": "Micron Technology",
       "ticker": "MU",
       "sector": "Technology",
@@ -50,6 +51,7 @@
     },
     {
       "id": "acn-fq3",
+      "intent": "add",
       "name": "Accenture",
       "ticker": "ACN",
       "sector": "Technology",
@@ -89,6 +91,7 @@
     },
     {
       "id": "fdx-fq4",
+      "intent": "add",
       "name": "FedEx",
       "ticker": "FDX",
       "sector": "Industrials",
@@ -128,6 +131,7 @@
     },
     {
       "id": "nke-fq4",
+      "intent": "add",
       "name": "Nike",
       "ticker": "NKE",
       "sector": "Consumer",
@@ -168,6 +172,8 @@
   "exEarnings": [
     {
       "id": "gold-pullback",
+      "intent": "protect",
+      "tickers": ["XAU", "GLD", "4GLD", "GDX", "IAU", "GLDM"],
       "name": "Gold — accumulate the pullback",
       "ticker": "XAU",
       "sector": "Gold",
@@ -205,6 +211,7 @@
     },
     {
       "id": "ai-power",
+      "intent": "income",
       "name": "AI power & the grid",
       "ticker": "",
       "sector": "Utilities",
@@ -240,6 +247,7 @@
     },
     {
       "id": "lock-yields",
+      "intent": "income",
       "name": "Lock yields before the cuts",
       "ticker": "",
       "sector": "Rates",
@@ -275,6 +283,7 @@
     },
     {
       "id": "energy-tactical",
+      "intent": "income",
       "name": "Energy — tactical on Hormuz risk",
       "ticker": "",
       "sector": "Energy",

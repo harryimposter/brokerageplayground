@@ -4,7 +4,7 @@
    ONE intent-aware scorer. Replaces the old pair of engines (this file's 5-axis
    engine + scanner.js `ideaFit`), which used different math and disagreed.
 
-   Five transparent axes, each 0–100 with a plain-English note, combined with FLAT
+   FOUR transparent axes, each 0–100 with a plain-English note, combined with FLAT
    (fixed) weights. The weighted sum is the client-FIT score (how RIGHT the idea is
    for THIS client — separate from the idea's own conviction). The axes:
 
@@ -12,12 +12,20 @@
        strategic peg: (target − current)/target. Shares ONE peg with Affinity.
      • AFFINITY FIT — recency-weighted (λ=0.94, 24-mo) sector affinity minus an
        over-the-peg concentration penalty.
-     • MANDATE & RISK — Tradability × (0.6·RiskSuitability + 0.4·IntentFit): can the
-       client trade the idea's natural expression (MiFID), and does its vol/beta/
-       structure and goal type suit the mandate?
+     • MANDATE & RISK — 0.6·RiskSuitability + 0.4·IntentFit: does the idea's vol/beta/
+       structure and goal type suit the mandate? (Tradability is no longer here.)
      • CONCENTRATION WITHIN SECTOR — (1 − Herfindahl)×100 over the book's in-sector
        holdings; inverted for fit by default (a concentrated sector wants a new name).
-     • HOUSE-VIEW FIT — does the book already participate in the idea's theme?
+
+   HOUSE-VIEW FIT is NOT a client-fit axis — it is an idea-level property, so it lives
+   in the CONVICTION score (its 4th pillar, build_today_focus.py), not here. It was
+   removed from client-fit to stop double-counting holdings already captured by Affinity
+   and Gap fit. The four weights below are the original five rescaled by 1/0.85.
+
+   A GLOBAL TRADABILITY GATE (binary, MiFID) multiplies the whole weighted sum:
+   Final Client-Fit = Tradability × Σ(axisᵢ·weightᵢ). If the client can't trade the
+   idea's natural expression, fit = 0 and the idea is suppressed for that client
+   (surfaced with the reason, not silently dropped).
 
    Reads the real data — `client.risk`, `client.sectorHistory`, positions — over ONE
    reconciled book (`split ≡ Σ positions`). Strategic pegs are a single source of
@@ -32,21 +40,27 @@
   /* smooth 0..1 ramp: 0 at x<=lo, 1 at x>=hi, linear between (kills cliffs) */
   const ramp = (x, lo, hi) => x <= lo ? 0 : x >= hi ? 1 : (x - lo) / (hi - lo);
 
-  /* the five axes, in display order */
+  /* the four client-fit axes, in display order (House-view fit moved to conviction) */
   const AXES = [
     { key: "gap",        label: "Gap fit" },                    // headroom from current sector alloc up to the strategic peg
     { key: "holdings",   label: "Affinity fit" },               // recency-weighted sector affinity − over-limit penalty
-    { key: "mandate",    label: "Mandate & risk" },             // Tradability × (0.6·RiskSuitability + 0.4·IntentFit)
-    { key: "concSector", label: "Concentration within sector" },// (1 − Herfindahl) × 100, inverted for fit by default
-    { key: "houseview",  label: "House-view fit" }
+    { key: "mandate",    label: "Mandate & risk" },             // 0.6·RiskSuitability + 0.4·IntentFit
+    { key: "concSector", label: "Concentration within sector" } // (1 − Herfindahl) × 100, inverted for fit by default
   ];
 
   /* ------------------------------------------------------------------ tunables
      Every magic number lives here so the model is visible and calibratable. */
   const PARAMS = {
-    /* FLAT axis weights — fixed per axis (no longer intent-conditional). Sum = 1.00.
-       Tune here; the per-client breakdown shows the weight actually used. */
-    weights: { holdings: 0.25, gap: 0.20, mandate: 0.25, concSector: 0.15, houseview: 0.15 },
+    /* FLAT axis weights — fixed per axis. The original five (0.25/0.20/0.25/0.15/0.15)
+       with House-view (0.15) removed, the remaining four rescaled by 1/0.85 so they keep
+       their relative balance and sum to EXACTLY 1.00. EXACT fractions are used in the math
+       (not the rounded display values 0.29 / 0.29 / 0.24 / 0.18 shown in the UI). */
+    weights: {
+      holdings:   0.25 / 0.85,   // 0.294117…  (shown 0.29)
+      gap:        0.20 / 0.85,   // 0.235294…  (shown 0.24)
+      mandate:    0.25 / 0.85,   // 0.294117…  (shown 0.29)
+      concSector: 0.15 / 0.85    // 0.176470…  (shown 0.18)
+    },
     /* Affinity-fit axis: max(0, thematicAffinity − concentrationPenalty). The
        `comfort` pegs are the SINGLE source of truth, shared with Gap fit (sectorPeg). */
     affinity: {
@@ -70,16 +84,8 @@
     const b = (S().GOAL_BUCKETS || []).find(x => x.key === key);
     return b ? (b.name || b.key) : key;
   }
-  function themeName(themeId) {
-    const t = (S().themes || []).find(x => x.id === themeId);
-    return t ? t.name : null;
-  }
-  /* the set of sectors a theme's ideas cover — for binary theme participation */
-  function themeSectors(themeId) {
-    const set = new Set();
-    (S().ideas || []).filter(i => i.themeId === themeId).forEach(i => { if (i.sector) set.add(i.sector); });
-    return set;
-  }
+  /* (themeName / themeSectors removed with the House-view client-fit axis — house-view
+     fit is now a conviction pillar, not a per-client signal.) */
 
   /* ---- intent (explicit, with a derived fallback) ---- */
   function ideaIntent(idea) { return idea.intent || defaultIntent(idea); }
@@ -320,22 +326,19 @@
     return { score, note };
   }
 
-  /* MANDATE & RISK = Tradability × (0.6·RiskSuitability + 0.4·IntentFit), 0–100.
-     Tradability is binary: a Retail client can't trade an OTC natural expression → 0
-     (axis = 0, stop). RiskSuitability and IntentFit grade the idea against the
-     client's mandate (from mandateClass / riskProfile). */
+  /* MANDATE & RISK = 0.6·RiskSuitability + 0.4·IntentFit, 0–100.
+     Tradability is NO LONGER on this axis — it is now a GLOBAL gate (see
+     `tradability()` + scoreIdeaForClient) that multiplies the whole weighted sum,
+     so keeping it here too would double-count. This axis is a clean blend of the
+     two sub-scores grading the idea against the client's mandate (mandateClass /
+     riskProfile). Both sub-scores stay visible in the note and on the result. */
   function axisMandate(idea, client, ctx) {
     const mandate = mandateClass(client);
-    const natural = naturalExpression(idea);
-    const tradable = !(client.classification === "Retail" && S().isOtcOption(natural));
-    if (!tradable) {
-      return { score: 0, note: `Tradability no — ${client.name} (${client.mifid}) can't trade the natural expression (${natural} is OTC). Mandate & Risk 0.` };
-    }
     const rs = riskSuitability(mandate, riskProfileOf(idea));
     const intf = intentFitScore(mandate, goalTypeOf(idea));
     const blend = 0.6 * rs.score + 0.4 * intf.score;
-    const note = `Tradability yes; Risk Suitability ${rs.score} (${rs.reason}); Intent Fit ${intf.score} (${intf.reason}); Mandate & Risk ${Math.round(blend)}.`;
-    return { score: blend, note };
+    const note = `Risk Suitability ${rs.score} (${rs.reason}); Intent Fit ${intf.score} (${intf.reason}); Mandate & Risk ${Math.round(blend)}.`;
+    return { score: blend, note, riskSuitability: rs.score, intentFit: intf.score };
   }
 
   /* CONCENTRATION WITHIN SECTOR — Herfindahl diversification of the book's holdings
@@ -358,37 +361,75 @@
     return { score: fitContribution, note };
   }
 
-  function axisHouseview(idea, client, ctx) {
-    if (!idea.themeId) return { score: 42, note: `Off-theme tactical idea — judged on its own merit, not a standing house view.` };
-    const tn = themeName(idea.themeId) || "house";
-    const sectors = themeSectors(idea.themeId);
-    const participates = (client.positions || []).some(p => sectors.has(p.sector));
-    return participates
-      ? { score: 82, note: `Sits on the ${tn} house view, which this book already participates in.` }
-      : { score: 50, note: `On the ${tn} house view — a new thematic overlay for this book.` };
-  }
+  /* HOUSE-VIEW FIT removed from client-fit — it is an idea-level property and now
+     lives in the CONVICTION score (4th pillar, build_today_focus.py / today_focus.json),
+     scored 1–5 and shown in the UI as a percentage (20% per level). */
 
-  const AXIS_FN = { gap: axisGap, holdings: axisAffinity, mandate: axisMandate, concSector: axisConcSector, houseview: axisHouseview };
+  const AXIS_FN = { gap: axisGap, holdings: axisAffinity, mandate: axisMandate, concSector: axisConcSector };
+
+  /* ===================== GLOBAL TRADABILITY GATE ===========================
+     Binary {0,1}, computed ONCE per idea×client, BEFORE the weighted sum, and
+     multiplied across the whole bracketed score (see scoreIdeaForClient). NOT an
+     axis — it used to live on Mandate & Risk; moved out so it gates the WHOLE fit
+     rather than one 0.25-weighted term, and to stop double-counting.
+       Final Client-Fit = Tradability × Σ(axisᵢ · weightᵢ)
+     Tradability 0 ⇒ Final Client-Fit 0 and the idea is suppressed for that client.
+     The reason is surfaced in the UI ("Not tradable — …"), never silently dropped.
+
+     Model (data.js complexityOf): a **Retail** client cannot trade an **OTC**
+     natural expression (collars, forwards, OTC options…). Structured NOTES are
+     packaged securities a Retail client CAN trade; a Professional can trade any
+     expression. */
+  function tradability(idea, client) {
+    const natural = naturalExpression(idea);
+    const blocked = client.classification === "Retail" && S().isOtcOption(natural);
+    if (blocked) {
+      return { ok: 0, natural,
+        reason: `Not tradable — ${client.mifid || "Retail"} classification doesn't permit ${natural} (OTC derivative). Needs Professional re-classification or a non-complex / structured-note alternative.` };
+    }
+    return { ok: 1, natural, reason: `Tradable — ${client.mifid || client.classification} permits ${natural}.` };
+  }
 
   /* ---- score one idea for one client → superset consumed by every call site ---- */
   function scoreIdeaForClient(idea, client) {
     const ctx = buildCtx(idea, client);
-    const W = PARAMS.weights;   // flat weights (fixed per axis)
+    const W = PARAMS.weights;   // flat weights (fixed per axis), Σ = 1.00
     const axes = AXES.map(a => {
       const r = AXIS_FN[a.key](idea, client, ctx);
       const weight = W[a.key];
       return { key: a.key, label: a.label, weight, score: Math.round(r.score), contribution: round(r.score * weight), note: r.note };
     });
-    const fit = Math.round(axes.reduce((s, a) => s + a.score * a.weight, 0));
+
+    /* the bracketed weighted sum — inner five weights Σ = 1.00, so this stays 0–100.
+       The global gate below only ever passes it through or zeroes it; nothing is
+       re-normalised. */
+    const bracketFit = Math.round(axes.reduce((s, a) => s + a.score * a.weight, 0));
+
+    /* GLOBAL TRADABILITY GATE — binary multiplier over the whole score. */
+    const trad = tradability(idea, client);
+    const fit = trad.ok ? bracketFit : 0;
+    const suppressed = !trad.ok;
+
     const tier = fit >= PARAMS.tierStrong ? "Strong" : fit >= PARAMS.tierGood ? "Good" : "Marginal";
     const lead = axes.slice().sort((a, b) => b.contribution - a.contribution)[0];
-    const why = lead.note;
+    const why = suppressed ? trad.reason : lead.note;
     return {
       fit, tier, why, axes, intent: ctx.intent,
+      // global tradability gate
+      tradable: !!trad.ok, suppressed, tradabilityReason: trad.reason,
+      naturalExpression: trad.natural, bracketFit,
       // back-compat fields for scanner.js / pre-trade / morgan.js
-      applies: fit >= PARAMS.applyMin, score: fit, reason: why,
+      applies: trad.ok && bracketFit >= PARAMS.applyMin, score: fit, reason: why,
       gap: ctx.gap, secExp: ctx.sectorExp, acExp: ctx.acExp
     };
+  }
+
+  /* clients an idea is SUPPRESSED for by the global tradability gate — so the UI can
+     surface the MiFID reason instead of silently dropping them. */
+  function suppressedClients(idea) {
+    return (S().clients || [])
+      .map(c => ({ client: c, ...scoreIdeaForClient(idea, c) }))
+      .filter(x => x.suppressed);
   }
 
   /* flag the clients an idea applies to, scored + sorted (default: fit >= flagMin) */
@@ -403,5 +444,5 @@
       .slice(0, max);
   }
 
-  window.MAPPING = { AXES, PARAMS, scoreIdeaForClient, flagClients, tiltOf, mandateClass, sectorPeg, naturalExpression, goalTypeOf, riskProfileOf, ideaIntent, relevantHolding };
+  window.MAPPING = { AXES, PARAMS, scoreIdeaForClient, flagClients, tradability, suppressedClients, tiltOf, mandateClass, sectorPeg, naturalExpression, goalTypeOf, riskProfileOf, ideaIntent, relevantHolding };
 })();

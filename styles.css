@@ -386,6 +386,8 @@ button.struct-chip.struct-toggle:focus-visible { outline: 2px solid var(--gold);
 .client-apply-top .cmeta { font-size: 11px; color: var(--ink-faint); margin-left: auto; }
 .client-apply .why { font-size: 12.8px; color: var(--ink-soft); line-height: 1.5; margin: 0; }
 .client-apply .go { font-size: 11px; color: var(--bronze-deep); margin-top: 8px; font-weight: 600; }
+.client-apply.suppressed { border-left: 3px solid var(--neg, #b4452f); opacity: .9; }
+.client-apply .why.supp { color: var(--neg, #b4452f); }
 
 /* ===== Advisor Book ====================================================== */
 .book-controls {
@@ -933,6 +935,13 @@ button.struct-chip.struct-toggle:focus-visible { outline: 2px solid var(--gold);
 .fcl-fit.fit-good { background: #F6EFE2; color: var(--bronze-deep); }
 .fcl-fit.fit-marginal { background: var(--cream-2); color: var(--ink-faint); }
 .fcl-why { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; margin: 8px 0 0; }
+
+/* clients suppressed by the global tradability gate (Final Client-Fit = 0) */
+.fc-suppressed { display: flex; flex-direction: column; gap: 9px; }
+.fc-supp-row { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 9px; background: var(--cream); border: 1px solid var(--line); border-left: 3px solid var(--neg, #b4452f); border-radius: var(--radius); padding: 11px 13px; opacity: .9; }
+.fc-supp-row .fcl-why.supp { grid-column: 1 / -1; margin: 2px 0 0; }
+.fcl-fit.supp { margin-left: auto; background: var(--cream-2); color: var(--neg, #b4452f); }
+.fcl-why.supp { color: var(--neg, #b4452f); }
 .fcl-expand { background: none; border: none; padding: 8px 0 0; color: var(--bronze-deep); font-size: 11.5px; font-weight: 600; cursor: pointer; }
 .fcl-expand:hover { color: var(--ink); }
 .fcl-expand.open { color: var(--ink); }
@@ -988,6 +997,9 @@ button.struct-chip.struct-toggle:focus-visible { outline: 2px solid var(--gold);
 .ri-w { font-size: 10.5px; color: var(--bronze-deep); font-weight: 600; letter-spacing: .02em; }
 .ri-d { font-size: 12px; color: var(--ink-soft); line-height: 1.5; margin-top: 2px; }
 
+.rub-gate { margin-top: 16px; background: var(--cream-2); border: 1px solid var(--line-strong); border-left: 3px solid var(--neg, #b4452f); border-radius: var(--radius); padding: 12px 14px; }
+.rub-gate .rub-h { margin-top: 0; }
+.rub-gate .rub-p { margin-bottom: 0; }
 .rub-pegs { margin-top: 16px; background: #F6EFE2; border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 12px 14px; }
 .rub-pegs .rub-h { margin-top: 0; }
 .rub-pegs .rub-p { margin-bottom: 10px; }

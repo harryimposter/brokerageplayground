@@ -214,25 +214,13 @@
     return f.sort((a, b) => b.severity - a.severity);
   }
 
-  /* ---- ideas -> portfolio : which Views ideas fit this book ---- */
+  /* ---- ideas -> portfolio : DELEGATED to the unified MAPPING engine ----
+     A thin facade so the Views tab, search, pre-trade and morgan.js keep their
+     existing output keys (applies / score / reason / gap / secExp / acExp) while
+     sharing ONE algorithm with Today's Focus and the Advisor-Book top-3.
+     mapping.js loads after scanner.js, but every call here happens post-load. */
   function ideaFit(idea, client) {
-    const exp = exposure(client);
-    const buckets = bucketAlloc(client.split);
-    const secExp = round(exp.bySector[idea.sector] || 0);
-    const acExp = round(exp.byClass[idea.assetClass] || 0);
-    const gap = Math.max(0, round((client.goals.target[idea.bucket] || 0) - (buckets[idea.bucket] || 0)));
-    const conv = CONV_W[idea.conviction] || 1;
-    const score = secExp * 1.4 + acExp * 0.4 + gap * 1.2 + conv;
-    const protectionIncome = idea.bucket === "Protection" || idea.bucket === "Income";
-    const applies = secExp >= 6 || acExp >= 25 || gap >= 6 || (protectionIncome && gap >= 4);
-
-    let reason;
-    if (secExp >= 6) reason = `Direct fit — holds ${secExp}% ${idea.sector}.`;
-    else if (gap >= 5) reason = `Goal fit — under its ${idea.bucket} target by ${gap}pts; this idea lifts it.`;
-    else if (acExp >= 25) reason = `Asset-class fit — a ${acExp}% ${idea.assetClass} sleeve to build on.`;
-    else if (gap >= 4) reason = `Goal fit — slightly under its ${idea.bucket} target; a sensible top-up.`;
-    else reason = `Thematic overlay aligned with the book.`;
-    return { applies, score: round(score), reason, gap, secExp, acExp };
+    return window.MAPPING.scoreIdeaForClient(idea, client);
   }
 
   function matchedIdeas(client) {

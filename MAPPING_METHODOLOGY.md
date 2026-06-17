@@ -36,8 +36,11 @@ each client's `split` literal **equals the per-`assetClass` sum of its positions
 axes read.
 
 The output object exposes `{ fit, tier, why, axes, intent, applies, score, reason, gap,
-secExp, acExp }`. `axes` is five `{key, label, weight, score, contribution, note}` rows; the
-`weight` is the **flat per-axis** weight (§6), shown in the per-client drawer breakdown.
+secExp, acExp }` plus the global-gate fields `{ tradable, suppressed, tradabilityReason,
+naturalExpression, bracketFit }` (§5.5b — `bracketFit` is the pre-gate weighted sum; `fit =
+tradability × bracketFit`). `axes` is four `{key, label, weight, score, contribution, note}` rows;
+the `weight` is the **flat per-axis** weight (§6, exact fraction; the UI rounds it for display),
+shown in the per-client drawer breakdown.
 
 `data.js` also synthesises a 24-month monthly sector-allocation history per client
 (`client.sectorHistory[sector]`, index 0 = most recent = current allocation) — clearly
@@ -75,34 +78,37 @@ unparseable.
 
 ---
 
-## 5. The five axes (each 0–100). All constants live in `PARAMS`.
+## 5. The four axes (each 0–100). All constants live in `PARAMS`.
 
-### 5.1 Gap fit (`gap`, weight 0.20)
+Weights are the exact fractions in §6 (shown rounded here for readability).
+
+### 5.1 Gap fit (`gap`, weight 0.24)
 `Gap = max(0, (peg − current) / peg × 100)`, where `current` is the book's % in the idea's
 sector and `peg = sectorPeg(client, sector)`. 0 once at/over the peg.
 Worked (growth, peg 25): current 5 → 80, 15 → 40, 26 → 0.
 
-### 5.2 Affinity fit (`holdings`, weight 0.25)
+### 5.2 Affinity fit (`holdings`, weight 0.29)
 `max(0, ThematicAffinity − ConcentrationPenalty)`.
 - **Thematic Affinity** = recency-weighted (λ=0.94) percentile of the current sector
   allocation within the 24-mo `client.sectorHistory[sector]` (Σ weights of months ≤ current).
 - **Penalty** = `max(0, current − peg) × 10`, capped 100. Same `peg` as Gap fit.
 
-### 5.3 Mandate & Risk (`mandate`, weight 0.25)
-`Mandate & Risk = Tradability × (0.6·RiskSuitability + 0.4·IntentFit)`.
-- **Tradability** ∈ {0,1}: a **Retail** client + an **OTC** `naturalExpression`
-  (`isOtcOption`) → **0** (axis = 0, stop). Professional, or a non-OTC / structured-note
-  natural expression → 1.
+### 5.3 Mandate & Risk (`mandate`, weight 0.29)
+`Mandate & Risk = 0.6·RiskSuitability + 0.4·IntentFit`. **Tradability is no longer on this
+axis** — it is now a [global gate](#55b-global-tradability-gate) that multiplies the whole fit,
+so keeping it here too would double-count.
 - **Risk Suitability** (0–100 + reason) = deterministic matrix of `riskProfile{vol,beta,structured}`
   vs mandate: growth rewards high-beta/high-vol; income rewards low-vol/low-drawdown; preservation
   rewards low-vol / capital-protected and punishes high-beta.
 - **Intent Fit** (0–100 + reason) = matrix `INTENT_FIT[mandate][goalType]`: growth↔appreciation 90,
   income↔yield 90, preservation↔protection 92; off-goal pairings lower (e.g. income↔appreciation 60).
 
-Worked: income client, a tradable **low-vol dividend equity** (`vol:low`, `goalType:appreciation`)
-→ Tradability 1, Risk Suitability **90**, Intent Fit **60** → `1×(0.6·90 + 0.4·60)` = **78**.
+Both sub-scores stay visible on the result (`axes[mandate].score`, plus `riskSuitability` /
+`intentFit` on the axis row's source). Worked: income client, a **low-vol dividend equity**
+(`vol:low`, `goalType:appreciation`) → Risk Suitability **90**, Intent Fit **60** →
+`0.6·90 + 0.4·60` = **78**.
 
-### 5.4 Concentration within sector (`concSector`, weight 0.15)
+### 5.4 Concentration within sector (`concSector`, weight 0.18)
 `raw = (1 − HHI) × 100`, where `HHI = Σ(weightᵢ)²` over the book's holdings **inside the idea's
 sector**, weights normalised to sum to 1. Concentrated → 0, diversified → 100.
 Worked: one name → HHI 1.0 → **0**; five equal names → HHI 0.20 → **80**.
@@ -113,27 +119,66 @@ single flippable line `PARAMS.concWithinSector.invertForFit` (default `true`). T
 shows **both** the raw diversification score and the fit contribution. No in-sector holdings →
 neutral `noHoldingScore` (50).
 
-### 5.5 House-view fit (`houseview`, weight 0.15)
-Off-theme → 42. Else binary theme participation: the book holds ≥1 position in a sector the
-theme covers → 82, else 50. (Sector *membership*, not magnitude — no double-count with 5.1/5.2.)
+### 5.5 House-view fit — moved out of client-fit
+House-view fit is **no longer a client-fit axis**. It is an idea-level property (not a per-client
+signal) and was double-counting holdings already captured by Affinity (5.2) and Gap fit (5.1), so
+it now lives in the **conviction score** as its 4th pillar (`build_today_focus.py` RUBRIC /
+`today_focus.json`), scored **1–5** on the same scale as the other conviction pillars (summed,
+scaled to 100 — conviction math unchanged):
+
+| score | meaning |
+|---|---|
+| 5 | core desk theme; idea is a direct expression of it |
+| 4 | on-theme, clearly within a house view |
+| 3 | thematically adjacent / loosely connected |
+| 2 | off-theme, tactical, neutral to house view |
+| 1 | actively cuts against a standing house view |
+
+Stored as the **1–5 integer** (so the conviction sum is unchanged); **displayed in the UI as a
+percentage at 20% per level** (1→20%, 2→40%, 3→60%, 4→80%, 5→100%) — display-only, the engine
+keeps the integer.
+
+### 5.5b Global tradability gate
+`tradability(idea, client) ∈ {0,1}` (`window.MAPPING.tradability`), computed **once** per
+idea×client **before** the weighted sum and multiplied across the whole bracketed score (not an
+axis — see §6). Binary MiFID rule (data.js `complexityOf`): a **Retail** client + an **OTC**
+`naturalExpression` (`isOtcOption` — collars, forwards, OTC options) → **0**; a Professional, or a
+non-complex / structured-note expression → **1**. (Structured *notes* are packaged securities a
+Retail client *can* trade.)
+
+`0` ⇒ `fit = 0`, `suppressed = true`, `applies = false` — the idea drops out of every flag/apply
+list, but the UI **surfaces** it with the reason (`tradabilityReason`, "Not tradable — …") rather
+than silently dropping it: the focus drawer lists suppressed clients in a dedicated section, and
+`window.MAPPING.suppressedClients(idea)` returns them for any other call site.
 
 ---
 
-## 6. Flat weights, the shared peg, and combine
+## 6. Flat weights, the shared peg, the global gate, and combine
 
-**Flat axis weights (sum = 1.00), in `PARAMS.weights`:**
+**Flat axis weights (sum = 1.00), in `PARAMS.weights`.** With House-view removed, the original
+five weights are rescaled by **1/0.85** so the remaining four keep their relative balance and sum
+to exactly 1.00. The **exact fractions** are used in the math; the UI shows the rounded values:
 
-| axis | weight |
-|---|---|
-| Affinity fit (`holdings`) | 0.25 |
-| Mandate & Risk (`mandate`) | 0.25 |
-| Gap fit (`gap`) | 0.20 |
-| Concentration within sector (`concSector`) | 0.15 |
-| House-view fit (`houseview`) | 0.15 |
+| axis | original | exact fraction | code value | shown |
+|---|---|---|---|---|
+| Affinity fit (`holdings`) | 0.25 | 0.25 / 0.85 | 0.294117… | 0.29 |
+| Mandate & Risk (`mandate`) | 0.25 | 0.25 / 0.85 | 0.294117… | 0.29 |
+| Gap fit (`gap`) | 0.20 | 0.20 / 0.85 | 0.235294… | 0.24 |
+| Concentration within sector (`concSector`) | 0.15 | 0.15 / 0.85 | 0.176470… | 0.18 |
 
-`fit = round(Σ score·weight)`. Tiers: `≥66 Strong`, `≥48 Good`, else Marginal. Gates:
-`applies` = `fit ≥ 45` (`applyMin`); `flagClients` defaults to `fit ≥ 50` (`flagMin`), top 6.
-`why` = the highest-contribution axis's note.
+**Combine — global gate × bracketed weighted sum:**
+
+```
+bracketFit = round(Σ score·weight)          # four axes, exact weights Σ = 1.00 → 0–100
+fit        = tradability × bracketFit        # binary gate (§5.5b); 0 ⇒ suppressed
+```
+
+The gate only ever **passes the bracket through (×1) or zeroes it (×0)** — because the four
+weights already sum to 1.00, nothing is re-normalised. Tiers: `≥66 Strong`, `≥48 Good`, else
+Marginal. Gates: `applies` = tradable **and** `bracketFit ≥ 45` (`applyMin`); `flagClients`
+defaults to `fit ≥ 50` (`flagMin`), top 6 (suppressed clients have `fit 0`, so they fall out and
+are surfaced separately per §5.5b). `why` = the suppression reason when gated, else the
+highest-contribution axis's note.
 
 **Single source of truth for the peg:** `PARAMS.affinity.comfort = {growth:25, income:15,
 preservation:10}` (+ optional `PARAMS.affinity.sectorComfort` per-sector overrides), read by
@@ -144,9 +189,12 @@ it) via `sectorPeg(client, sector)`. There is no second copy.
 
 ## 7. Worked examples (live data)
 
-- **Mandate & Risk** — income client (Scott), tradable low-vol dividend equity → RS 90, IF 60,
-  Mandate & Risk **78**. A Retail client (Aurora) + an OTC natural expression (zero-cost collar)
-  → **0** (Tradability no).
+- **Mandate & Risk** — income client (Scott), low-vol dividend equity → RS 90, IF 60,
+  Mandate & Risk **78**.
+- **Global tradability gate** — a Retail client (Aurora) + an OTC natural expression (zero-cost
+  collar) → tradability **0**, so the whole fit is **0** and the idea is suppressed for Aurora
+  (surfaced with the MiFID reason). A Professional client, or a structured-note expression, → 1
+  and the bracketed weighted sum passes through unchanged.
 - **Concentration within sector** — one name → raw 0; five equal → raw 80. Fable's 6 spread
   Technology names → HHI 0.19, diversification 81, inverted fit contribution **19** (already
   diversified within tech, so a new tech name adds little).
@@ -163,6 +211,16 @@ it) via `sectorPeg(client, sector)`. There is no second copy.
 3. **Flat weights** replace the intent-conditional weight matrix.
 4. Gap fit is **sector headroom to the shared peg** (was the goal-bucket gap); Affinity fit and
    Gap fit read that **one** peg constant.
+5. **Tradability moved off the Mandate & Risk axis to a global gate** (§5.5b): it now multiplies
+   the whole weighted sum (`fit = tradability × bracketFit`) instead of zeroing one 0.25-weighted
+   term, so a non-tradable idea is fully suppressed (`fit 0`) rather than scoring up to ~75. The
+   axis is now a clean `0.6·RiskSuitability + 0.4·IntentFit` blend. Suppressed clients are
+   surfaced with the MiFID reason, not silently dropped.
+6. **House-view fit removed from client-fit and moved to conviction** (§5.5): it was an idea-level
+   property double-counting holdings already in Affinity / Gap fit. It is now the 4th conviction
+   pillar (1–5, displayed as a percentage at 20%/level). The remaining four client-fit weights are
+   the original five rescaled by **1/0.85** (0.29 / 0.29 / 0.24 / 0.18 — exact fractions in code,
+   §6); client-fit is now a **four-axis** model.
 
 ### Remaining limitations / candidates for further work
 - AUM, ccy-hedging depth, liquidity and liability-funding still don't enter the fit

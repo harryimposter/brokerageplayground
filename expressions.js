@@ -45,8 +45,14 @@
     "default":     { name: "the underlying",           ticker: "the name",   index: "the relevant index",         etf: "the ETF" }
   };
   function uFor(ctx) {
-    if (!ctx || !ctx.sector) return SECTOR_U.default;
-    return SECTOR_U[ctx.sector] || SECTOR_U.default;
+    const base = Object.assign({}, (ctx && ctx.sector && SECTOR_U[ctx.sector]) || SECTOR_U.default);
+    // A single-name idea overrides the sector proxy with its OWN ticker/name, so a
+    // Micron idea's example reads "MU" — not the sector's representative "NVDA".
+    if (ctx && ctx.ticker) {
+      base.ticker = String(ctx.ticker).split(" ")[0];
+      if (ctx.name) base.name = ctx.name;
+    }
+    return base;
   }
 
   /* ---------------------------- canonical entries ------------------------- */

@@ -18,6 +18,7 @@ window.TODAY_FOCUS = {
   "earnings": [
     {
       "id": "mu-fq3",
+      "intent": "protect",
       "name": "Micron Technology",
       "ticker": "MU",
       "sector": "Technology",
@@ -109,6 +110,7 @@ window.TODAY_FOCUS = {
     },
     {
       "id": "acn-fq3",
+      "intent": "add",
       "name": "Accenture",
       "ticker": "ACN",
       "sector": "Technology",
@@ -191,6 +193,7 @@ window.TODAY_FOCUS = {
     },
     {
       "id": "fdx-fq4",
+      "intent": "add",
       "name": "FedEx",
       "ticker": "FDX",
       "sector": "Industrials",
@@ -273,6 +276,7 @@ window.TODAY_FOCUS = {
     },
     {
       "id": "nke-fq4",
+      "intent": "add",
       "name": "Nike",
       "ticker": "NKE",
       "sector": "Consumer",
@@ -353,6 +357,15 @@ window.TODAY_FOCUS = {
   "exEarnings": [
     {
       "id": "gold-pullback",
+      "intent": "protect",
+      "tickers": [
+        "XAU",
+        "GLD",
+        "4GLD",
+        "GDX",
+        "IAU",
+        "GLDM"
+      ],
       "name": "Gold — accumulate the pullback",
       "ticker": "XAU",
       "sector": "Gold",
@@ -439,6 +452,7 @@ window.TODAY_FOCUS = {
     },
     {
       "id": "ai-power",
+      "intent": "income",
       "name": "AI power & the grid",
       "ticker": "",
       "sector": "Utilities",
@@ -517,6 +531,7 @@ window.TODAY_FOCUS = {
     },
     {
       "id": "lock-yields",
+      "intent": "income",
       "name": "Lock yields before the cuts",
       "ticker": "",
       "sector": "Rates",
@@ -595,6 +610,7 @@ window.TODAY_FOCUS = {
     },
     {
       "id": "energy-tactical",
+      "intent": "income",
       "name": "Energy — tactical on Hormuz risk",
       "ticker": "",
       "sector": "Energy",
@@ -693,7 +709,7 @@ window.TODAY_FOCUS = {
       {
         "key": "houseview",
         "label": "House-view fit",
-        "desc": "Alignment with the desk's Solutions Views (off-theme scores lower)."
+        "desc": "Alignment with a standing desk house view — an idea-level property (moved here from client-fit). 5 core desk theme / direct expression · 4 on-theme · 3 thematically adjacent · 2 off-theme, tactical · 1 cuts against a house view. Shown in the UI as a percentage (20% per level)."
       }
     ],
     "tiers": [
