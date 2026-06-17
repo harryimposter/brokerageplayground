@@ -377,11 +377,13 @@
     if (!m) return "—";
     return `${+m[3]} ${HMONTHS[(+m[2]) - 1]} ${m[1]}`;
   }
-  function fmtSpot(p) {
-    if (p.entrySpot == null) return "—";
-    const v = p.entrySpot, dp = v >= 1000 ? 0 : 2;
-    return `${ccySym(p.ccy)}${v.toLocaleString("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp })}`;
+  function fmtSpotVal(v, ccy) {
+    if (v == null) return "—";
+    const dp = v >= 1000 ? 0 : 2;
+    return `${ccySym(ccy)}${v.toLocaleString("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp })}`;
   }
+  // current/live mark implied by the held P&L on the entry spot
+  function liveSpot(p) { return p.entrySpot == null ? null : p.entrySpot * (1 + (p.pnlPct || 0) / 100); }
   // unrealised P&L in book-ccy millions: current value − cost basis implied by pnlPct
   function pnlDollarM(p, aum) {
     if (!p.pnlPct) return 0;
@@ -396,7 +398,7 @@
     const present = SEED.ASSET_CLASSES.filter(ac => (c.positions || []).some(p => p.assetClass === ac));
     if (!present.length) return '<p class="pos-note" style="padding:12px 0">No positions on file.</p>';
     const header = `<div class="hold-row hold-head">
-      <span>Holding</span><span>Sector</span><span>Trade date</span><span>Entry spot</span><span>Matures</span><span class="hr-num">Weight</span><span class="hr-num">P&amp;L</span>
+      <span>Holding</span><span>Sector</span><span>Ccy</span><span>Entry date</span><span class="hr-num">Entry spot</span><span class="hr-num">Current</span><span>Matures</span><span class="hr-num">Weight</span><span class="hr-num">P&amp;L</span>
     </div>`;
     const groups = present.map(ac => {
       const rows = c.positions.filter(p => p.assetClass === ac);
@@ -407,8 +409,10 @@
         return `<div class="hold-row">
           <div class="hold-name"><div class="pos-name">${esc(p.name)}<span class="pos-tick">${esc(p.ticker)}</span></div><div class="pos-note">${esc(p.note || "")}</div></div>
           <span class="hold-cell">${esc(p.sector || "—")}</span>
+          <span class="hold-cell">${esc(p.ccy || "—")}</span>
           <span class="hold-cell">${fmtTradeDate(p.entryDate)}</span>
-          <span class="hold-cell">${fmtSpot(p)}</span>
+          <span class="hold-cell hr-num">${fmtSpotVal(p.entrySpot, p.ccy)}</span>
+          <span class="hold-cell hr-num">${fmtSpotVal(liveSpot(p), p.ccy)}</span>
           <span class="hold-cell">${fmtTradeDate(p.mat)}</span>
           <span class="hr-num pos-wt">${p.weightPct}%</span>
           <div class="hr-num"><div class="pos-pnl ${cls}">${up ? "+" : ""}${p.pnlPct}%</div>${p.pnlPct ? `<div class="pos-pnld ${cls}">${fmtPnlM(pnlDollarM(p, c.aum), c.ccy)}</div>` : ""}</div>
@@ -420,6 +424,20 @@
       </div>`;
     }).join("");
     return `<div class="hold-table">${header}${groups}</div>`;
+  }
+
+  /* ----------------------- iframe fragment host ----------------------- */
+  // Wrap a fragment in a standalone same-origin document that links the app's
+  // stylesheet + fonts, so it renders with the full JPM aesthetic inside an
+  // <iframe srcdoc>. Relative href resolves against the parent doc URL.
+  const FRAME_FONTS = "https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap";
+  function frameDoc(bodyHTML, extraCSS) {
+    const css = (document.querySelector('link[rel="stylesheet"]') || {}).getAttribute("href") || "styles.css";
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+      <link href="${FRAME_FONTS}" rel="stylesheet">
+      <link rel="stylesheet" href="${css}">
+      <style>html,body{background:var(--paper);margin:0;}body{padding:12px 16px;font-family:var(--sans);color:var(--ink);}${extraCSS || ""}</style>
+      </head><body>${bodyHTML}</body></html>`;
   }
 
   function renderClientDetail(c) {
@@ -461,6 +479,10 @@
         </div></div>` : "";
 
     $("#clientDetail").innerHTML = `
+      <div class="cd-topbar">
+        <button class="rubric-btn" id="goalsBtn" type="button">What do these goals mean?</button>
+      </div>
+
       <div class="cd-cols">
         <div class="cd-head">
           <div class="cd-head-top">
@@ -506,28 +528,54 @@
         </section>` : ""}
 
         ${houseViewsHTML}
+
+        <section class="bb-sec bb-more">
+          <button class="see-more-btn" id="seeMoreIdeas" type="button" aria-expanded="false">See all house-view ideas that fit — ${rec.viewItems.length} by asset class ›</button>
+          <div class="panel" id="moreIdeasPanel" hidden style="margin-top:14px">
+            <div class="panel-head"><h3>House views that fit, by asset class</h3><span class="rec-theme" style="margin-left:auto">${rec.viewItems.length} standing ideas matched to this book</span></div>
+            <div class="panel-body reco-body">${viewGroupsHTML}</div>
+          </div>
+        </section>
       </div>
 
-      <button class="see-more-btn" id="seeMoreIdeas" type="button" aria-expanded="false">See all house-view ideas that fit — ${rec.viewItems.length} by asset class ›</button>
-      <div class="panel" id="moreIdeasPanel" hidden style="margin-top:14px">
-        <div class="panel-head"><h3>House views that fit, by asset class</h3><span class="rec-theme" style="margin-left:auto">${rec.viewItems.length} standing ideas matched to this book</span></div>
-        <div class="panel-body reco-body">${viewGroupsHTML}</div>
+      <div class="panel" style="margin-top:18px">
+        <div class="panel-head"><h3>Actions for this book</h3><span class="rec-theme" style="margin-left:auto">${rec.findings.length} derived from this portfolio · most urgent first · scroll for more</span></div>
+        <div class="panel-body frame-host"><iframe class="cd-frame actions-frame" id="actionsFrame" title="Actions for this book"></iframe></div>
       </div>
 
-      <div class="panel framed-panel" style="margin-top:18px">
-        <div class="panel-head"><h3>Actions for this book</h3><span class="rec-theme" style="margin-left:auto">${rec.findings.length} derived from this portfolio · most urgent first</span></div>
-        <div class="panel-body reco-body framed-body">${actionsHTML}</div>
-      </div>
-
-      <div class="panel framed-panel" style="margin-top:18px">
-        <div class="panel-head"><h3>Holdings</h3><span class="rec-theme" style="margin-left:auto">${(c.positions || []).length} positions · grouped by asset class</span></div>
-        <div class="panel-body framed-body">${holdingsHTML}</div>
+      <div class="panel" style="margin-top:18px">
+        <div class="panel-head"><h3>Holdings</h3><span class="rec-theme" style="margin-left:auto">${(c.positions || []).length} positions · grouped by asset class · scroll for more</span></div>
+        <div class="panel-body frame-host"><iframe class="cd-frame holdings-frame" id="holdingsFrame" title="Holdings"></iframe></div>
       </div>
       ${liabilities}`;
 
     // wire interactions
     window.EXPRESSIONS.wire($("#clientDetail"));
     wireFocusTiles($("#clientDetail"));
+
+    // goals glossary modal — reuses the "How scoring works" mechanism
+    const goalsBtn = $("#goalsBtn");
+    if (goalsBtn) goalsBtn.addEventListener("click", openGoals);
+
+    // actions iframe — fragment rendered in its own scrollable document; wire
+    // the staging / drawer / expression handlers inside it after load
+    const actionsFrame = $("#actionsFrame");
+    if (actionsFrame) {
+      actionsFrame.onload = () => {
+        const idoc = actionsFrame.contentDocument;
+        if (!idoc) return;
+        window.EXPRESSIONS.wire(idoc.body);
+        idoc.querySelectorAll(".reco-card[data-idea]").forEach(el =>
+          el.addEventListener("click", () => openIdeaDrawer(el.dataset.idea)));
+        idoc.querySelectorAll(".reco-card[data-stage]").forEach(el =>
+          el.addEventListener("click", () => stageFinding(c.id, el.querySelector("h4").textContent)));
+      };
+      actionsFrame.srcdoc = frameDoc(`<div class="reco-body" style="padding:0">${actionsHTML}</div>`);
+    }
+
+    // holdings iframe — static grouped table in its own scrollable document
+    const holdingsFrame = $("#holdingsFrame");
+    if (holdingsFrame) holdingsFrame.srcdoc = frameDoc(holdingsHTML);
     const seeMore = $("#seeMoreIdeas"), morePanel = $("#moreIdeasPanel");
     if (seeMore && morePanel) seeMore.addEventListener("click", () => {
       const open = !morePanel.hidden;
@@ -1327,7 +1375,6 @@
 
     renderFocus();
     $("#rubricBtn").addEventListener("click", openRubric);
-    $("#goalsBtn").addEventListener("click", openGoals);
     $("#draftGoBtn").addEventListener("click", () => openDraftView($("#draftThesis").value));
     $("#draftThesis").addEventListener("keydown", e => { if (e.key === "Enter") openDraftView($("#draftThesis").value); });
 
