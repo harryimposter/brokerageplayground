@@ -122,21 +122,43 @@ neutral `noHoldingScore` (50).
 ### 5.5 House-view fit — moved out of client-fit
 House-view fit is **no longer a client-fit axis**. It is an idea-level property (not a per-client
 signal) and was double-counting holdings already captured by Affinity (5.2) and Gap fit (5.1), so
-it now lives in the **conviction score** as its 4th pillar (`build_today_focus.py` RUBRIC /
-`today_focus.json`), scored **1–5** on the same scale as the other conviction pillars (summed,
-scaled to 100 — conviction math unchanged):
+it now lives in the **conviction score** (see §5.5a). For *ex-earnings* ideas it is the 8th
+conviction pillar (0–2: core theme/direct → 2 · on-theme/adjacent → 1 · off-theme/against → 0).
+*Earnings* ideas are scored by Carter's rubric, which has no house-view pillar — the on-theme /
+off-theme tag still shows on the tile, it just doesn't enter the earnings conviction sum.
 
-| score | meaning |
+### 5.5a Conviction — two models by idea kind
+Conviction (`build_today_focus.py`, `today_focus.json` → `today_focus.js`) is computed by **one of
+two rubrics**, chosen by `idea.kind`. Each pillar carries its own `max` and a data-quality tag
+`dq ∈ {sourced, estimated, unverified}`; the generator stamps `label`/`max`, sums the raw score,
+scales to `/100` and bands it. Both models surface in the "How scoring works" modal behind an
+**Earnings / Ex-earnings** toggle, and each idea's drawer renders its own model as collapsed pillar
+tiles (tap to reveal the one-line read).
+
+**Earnings ideas — Carter's Shark Tank print rubric (`EARNINGS_RUBRIC`, /8).** Four pillars, each
+**0–2**, verbatim from the Shark Tank `BUILD_GUIDE.md` earnings rubric:
+
+| pillar | 0–2 criterion |
 |---|---|
-| 5 | core desk theme; idea is a direct expression of it |
-| 4 | on-theme, clearly within a house view |
-| 3 | thematically adjacent / loosely connected |
-| 2 | off-theme, tactical, neutral to house view |
-| 1 | actively cuts against a standing house view |
+| Asymmetry signal | implied straddle move ÷ avg absolute realised move over the trailing **4 prints** — materially <1 (market underpricing) → 2 · near fair → 1 · implied rich → 0 |
+| Sell-side consensus | majority buy / upside to mean PT / positive last-30d revisions |
+| Catalyst clarity | pre: a dated, unpriced catalyst; post: a reaction disproportionate to print quality |
+| Positioning & sentiment | short interest >10% float OR extreme positioning |
 
-Stored as the **1–5 integer** (so the conviction sum is unchanged); **displayed in the UI as a
-percentage at 20% per level** (1→20%, 2→40%, 3→60%, 4→80%, 5→100%) — display-only, the engine
-keeps the integer.
+Carter's banding governs the label: **High** (raw ≥6, no 0 pillar, all sourced) · **High — data
+gap** (same but ≥1 estimated input) · **Medium** (raw 4–5, or any 0 pillar, or consensus
+unverified) · **Low** (raw <4 or two-plus zeros → excluded).
+
+**Ex-earnings ideas — eight-pillar model (`EXEARN_RUBRIC`, /15).** Asymmetry (0–3) · Catalyst
+(0–2) · Consensus + confirmation (0–2) · Positioning (0–2) · Technical (0–2) · Stop / risk-reward
+(0–1) · RSI flag (0–1) · House-view fit (0–2). `score = raw ÷ 15 × 100`; **High ≥75 · Medium ≥55 ·
+Watch ≥0**.
+
+**Data-quality cap (global modifier).** If any pillar's core input is `estimated`/`unverified`
+(`capped = true`), the ex-earnings label cannot exceed **Medium**; the earnings model expresses the
+same idea through Carter's "High — data gap" label. With the current playground data (straddle /
+short-interest / RSI feeds not wired up, so those pillars are `estimated`), the cap is binding on
+every idea — wire sourced inputs in and Highs unlock.
 
 ### 5.5b Global tradability gate
 `tradability(idea, client) ∈ {0,1}` (`window.MAPPING.tradability`), computed **once** per
@@ -217,10 +239,15 @@ it) via `sectorPeg(client, sector)`. There is no second copy.
    axis is now a clean `0.6·RiskSuitability + 0.4·IntentFit` blend. Suppressed clients are
    surfaced with the MiFID reason, not silently dropped.
 6. **House-view fit removed from client-fit and moved to conviction** (§5.5): it was an idea-level
-   property double-counting holdings already in Affinity / Gap fit. It is now the 4th conviction
-   pillar (1–5, displayed as a percentage at 20%/level). The remaining four client-fit weights are
-   the original five rescaled by **1/0.85** (0.29 / 0.29 / 0.24 / 0.18 — exact fractions in code,
-   §6); client-fit is now a **four-axis** model.
+   property double-counting holdings already in Affinity / Gap fit. It now lives in the conviction
+   score (the 8th pillar of the ex-earnings model; the earnings model has no house-view pillar). The
+   remaining four client-fit weights are the original five rescaled by **1/0.85** (0.29 / 0.29 /
+   0.24 / 0.18 — exact fractions in code, §6); client-fit is now a **four-axis** model.
+7. **Conviction split into two models by idea kind** (§5.5a): earnings ideas use Carter's original
+   Shark Tank /8 print rubric verbatim (asymmetry over the trailing 4 prints, consensus, catalyst,
+   positioning); ex-earnings ideas use the eight-pillar /15 model. A per-pillar data-quality tag
+   feeds a cap that holds estimated/unverified ideas at Medium. Both render as collapsed pillar
+   tiles, and the "How scoring works" modal toggles between the two rubrics.
 
 ### Remaining limitations / candidates for further work
 - AUM, ccy-hedging depth, liquidity and liability-funding still don't enter the fit

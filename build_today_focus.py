@@ -32,27 +32,59 @@ HERE = Path(__file__).resolve().parent
 SRC = HERE / "today_focus.json"
 OUT = HERE / "today_focus.js"
 
-# ---- Conviction rubric (shown in the UI) --------------------------------------
-# Four pillars, each scored 1-5 in the research file; total /20 -> /100.
-RUBRIC = {
-    "max_per_pillar": 5,
+# ---- Conviction rubrics (TWO models, selected by idea kind) -------------------
+# EARNINGS ideas are scored by Carter's original Shark Tank rubric verbatim: four
+# pillars, each 0-2 -> /8, with his own rule-based banding. EX-EARNINGS ideas use
+# the eight-pillar /15 model. Each pillar carries its own `max`, and each pillar's
+# core input is tagged sourced|estimated|unverified (the `dq` field) so the
+# data-quality treatment can read it. Pillar scores + dq are authored in the
+# research file; labels, max, totals, score/100 and the tier are computed here.
+
+EARNINGS_RUBRIC = {
+    "model": "earnings",
+    "title": "Earnings ideas — Carter's print rubric",
+    "blurb": "Four pillars, each 0-2 (max 8), scaled to 100. The exact model Carter built for the Shark Tank earnings book.",
+    "maxRaw": 8,
     "pillars": [
-        {"key": "catalyst",  "label": "Catalyst clarity",      "desc": "Is there a dated, hard catalyst (a print, a meeting) or just a drift?"},
-        {"key": "setup",     "label": "Setup & positioning",   "desc": "Technicals, valuation and how crowded / reset the trade is."},
-        {"key": "pricing",   "label": "Risk / reward & pricing","desc": "How well priced the reward is versus the risk you take."},
-        {"key": "houseview", "label": "House-view fit",         "desc": "Alignment with a standing desk house view — an idea-level property (moved here from client-fit). 5 core desk theme / direct expression · 4 on-theme · 3 thematically adjacent · 2 off-theme, tactical · 1 cuts against a house view. Shown in the UI as a percentage (20% per level)."},
+        {"key": "asymmetry",   "label": "Asymmetry signal",      "max": 2, "desc": "Implied straddle move into the print ÷ average absolute realised move over the trailing 4 prints. Materially below 1 (the market is underpricing the event) → 2 · near fair → 1 · implied rich → 0. Wide estimate dispersion can also carry it."},
+        {"key": "consensus",   "label": "Sell-side consensus",   "max": 2, "desc": "Majority buy / upside to the mean price target / positive last-30-day revisions. All three → 2 · partial → 1 · none or contradicts → 0."},
+        {"key": "catalyst",    "label": "Catalyst clarity",      "max": 2, "desc": "Pre-print: a dated, unpriced catalyst. Post-print: a reaction disproportionate to print quality. Clear → 2 · soft → 1 · none → 0."},
+        {"key": "positioning", "label": "Positioning & sentiment","max": 2, "desc": "Short interest >10% of float OR an extreme positioning setup. Extreme → 2 · notable lean → 1 · neutral / unavailable → 0."},
+    ],
+    "bandsNote": "High = raw ≥6/8, no zero pillar, all inputs sourced · High — data gap = the same but ≥1 estimated input · Medium = raw 4-5, or any zero pillar, or consensus unverified · Low = raw <4 or two-plus zeros (excluded).",
+}
+
+EXEARN_RUBRIC = {
+    "model": "exEarnings",
+    "title": "Ex-earnings ideas — eight-pillar conviction",
+    "blurb": "Eight pillars summed to 15, scaled to 100. High ≥ 75 · Medium ≥ 55 · Watch ≥ 0.",
+    "maxRaw": 15,
+    "pillars": [
+        {"key": "asymmetry",   "label": "Gap / asymmetry",          "max": 3, "desc": "Thesis expected move (entry → target) ÷ the name's normal move over the same horizon. ≥2.0 → 3 · 1.5-2.0 → 2 · 1.0-1.5 → 1 · <1.0 → 0. The thesis target is a soft input → tagged estimated."},
+        {"key": "catalyst",    "label": "Catalyst",                 "max": 2, "desc": "A dated, hard reason it moves soon (earnings, FOMC, CPI, ECB) with a clear trigger → 2 · soft / undated → 1 · none → 0."},
+        {"key": "consensus",   "label": "Consensus + confirmation", "max": 2, "desc": "Sell-side aligned (buy ratio ≥0.6, mean-PT upside, revisions ≥0) AND an independent signal (breakout / fund flow / options skew). Both → 2 · one → 1 · neither → 0."},
+        {"key": "positioning", "label": "Positioning",              "max": 2, "desc": "Crowd offside our trade is fuel; crowd already with us is unwind risk. A hard read (SI >10% float / extreme CoT) plus a price-crowding read (RSI + stretch from the 50/200-day). Either shows the crowd offside → 2 · either shows it with us → 0 · otherwise 1."},
+        {"key": "technical",   "label": "Technical",                "max": 2, "desc": "50/100/200-day MA alignment, Bollinger entry quality, Fibonacci off the trailing 6-month swing. Trend agrees and entry not chasing an exhausted band → 2 · mixed → 1 · contradicts → 0."},
+        {"key": "stop",        "label": "Stop / risk-reward",       "max": 1, "desc": "A clean technical / structural stop AND reward ≥ 2× risk → 1 · wide, arbitrary or undefined → 0."},
+        {"key": "rsi",         "label": "RSI flag",                 "max": 1, "desc": "Classic absolute 30/70 convention. Not at a crowded extreme against us → 1 · overbought on a long / oversold on a short → 0 (flagged)."},
+        {"key": "houseview",   "label": "House-view fit",           "max": 2, "desc": "Core desk theme, direct expression → 2 · on-theme / adjacent → 1 · off-theme or cuts against a house view → 0."},
     ],
     "tiers": [
         {"key": "High",   "min": 75, "label": "High conviction"},
         {"key": "Medium", "min": 55, "label": "Medium conviction"},
         {"key": "Watch",  "min": 0,  "label": "Watchlist"},
     ],
+    "bandsNote": "Score = raw ÷ 15 × 100. High ≥75 · Medium ≥55 · Watch ≥0. Data-quality cap: if any pillar's core input is estimated or unverified, the label cannot exceed Medium.",
 }
-PILLAR_LABELS = {p["key"]: p["label"] for p in RUBRIC["pillars"]}
+
+RUBRICS = {"earnings": EARNINGS_RUBRIC, "ex-earnings": EXEARN_RUBRIC}
+DQ_TAGS = ("sourced", "estimated", "unverified")
+DQ_OK = "sourced"
+EXEARN_TIER_LABEL = {"High": "High conviction", "Medium": "Medium conviction", "Watch": "Watchlist"}
 
 
-def tier_for(score):
-    for t in RUBRIC["tiers"]:
+def tier_for(score, rubric):
+    for t in rubric.get("tiers", []):
         if score >= t["min"]:
             return t["key"]
     return "Watch"
@@ -86,19 +118,62 @@ def ensure_intent(idea, warns):
     return idea
 
 
-def score_conviction(idea, warns):
+def _norm_pillars(idea, rubric, warns):
+    """Stamp label + max from the rubric onto each authored pillar, default/validate
+    its data-quality tag, and check the count, keys and score ceilings."""
+    by_key = {p["key"]: p for p in rubric["pillars"]}
     pillars = idea.get("conviction", {}).get("pillars", [])
-    total = sum(p.get("score", 0) for p in pillars)
-    mx = RUBRIC["max_per_pillar"] * len(RUBRIC["pillars"])
-    if len(pillars) != len(RUBRIC["pillars"]):
-        warns.append(f"{idea['id']}: expected {len(RUBRIC['pillars'])} conviction pillars, found {len(pillars)}")
-    score = round(total / mx * 100) if mx else 0
-    # normalise pillar labels from the rubric so the UI is consistent
+    if len(pillars) != len(rubric["pillars"]):
+        warns.append(f"{idea['id']}: expected {len(rubric['pillars'])} {rubric['model']} pillars, found {len(pillars)}")
     for p in pillars:
-        p["label"] = PILLAR_LABELS.get(p["key"], p.get("label", p["key"]))
-        p["max"] = RUBRIC["max_per_pillar"]
-    idea["conviction"]["score"] = score
-    idea["conviction"]["tier"] = tier_for(score)
+        meta = by_key.get(p.get("key"))
+        if not meta:
+            warns.append(f"{idea['id']}: unknown pillar '{p.get('key')}' for the {rubric['model']} model")
+            continue
+        p["label"] = meta["label"]
+        p["max"] = meta["max"]
+        if p.get("dq") not in DQ_TAGS:
+            warns.append(f"{idea['id']}/{p['key']}: data-quality tag '{p.get('dq')}' missing/invalid — defaulted to estimated")
+            p["dq"] = "estimated"
+        if p.get("score", 0) > meta["max"]:
+            warns.append(f"{idea['id']}/{p['key']}: score {p['score']} exceeds max {meta['max']}")
+    return pillars
+
+
+def _earnings_label(raw, pillars, capped):
+    """Carter's Shark Tank banding, verbatim."""
+    zeros = sum(1 for p in pillars if p.get("score", 0) == 0)
+    if raw < 4 or zeros >= 2:
+        return "Low", "Watch"
+    if raw >= 6 and zeros == 0:
+        return ("High — data gap", "High") if capped else ("High", "High")
+    return "Medium", "Medium"
+
+
+def score_conviction(idea, warns):
+    rubric = RUBRICS[idea["kind"]]
+    pillars = _norm_pillars(idea, rubric, warns)
+    raw = sum(p.get("score", 0) for p in pillars)
+    score = round(raw / rubric["maxRaw"] * 100) if rubric["maxRaw"] else 0
+    # data-quality: any pillar whose core input isn't sourced trips the modifier
+    capped = any(p.get("dq", DQ_OK) != DQ_OK for p in pillars)
+    if idea["kind"] == "earnings":
+        # Carter's own labels (incl. "High — data gap") govern the earnings book.
+        label, tier = _earnings_label(raw, pillars, capped)
+    else:
+        # eight-pillar model: tier off the /100 score, then the hard Medium cap.
+        tier = tier_for(score, rubric)
+        if capped and tier == "High":
+            tier = "Medium"
+        label = EXEARN_TIER_LABEL[tier]
+    c = idea["conviction"]
+    c["raw"] = raw
+    c["maxRaw"] = rubric["maxRaw"]
+    c["score"] = score
+    c["tier"] = tier
+    c["label"] = label
+    c["capped"] = capped
+    c["model"] = rubric["model"]
     return idea
 
 
@@ -133,7 +208,7 @@ def main():
             ensure_intent(idea, warns)
             score_conviction(idea, warns)
 
-    data["convictionRubric"] = RUBRIC
+    data["convictionRubric"] = {"earnings": EARNINGS_RUBRIC, "exEarnings": EXEARN_RUBRIC}
 
     banner = (
         "/* AUTO-GENERATED by build_today_focus.py from today_focus.json — do not edit by hand.\n"

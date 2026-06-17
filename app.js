@@ -805,14 +805,21 @@
   const fitTierClass = (t) => "fit-" + String(t).toLowerCase();
   const srcFlag = (tag) => `<span class="src-flag ${esc(tag)}">${esc(tag)}</span>`;
 
+  // data-quality dot tooltips (the cap modifier reads these)
+  const DQ_TITLE = { sourced: "Sourced — a verified input", estimated: "Estimated — a soft input", unverified: "Unverified — flagged" };
+  // A pillar is a collapsed tile: header (dot · label · bar · score) with the
+  // one-line read hidden until the row is tapped, so the breakdown isn't a wall of text.
   function pillarHTML(p) {
-    // House-view fit is shown as a percentage (20% per level); the engine keeps the 1–5 integer.
-    const value = p.key === "houseview" ? `${p.score * 20}%` : `${p.score}/${p.max}`;
-    return `<div class="pill-row">
-      <span class="pl-k">${esc(p.label)}</span>
-      <span class="pl-bar"><span style="width:${(p.score / p.max * 100).toFixed(0)}%"></span></span>
-      <span class="pl-sc">${value}</span>
-      <div class="pl-note">${esc(p.note)}</div>
+    const dq = p.dq || "estimated";
+    return `<div class="pill-tile" data-dq="${esc(dq)}">
+      <button type="button" class="pl-head" aria-expanded="false">
+        <span class="pl-dot ${esc(dq)}" title="${esc(DQ_TITLE[dq] || dq)}"></span>
+        <span class="pl-k">${esc(p.label)}</span>
+        <span class="pl-bar"><span style="width:${(p.score / p.max * 100).toFixed(0)}%"></span></span>
+        <span class="pl-sc">${p.score}/${p.max}</span>
+        <span class="pl-chev" aria-hidden="true">›</span>
+      </button>
+      <div class="pl-note" hidden>${esc(p.note)}</div>
     </div>`;
   }
 
@@ -948,11 +955,16 @@
       </div>
 
       <div class="drawer-section">
-        <span class="eyebrow">Conviction ${conv.score}/100 · ${esc(conv.tier)}</span>
-        <div class="fc-conv-detail-open">
-          <div class="fcd-head">Four pillars (1–5 each):</div>
-          ${conv.pillars.map(pillarHTML).join("")}
+        <span class="eyebrow">Conviction</span>
+        <div class="conv-headline">
+          <span class="conv-score ${convTierClass(conv.tier)}" title="${conv.score}/100">${conv.score}</span>
+          <div class="conv-meta">
+            <div class="conv-label">${esc(conv.label || conv.tier)}</div>
+            <div class="conv-sub">${idea.kind === "earnings" ? "Carter's print rubric" : "Eight-pillar model"} · ${conv.raw}/${conv.maxRaw} across ${conv.pillars.length} pillars${conv.capped ? ` · <span class="conv-cap" title="A core input is estimated/unverified">data-quality cap</span>` : ""}</div>
+          </div>
         </div>
+        <div class="fcd-head">Tap a pillar to see the read</div>
+        <div class="conv-pillars">${conv.pillars.map(pillarHTML).join("")}</div>
       </div>
 
       ${intel ? `<div class="drawer-section"><span class="eyebrow">${idea.kind === "earnings" ? "Earnings intelligence" : "The setup"}</span>${intel}</div>` : ""}
@@ -995,6 +1007,15 @@
       e.stopPropagation();
       const ax = btn.closest(".fc-client").querySelector(".fcl-axes");
       if (ax) { ax.hidden = !ax.hidden; btn.classList.toggle("open", !ax.hidden); }
+    }));
+    // collapse/expand each conviction pillar's one-line read
+    $$(".pl-head", root).forEach(btn => btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const tile = btn.closest(".pill-tile"), note = tile.querySelector(".pl-note");
+      const open = note.hidden;
+      note.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+      tile.classList.toggle("open", open);
     }));
     $$(".fc-tag.theme[data-gotheme]", root).forEach(el => el.addEventListener("click", () => {
       const id = el.dataset.gotheme; closeDrawer(); activeThemeId = id; switchTab("ideas"); renderThemes(); renderIdeaPanel();
@@ -1078,14 +1099,35 @@
     concSector: "Concentration within the idea's sector — a Herfindahl diversification score of the book's in-sector holdings, (1 − HHI) × 100. Inverted for fit by default: a more concentrated sector position means a new name fits more (flip via PARAMS.concWithinSector.invertForFit). The breakdown shows both the raw diversification score and the fit contribution."
     // House-view fit is no longer a client-fit axis — it's the 4th conviction pillar (shown above).
   };
+  // one conviction model's collapsible pillar list (rubric rows expand on tap)
+  function rubricModelHTML(R, active) {
+    if (!R) return "";
+    return `<div class="rub-model" data-rubmodel="${esc(R.model)}"${active ? "" : " hidden"}>
+      <p class="rub-p">${esc(R.blurb)}</p>
+      <div class="rub-list">${R.pillars.map(p => `
+        <div class="rub-item">
+          <button type="button" class="ri-head" aria-expanded="false">
+            <span class="ri-k">${esc(p.label)} <span class="ri-w">max ${p.max}</span></span>
+            <span class="ri-chev" aria-hidden="true">›</span>
+          </button>
+          <div class="ri-d" hidden>${esc(p.desc)}</div>
+        </div>`).join("")}</div>
+      ${R.bandsNote ? `<p class="rub-bands">${esc(R.bandsNote)}</p>` : ""}
+    </div>`;
+  }
   function openRubric() {
-    const R = (window.TODAY_FOCUS || {}).convictionRubric || { max_per_pillar: 5, pillars: [], tiers: [] };
+    const CR = (window.TODAY_FOCUS || {}).convictionRubric || {};
     openModal(`
       <div class="modal-head"><span class="eyebrow">Methodology</span><h2>How an idea is scored</h2></div>
       <div class="modal-body">
         <h3 class="rub-h">1 · Conviction score — “how good is the idea”</h3>
-        <p class="rub-p">Four pillars, each scored 1–${R.max_per_pillar}; the total is shown out of 100. ${R.tiers.map(t => `<b>${esc(t.key)}</b> ≥ ${t.min}`).join(" · ")}.</p>
-        <div class="rub-list">${R.pillars.map(p => `<div class="rub-item"><div class="ri-k">${esc(p.label)}</div><div class="ri-d">${esc(p.desc)}</div></div>`).join("")}</div>
+        <p class="rub-p">Conviction uses two models, picked by idea type. <b>Earnings</b> ideas use Carter's original Shark Tank print rubric; <b>ex-earnings</b> ideas use the eight-pillar model. Tap a pillar to read its rule.</p>
+        <div class="rub-toggle seg-group" role="tablist">
+          <button type="button" class="seg active" data-rubtab="earnings" role="tab">Earnings</button>
+          <button type="button" class="seg" data-rubtab="exEarnings" role="tab">Ex-earnings</button>
+        </div>
+        ${rubricModelHTML(CR.earnings, true)}
+        ${rubricModelHTML(CR.exEarnings, false)}
         <h3 class="rub-h">2 · Client-fit score — “how right for THIS client”</h3>
         <p class="rub-p">Separate from conviction. Each idea is scored against every client across four axes; the weighted sum is the fit score (0–100). Weights are <b>flat</b> (fixed per axis, shown below — the original five rescaled by 1/0.85 after House-view moved to conviction). Open the per-axis breakdown on any flagged client to see each axis's score, weight and reasoning.</p>
         <div class="rub-list">${window.MAPPING.AXES.map(a => `<div class="rub-item"><div class="ri-k">${esc(a.label)} <span class="ri-w">weight ${(+window.MAPPING.PARAMS.weights[a.key]).toFixed(2)}</span></div><div class="ri-d">${esc(AXIS_DESC[a.key] || "")}</div></div>`).join("")}</div>
@@ -1106,6 +1148,21 @@
       </div>
       <div class="modal-foot"><button class="btn btn-primary" id="rubClose">Got it</button></div>`);
     $("#rubClose").onclick = closeModal;
+    const modal = $("#modal");
+    // earnings / ex-earnings toggle — show only the selected model
+    $$(".rub-toggle .seg", modal).forEach(b => b.addEventListener("click", () => {
+      const tab = b.dataset.rubtab;
+      $$(".rub-toggle .seg", modal).forEach(s => s.classList.toggle("active", s === b));
+      $$(".rub-model", modal).forEach(m => { m.hidden = m.dataset.rubmodel !== tab; });
+    }));
+    // expand a rubric pillar's rule on tap
+    $$(".ri-head", modal).forEach(btn => btn.addEventListener("click", () => {
+      const item = btn.closest(".rub-item"), d = item.querySelector(".ri-d");
+      const open = d.hidden;
+      d.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+      item.classList.toggle("open", open);
+    }));
   }
 
   /* ----------------------- draft a view (lighter add) ----------------- */

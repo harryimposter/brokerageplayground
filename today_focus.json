@@ -22,10 +22,10 @@
       "structures": ["Phoenix autocall", "Zero-cost collar", "Buffered note", "Direct equity"],
       "conviction": {
         "pillars": [
-          { "key": "catalyst", "label": "Catalyst clarity", "score": 5, "note": "Hard dated binary — FQ3 after the close on 24 Jun (sourced)." },
-          { "key": "setup", "label": "Setup & positioning", "score": 4, "note": "Stock ~$546, +70% YTD and near a 52-week high — richly positioned into the print (sourced)." },
-          { "key": "pricing", "label": "Risk / reward & pricing", "score": 3, "note": "Implied vol is rich; reward/risk is better defined with a structure than with naked stock (estimated)." },
-          { "key": "houseview", "label": "House-view fit", "score": 5, "note": "Squarely the AI & Productivity / memory-supercycle house view (sourced)." }
+          { "key": "asymmetry", "score": 0, "dq": "estimated", "note": "Implied straddle ~8.5% vs ~6.5% average realised over recent prints — the market is paying up for the move, so little edge buying the event." },
+          { "key": "consensus", "score": 2, "dq": "estimated", "note": "Street broadly constructive on AI-memory; HBM demand underpins above-spot price targets." },
+          { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Hard dated binary — FQ3 after the close on 24 Jun." },
+          { "key": "positioning", "score": 1, "dq": "estimated", "note": "+70% YTD and near a 52-week high — a notable crowded-long lean into the print, not a short-squeeze setup." }
         ]
       },
       "earnings": {
@@ -64,10 +64,10 @@
       "structures": ["Direct equity", "Call overwrite", "Structured note"],
       "conviction": {
         "pillars": [
-          { "key": "catalyst", "label": "Catalyst clarity", "score": 5, "note": "Dated report — FQ3 before the open on 18 Jun (sourced)." },
-          { "key": "setup", "label": "Setup & positioning", "score": 3, "note": "Services multiple has de-rated on AI-disruption fears; expectations reset (estimated)." },
-          { "key": "pricing", "label": "Risk / reward & pricing", "score": 3, "note": "A reasonable risk/reward into a reset bar; income overwrite is attractive (estimated)." },
-          { "key": "houseview", "label": "House-view fit", "score": 4, "note": "Direct read on the 'AI adopters / software & services' house view (sourced)." }
+          { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Implied ~6% vs ~5% realised — only modestly rich, so some edge but not a clean misprice." },
+          { "key": "consensus", "score": 1, "dq": "estimated", "note": "Services multiple de-rated on AI-disruption fears; the sell-side is split rather than aligned." },
+          { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Dated FQ3 before the open on 18 Jun — the bellwether read on enterprise AI spend." },
+          { "key": "positioning", "score": 1, "dq": "estimated", "note": "Expectations reset after the de-rate; positioning closer to washed-out than crowded." }
         ]
       },
       "earnings": {
@@ -104,10 +104,10 @@
       "structures": ["Direct equity", "Call overwrite", "Quality basket"],
       "conviction": {
         "pillars": [
-          { "key": "catalyst", "label": "Catalyst clarity", "score": 5, "note": "Dated FQ4 report on 23 Jun (sourced)." },
-          { "key": "setup", "label": "Setup & positioning", "score": 3, "note": "Cyclical, sentiment-sensitive into a mixed freight backdrop (estimated)." },
-          { "key": "pricing", "label": "Risk / reward & pricing", "score": 3, "note": "Cheap multiple, but guidance risk is two-sided (estimated)." },
-          { "key": "houseview", "label": "House-view fit", "score": 3, "note": "Supports the broadening / quality-cyclicals house view as a macro tell (estimated)." }
+          { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Implied ~7% vs ~6% realised — modestly rich into a two-sided guide." },
+          { "key": "consensus", "score": 1, "dq": "estimated", "note": "Cheap multiple but ratings are mixed; guidance risk cuts both ways." },
+          { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Dated FQ4 on 23 Jun — a live read on the freight / industrial cycle." },
+          { "key": "positioning", "score": 1, "dq": "estimated", "note": "Cyclical and sentiment-sensitive, but not at a positioning extreme." }
         ]
       },
       "earnings": {
@@ -144,10 +144,10 @@
       "structures": ["Direct equity", "Cash-secured puts", "Buffered note"],
       "conviction": {
         "pillars": [
-          { "key": "catalyst", "label": "Catalyst clarity", "score": 4, "note": "Dated FQ4 after the close on 30 Jun (sourced)." },
-          { "key": "setup", "label": "Setup & positioning", "score": 2, "note": "Multi-quarter turnaround with uneven visibility; story-stock risk (estimated)." },
-          { "key": "pricing", "label": "Risk / reward & pricing", "score": 3, "note": "Beaten-down expectations cut both ways; cash-secured puts pay you to wait (estimated)." },
-          { "key": "houseview", "label": "House-view fit", "score": 2, "note": "Off-theme — no consumer-discretionary house view behind it (sourced)." }
+          { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Implied ~8% vs ~7% realised — modestly rich for a turnaround print." },
+          { "key": "consensus", "score": 1, "dq": "estimated", "note": "Street cautious on the multi-quarter reset; no clean buy-side alignment." },
+          { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Dated FQ4 after the close on 30 Jun — a real single-name catalyst." },
+          { "key": "positioning", "score": 1, "dq": "estimated", "note": "Beaten-down name with some short interest, but the turnaround keeps it from a clean squeeze setup." }
         ]
       },
       "earnings": {
@@ -186,10 +186,14 @@
       "structures": ["Physical / ETC", "Gold accumulator", "Capital-protected note"],
       "conviction": {
         "pillars": [
-          { "key": "catalyst", "label": "Catalyst clarity", "score": 3, "note": "No single dated catalyst — a structural buy on a price pullback (sourced)." },
-          { "key": "setup", "label": "Setup & positioning", "score": 4, "note": "~25% below the Jan all-time high; positioning has reset (sourced)." },
-          { "key": "pricing", "label": "Risk / reward & pricing", "score": 4, "note": "Bank targets $5,200-6,000 sit 25-44% above spot; accumulate via accumulator/ETC (sourced)." },
-          { "key": "houseview", "label": "House-view fit", "score": 5, "note": "Core to the Gold & Currency house view as strategic ballast (sourced)." }
+          { "key": "asymmetry", "score": 2, "dq": "estimated", "note": "Bank targets 25-44% above spot versus gold's normal trailing move — roughly a 1.5-2x asymmetry to the upside." },
+          { "key": "catalyst", "score": 1, "dq": "sourced", "note": "No single dated catalyst — a structural accumulation on a price pullback." },
+          { "key": "consensus", "score": 2, "dq": "sourced", "note": "Every major bank's year-end target sits above spot and central banks are net buyers — sell-side and flow both confirm." },
+          { "key": "positioning", "score": 1, "dq": "estimated", "note": "~25% off the highs with positioning reset — neither washed-out nor crowded; mild fuel." },
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "Below the January high near-term, but the long-term uptrend is intact — mixed." },
+          { "key": "stop", "score": 1, "dq": "estimated", "note": "The pullback offers a structural level to lean on with 25%+ upside — reward well over risk." },
+          { "key": "rsi", "score": 1, "dq": "estimated", "note": "Well off the highs — not overbought, no crowded-long extreme against a buyer." },
+          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core to the Gold & Currency house view as strategic ballast." }
         ]
       },
       "macro": {
@@ -224,10 +228,14 @@
       "structures": ["Utility basket", "Thematic basket", "HALO basket (ACM+)"],
       "conviction": {
         "pillars": [
-          { "key": "catalyst", "label": "Catalyst clarity", "score": 3, "note": "Structural demand story rather than a single dated event (sourced)." },
-          { "key": "setup", "label": "Setup & positioning", "score": 4, "note": "Multi-year rate-base and load growth; still under-owned vs the chip names (estimated)." },
-          { "key": "pricing", "label": "Risk / reward & pricing", "score": 3, "note": "Rate-sensitive, but contracted income cushions the entry (estimated)." },
-          { "key": "houseview", "label": "House-view fit", "score": 5, "note": "Core Power & Infrastructure house view (sourced)." }
+          { "key": "asymmetry", "score": 2, "dq": "estimated", "note": "Datacenter power demand roughly doubling — a large structural move versus the sector's normal drift." },
+          { "key": "catalyst", "score": 1, "dq": "sourced", "note": "A structural demand story rather than a single dated event." },
+          { "key": "consensus", "score": 1, "dq": "estimated", "note": "IEA data and some sell-side support, but no independent breakout / flow confirmation yet." },
+          { "key": "positioning", "score": 2, "dq": "estimated", "note": "Still under-owned versus the chip names — the crowd is not yet with us, which is fuel." },
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "Multi-year rate-base and load growth; constructive but not a clean breakout." },
+          { "key": "stop", "score": 0, "dq": "estimated", "note": "A thematic basket has no single clean stop — risk is managed by sizing, not a level." },
+          { "key": "rsi", "score": 1, "dq": "estimated", "note": "The sector is not at a crowded extreme." },
+          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core Power & Infrastructure house view." }
         ]
       },
       "macro": {
@@ -260,10 +268,14 @@
       "structures": ["Extend duration", "Bond ladder", "Govt / IG bonds"],
       "conviction": {
         "pillars": [
-          { "key": "catalyst", "label": "Catalyst clarity", "score": 4, "note": "Dated FOMC decision 16-17 Jun; a hold is the consensus (sourced)." },
-          { "key": "setup", "label": "Setup & positioning", "score": 3, "note": "Front-end yields still attractive but reinvestment risk is rising (sourced)." },
-          { "key": "pricing", "label": "Risk / reward & pricing", "score": 4, "note": "Lock ~4.3-4.5% and add convexity if cuts land later in 2026 (estimated)." },
-          { "key": "houseview", "label": "House-view fit", "score": 5, "note": "Core Fixed Income house view — extend duration before the cutting cycle (sourced)." }
+          { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Locking ~4.3-4.5% plus convexity if cuts land is a modest expected move versus normal bond ranges." },
+          { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Dated FOMC decision 16-17 Jun; a hold is consensus — a hard, dated reason." },
+          { "key": "consensus", "score": 2, "dq": "sourced", "note": "Reuters poll consensus is a hold and the rate path backs extending duration — aligned with an independent macro read." },
+          { "key": "positioning", "score": 1, "dq": "sourced", "note": "The crowd is still parked in cash and bills; extending is the contrarian-leaning move." },
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "A duration trade; the curve picture is constructive but mixed." },
+          { "key": "stop", "score": 1, "dq": "estimated", "note": "High-quality bonds give a defined downside; carry plus convexity clears the risk." },
+          { "key": "rsi", "score": 1, "dq": "estimated", "note": "Not a meaningful crowding flag for high-grade duration — treated as neutral." },
+          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core Fixed Income house view — extend duration before the cutting cycle." }
         ]
       },
       "macro": {
@@ -296,10 +308,14 @@
       "structures": ["Direct equity", "Call overwrite", "Thematic basket"],
       "conviction": {
         "pillars": [
-          { "key": "catalyst", "label": "Catalyst clarity", "score": 3, "note": "Headline-driven — hinges on the Hormuz / Iran negotiation path (sourced)." },
-          { "key": "setup", "label": "Setup & positioning", "score": 3, "note": "Premium half-deflated from the April spike; two-sided (sourced)." },
-          { "key": "pricing", "label": "Risk / reward & pricing", "score": 3, "note": "Majors pay a dividend while you hold the optionality; overwrite for income (estimated)." },
-          { "key": "houseview", "label": "House-view fit", "score": 2, "note": "Off-theme tactical hedge, not a strategic tilt (sourced)." }
+          { "key": "asymmetry", "score": 2, "dq": "sourced", "note": "A Hormuz re-escalation could retrace much of the move from ~$118 — a large potential move versus oil's normal range." },
+          { "key": "catalyst", "score": 1, "dq": "sourced", "note": "Headline-driven — hinges on the Hormuz / Iran path rather than a dated event." },
+          { "key": "consensus", "score": 1, "dq": "estimated", "note": "Off-theme tactical; no standing sell-side alignment behind it." },
+          { "key": "positioning", "score": 1, "dq": "sourced", "note": "The geopolitical premium is half-deflated — positioning two-sided, no clear edge." },
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "Brent has rolled off the April spike; the chart is mixed." },
+          { "key": "stop", "score": 0, "dq": "estimated", "note": "A majors-plus-overwrite hedge has no clean single stop." },
+          { "key": "rsi", "score": 1, "dq": "estimated", "note": "Not at a crowded extreme." },
+          { "key": "houseview", "score": 0, "dq": "sourced", "note": "Off-theme — explicitly a tactical hedge, not a strategic house view." }
         ]
       },
       "macro": {
