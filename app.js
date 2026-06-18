@@ -1299,53 +1299,61 @@
 
   /* ----------------- per-client "how were these goals derived" ------------- */
   function openGoalDerivation(c) {
-    const G = window.GOALS, d = G.deriveGoals(c);
-    const i = d.inputs, w = d.willingness, comp = d.components, v = d.vector, cur = G.currentBuckets(c), raw = d.raw, Wc = d.willingCoef;
+    const d = window.GOALS.deriveGoals(c), cur = window.GOALS.currentBuckets(c), v = d.vector;
     const srcText = {
       "stated-goal": `<b>${esc(c.name)} has a funding goal on file</b>, so we know how hard the money must work — a <b>required return</b>. We combine that with ${esc(c.name)}'s risk appetite, read from both the stated profile and how the book is actually invested.`,
       "stated-risk": `<b>${esc(c.name)} has no numeric goal on file</b>, but a stated risk appetite. There's no required-return signal, so we lean harder on appetite — what ${esc(c.name)} says, blended with what the book reveals.`,
-      "revealed": `<b>${esc(c.name)} has nothing on file</b> — no funding goal and no risk profile. Every number below is read <b>purely from how the book is actually invested</b>.`
+      "revealed": `<b>${esc(c.name)} has nothing on file</b> — no funding goal and no risk profile. Every number is read <b>purely from how the book is actually invested</b>.`
     }[d.source] || "";
     const srcTag = { "stated-goal": "stated goal", "stated-risk": "stated risk", "revealed": "revealed from the book" }[d.source];
 
-    /* one row = a bucket: its general FORMULA, then the actual numbers plugged in.
-       Terms are listed in the same order in both so they line up. */
-    const buckets = [
-      { key: "Growth", terms: [
-        ["8", "base", comp.Growth.base],
-        ["5 × required-return%", "", comp.Growth.requiredReturn],
-        ["3 × (horizon − 6)", "", comp.Growth.longHorizon],
-        [`${Wc} × willingness`, "", comp.Growth.willingness]
-      ]},
-      { key: "Income", terms: [
-        ["8", "base", comp.Income.base],
-        ["8 × income-draw%", "", comp.Income.incomeNeed],
-        ["8 × debt-service%", "", comp.Income.service],
-        ["0.6 × debt-load%", "", comp.Income.debtMatch],
-        ["15 (if drawdown)", "", comp.Income.drawdown],
-        ["18 × (1 − willingness)", "caution", comp.Income.caution]
-      ]},
-      { key: "Protection", terms: [
-        ["8", "base", comp.Protection.base],
-        ["1 × near-bill%", "", comp.Protection.nearBill],
-        ["0.3 × debt-load%", "", comp.Protection.debtBallast],
-        ["1 × (top-name% − 15)", "", comp.Protection.concentration],
-        ["15 (if drawdown)", "", comp.Protection.drawdown],
-        ["3 × (5 − horizon)", "", comp.Protection.shortHorizon],
-        ["28 × (1 − willingness)", "caution", comp.Protection.caution]
-      ]}
-    ];
-    const stepHTML = (b) => {
-      const formula = b.terms.map(t => t[0]).join("  +  ");
-      const calc = b.terms.map(t => t[2]).join(" + ");
-      return `<div class="gd-step">
-        <div class="gd-step-k">${b.key}</div>
-        <div class="gd-formula"><span class="lbl">formula:</span> ${formula}</div>
-        <div class="gd-calc">= ${calc} = <b>${raw[b.key]}</b></div>
-      </div>`;
-    };
+    openModal(`
+      <div class="modal-head"><span class="eyebrow">Goal derivation · ${esc(c.name)}</span><h2>How were these goals derived</h2></div>
+      <div class="modal-body goal-deriv">
+        <p>We don't ask ${esc(c.name)} to type target percentages — real clients don't think that way. Instead the goal is <b>inferred</b> from <b>both sides of the balance sheet</b> plus risk appetite, into three buckets: <b>Protection · Income · Growth</b>.</p>
 
-    // measured inputs that actually feed the formulas (skip zeros for a clean line)
+        <h3 class="gd-h">In plain English</h3>
+        <p><b>Evidence used: <span class="gd-src">${srcTag}</span>.</b> ${srcText}</p>
+        <p>The logic: <b>fund the obligations first</b> (bills due and debt → Protection; a spending draw or debt servicing → Income), then <b>deploy the surplus by how hard the money must work</b> (required return + a long horizon + appetite → Growth). Appetite is a <b>two-way dial</b> — a low appetite doesn't just shrink Growth, it adds ballast to Protection and Income. Crucially, the book sets the <em>appetite knob</em>, not the target itself, so the gap between what ${esc(c.name)} holds and needs stays meaningful.</p>
+        <p>For ${esc(c.name)} specifically:</p>
+        <ul class="gd-drivers">${d.drivers.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+
+        <div class="gd-exact">
+          <button class="rubric-btn" id="exactCalcBtn" type="button">Exact Calculations ›</button>
+          <span class="gd-exact-hint">the formula, and ${esc(c.name)}'s numbers plugged in</span>
+        </div>
+
+        <p class="gd-now">Result — inferred goal: <b>Growth ${v.Growth}% · Income ${v.Income}% · Protection ${v.Protection}%</b>. Current book today: Growth ${cur.Growth}% · Income ${cur.Income}% · Protection ${cur.Protection}% — that gap is what drives client tagging across the other tabs. Confidence ${Math.round(d.confidence * 100)}% (${srcTag}).</p>
+      </div>
+      <div class="modal-foot"><button class="btn btn-primary" id="gdClose">Got it</button></div>`);
+    $("#gdClose").onclick = closeModal;
+    const ec = $("#exactCalcBtn"); if (ec) ec.onclick = () => openGoalCalcs(c);
+  }
+
+  /* nested brown popup: Formula tab + Calculations tab (this client's numbers) */
+  function openGoalCalcs(c) {
+    const d = window.GOALS.deriveGoals(c);
+    const i = d.inputs, w = d.willingness, comp = d.components, v = d.vector, raw = d.raw, Wc = d.willingCoef;
+
+    /* TAB 1 — the general formula (same for every client) */
+    const fSteps = [
+      { k: "Willingness (0–1)", f: "0.5 × risk-asset share  +  0.3 × low-defensiveness  +  0.2 × concentration appetite", sub: "if a risk profile is stated, blend:  0.5 × stated  +  0.5 × revealed" },
+      { k: "Growth", f: "8  +  5 × required-return%  +  3 × (horizon − 6)  +  W × willingness", sub: "W = 30 when a funding goal exists, else 45" },
+      { k: "Income", f: "8  +  8 × income-draw%  +  8 × debt-service%  +  0.6 × debt-load%  +  15 (if drawdown)  +  18 × (1 − willingness)" },
+      { k: "Protection", f: "8  +  1 × near-bill%  +  0.3 × debt-load%  +  (top-name% − 15, if > 15)  +  15 (if drawdown)  +  3 × (5 − horizon, if < 5)  +  28 × (1 − willingness)" },
+      { k: "Final", f: "normalise(Growth, Income, Protection)  →  scales the three to sum to 100" }
+    ];
+    const formulaHTML = fSteps.map(s => `<div class="gd-step"><div class="gd-step-k">${s.k}</div>
+      <div class="gd-formula">${s.f}</div>${s.sub ? `<div class="gd-formula" style="margin-top:4px">${s.sub}</div>` : ""}</div>`).join("");
+
+    /* TAB 2 — this client's actual calculation */
+    const buckets = [
+      { key: "Growth", terms: [comp.Growth.base, comp.Growth.requiredReturn, comp.Growth.longHorizon, comp.Growth.willingness] },
+      { key: "Income", terms: [comp.Income.base, comp.Income.incomeNeed, comp.Income.service, comp.Income.debtMatch, comp.Income.drawdown, comp.Income.caution] },
+      { key: "Protection", terms: [comp.Protection.base, comp.Protection.nearBill, comp.Protection.debtBallast, comp.Protection.concentration, comp.Protection.drawdown, comp.Protection.shortHorizon, comp.Protection.caution] }
+    ];
+    const stepHTML = (b) => `<div class="gd-step"><div class="gd-step-k">${b.key}</div>
+      <div class="gd-calc">= ${b.terms.join(" + ")} = <b>${raw[b.key]}</b></div></div>`;
     const inP = [];
     if (i.requiredReturnPct > 0) inP.push(`required return <b>${i.requiredReturnPct}%</b>`);
     inP.push(`horizon <b>${i.horizonYears}y</b>${i.phase === "drawdown" ? " (drawdown)" : ""}`);
@@ -1354,44 +1362,37 @@
     if (i.nearBillPct > 0) inP.push(`near-term bill <b>${i.nearBillPct}%</b>`);
     if (i.topNamePct > 0) inP.push(`top single name <b>${i.topNamePct}%</b>`);
     inP.push(`willingness <b>${w.value}</b>`);
-
     const willCalc = w.stated == null
       ? `0.5 × ${w.R} + 0.3 × ${w.D} + 0.2 × ${w.C} = <b>${w.revealed}</b> &nbsp;·&nbsp; no stated profile, so willingness = <b>${w.value}</b>`
       : `0.5 × ${w.R} + 0.3 × ${w.D} + 0.2 × ${w.C} = ${w.revealed} (revealed), then 0.5 × ${w.stated} (stated) + 0.5 × ${w.revealed} = <b>${w.value}</b>`;
+    const calcHTML = `
+      <div class="gd-inputs">Measured off the book: ${inP.join(" &nbsp;·&nbsp; ")}</div>
+      <div class="gd-step"><div class="gd-step-k">Willingness (0–1)</div><div class="gd-calc">= ${willCalc}</div></div>
+      ${buckets.map(stepHTML).join("")}
+      <div class="gd-step gd-final"><div class="gd-step-k">Normalise to 100</div>
+        <div class="gd-calc">G ${raw.Growth} · I ${raw.Income} · P ${raw.Protection} &nbsp;→&nbsp; <b>Growth ${v.Growth}% · Income ${v.Income}% · Protection ${v.Protection}%</b></div></div>`;
 
-    openModal(`
-      <div class="modal-head"><span class="eyebrow">Goal derivation · ${esc(c.name)}</span><h2>How were these goals derived</h2></div>
-      <div class="modal-body goal-deriv">
-        <p>We don't ask ${esc(c.name)} to type target percentages — real clients don't think that way. Instead the goal is <b>inferred</b> from <b>both sides of the balance sheet</b> plus risk appetite, into three buckets: <b>Protection · Income · Growth</b>.</p>
-
-        <h3 class="gd-h">1 · In plain English</h3>
-        <p><b>Evidence used: <span class="gd-src">${srcTag}</span>.</b> ${srcText}</p>
-        <p>The logic: <b>fund the obligations first</b> (bills due and debt → Protection; a spending draw or debt servicing → Income), then <b>deploy the surplus by how hard the money must work</b> (required return + a long horizon + appetite → Growth). Appetite is a <b>two-way dial</b> — a low appetite doesn't just shrink Growth, it adds ballast to Protection and Income. Crucially, the book sets the <em>appetite knob</em>, not the target itself, so the gap between what ${esc(c.name)} holds and needs stays meaningful.</p>
-        <p>For ${esc(c.name)} specifically:</p>
-        <ul class="gd-drivers">${d.drivers.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
-
-        <h3 class="gd-h">2 · In numbers</h3>
-        <p>The model is the same for every client — here's the formula, then ${esc(c.name)}'s actual numbers plugged in. Measured off the book:</p>
-        <div class="gd-inputs">${inP.join(" &nbsp;·&nbsp; ")}</div>
-
-        <div class="gd-step">
-          <div class="gd-step-k">Willingness (0–1)</div>
-          <div class="gd-formula"><span class="lbl">formula:</span> 0.5 × risk-asset share &nbsp;+&nbsp; 0.3 × low-defensiveness &nbsp;+&nbsp; 0.2 × concentration appetite</div>
-          <div class="gd-calc">= ${willCalc}</div>
-        </div>
-
-        <p>Each bucket's raw score is the sum of its terms (the same order below); the three are then normalised to 100:</p>
-        ${buckets.map(stepHTML).join("")}
-
-        <div class="gd-step gd-final">
-          <div class="gd-step-k">Normalise to 100</div>
-          <div class="gd-calc">G ${raw.Growth} · I ${raw.Income} · P ${raw.Protection} &nbsp;→&nbsp; <b>Growth ${v.Growth}% · Income ${v.Income}% · Protection ${v.Protection}%</b></div>
-        </div>
-
-        <p class="gd-now">Current book today: Growth <b>${cur.Growth}%</b> · Income <b>${cur.Income}%</b> · Protection <b>${cur.Protection}%</b> — the gap between this and the inferred goal is what drives client tagging across the other tabs. Confidence ${Math.round(d.confidence * 100)}% (${srcTag}).</p>
+    const existing = document.getElementById("calcPop"); if (existing) existing.remove();
+    const wrap = document.createElement("div");
+    wrap.id = "calcPop"; wrap.className = "calc-pop-overlay";
+    wrap.innerHTML = `<div class="calc-pop" role="dialog" aria-modal="true">
+      <div class="calc-pop-head"><h3>Exact calculations · ${esc(c.name)}</h3><button class="calc-pop-x" id="calcPopX" aria-label="Close">✕</button></div>
+      <div class="calc-tabs">
+        <button class="calc-tab active" data-ctab="formula" type="button">Formula</button>
+        <button class="calc-tab" data-ctab="calc" type="button">Calculations</button>
       </div>
-      <div class="modal-foot"><button class="btn btn-primary" id="gdClose">Got it</button></div>`);
-    $("#gdClose").onclick = closeModal;
+      <div class="calc-pop-body goal-deriv">
+        <div class="calc-panel" data-cpanel="formula"><p>The model below is the <b>same for every client</b> — only the inputs change. (Switch to <b>Calculations</b> for ${esc(c.name)}'s numbers.)</p>${formulaHTML}</div>
+        <div class="calc-panel" data-cpanel="calc" hidden>${calcHTML}</div>
+      </div></div>`;
+    document.body.appendChild(wrap);
+    const kill = () => wrap.remove();
+    wrap.querySelector("#calcPopX").onclick = kill;
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) kill(); });
+    wrap.querySelectorAll(".calc-tab").forEach(t => t.addEventListener("click", () => {
+      wrap.querySelectorAll(".calc-tab").forEach(x => x.classList.toggle("active", x === t));
+      wrap.querySelectorAll(".calc-panel").forEach(p => { p.hidden = p.dataset.cpanel !== t.dataset.ctab; });
+    }));
   }
 
   /* ----------------------- draft a view (lighter add) ----------------- */
