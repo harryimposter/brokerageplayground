@@ -1144,11 +1144,25 @@ button.struct-chip.struct-toggle:focus-visible { outline: 2px solid var(--gold);
 .btn-danger:hover { background: #863F35; }
 .link-btn { background: none; border: none; color: var(--bronze-deep); font-weight: 600; cursor: pointer; padding: 0; font-size: inherit; text-decoration: underline; }
 
-/* goal-derivation modal */
+/* goal-derivation modal — one uniform font throughout */
+.goal-deriv, .goal-deriv h3, .goal-deriv p, .goal-deriv li, .goal-deriv div, .goal-deriv span {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+.goal-deriv p { font-size: 13.5px; line-height: 1.55; color: var(--ink, #29211A); margin: 8px 0; }
+.gd-h { font-size: 15px; font-weight: 700; margin: 20px 0 6px; color: var(--ink, #29211A); letter-spacing: .1px; }
 .gd-src { display: inline-block; background: var(--bronze-deep); color: var(--paper);
-  font-family: Inter, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .3px;
-  padding: 2px 9px; border-radius: 10px; }
-.gd-drivers { margin: 6px 0 12px; padding-left: 20px; }
-.gd-drivers li { margin: 4px 0; color: var(--ink-soft, #5A3E2B); }
-.gd-now { margin-top: 12px; padding: 10px 12px; background: var(--paper-2, #F4ECE0);
+  font-size: 11px; font-weight: 600; letter-spacing: .3px; padding: 2px 9px; border-radius: 10px; }
+.gd-drivers { margin: 6px 0 12px; padding-left: 18px; }
+.gd-drivers li { margin: 4px 0; font-size: 13px; color: var(--ink-soft, #5A3E2B); }
+.gd-inputs { font-size: 12px; color: var(--ink-faint, #6E5A47); background: var(--paper-2, #F4ECE0);
+  border-radius: var(--radius); padding: 8px 11px; margin: 8px 0 14px; line-height: 1.7; }
+.gd-step { margin: 9px 0; padding: 10px 13px; background: var(--paper-2, #F7F2E9);
+  border: 1px solid var(--line, #E6DCC9); border-radius: var(--radius); }
+.gd-step-k { font-size: 12.5px; font-weight: 700; color: var(--ink, #29211A); margin-bottom: 5px; }
+.gd-formula { font-size: 12.5px; color: var(--ink-faint, #6E5A47); margin-bottom: 4px; }
+.gd-formula .lbl { font-style: italic; }
+.gd-calc { font-size: 13.5px; color: var(--ink, #29211A); font-variant-numeric: tabular-nums; }
+.gd-calc b { font-weight: 700; }
+.gd-step.gd-final { background: #EDE3D2; border-color: var(--bronze, #9A7B4F); }
+.gd-now { margin-top: 14px; padding: 10px 12px; background: var(--paper-2, #F4ECE0);
   border-left: 4px solid var(--bronze-deep); border-radius: var(--radius); font-size: 13px; }

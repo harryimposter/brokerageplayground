@@ -1300,7 +1300,7 @@
   /* ----------------- per-client "how were these goals derived" ------------- */
   function openGoalDerivation(c) {
     const G = window.GOALS, d = G.deriveGoals(c);
-    const i = d.inputs, w = d.willingness, comp = d.components, v = d.vector, cur = G.currentBuckets(c);
+    const i = d.inputs, w = d.willingness, comp = d.components, v = d.vector, cur = G.currentBuckets(c), raw = d.raw, Wc = d.willingCoef;
     const srcText = {
       "stated-goal": `<b>${esc(c.name)} has a funding goal on file</b>, so we know how hard the money must work — a <b>required return</b>. We combine that with ${esc(c.name)}'s risk appetite, read from both the stated profile and how the book is actually invested.`,
       "stated-risk": `<b>${esc(c.name)} has no numeric goal on file</b>, but a stated risk appetite. There's no required-return signal, so we lean harder on appetite — what ${esc(c.name)} says, blended with what the book reveals.`,
@@ -1308,43 +1308,87 @@
     }[d.source] || "";
     const srcTag = { "stated-goal": "stated goal", "stated-risk": "stated risk", "revealed": "revealed from the book" }[d.source];
 
-    const labelMap = { base: "baseline", nearBill: "near-term bill", debtBallast: "debt ballast", concentration: "single-name concentration", drawdown: "drawdown phase", shortHorizon: "short horizon", caution: "caution (low appetite adds ballast)", incomeNeed: "income draw", service: "debt servicing", debtMatch: "debt matching", requiredReturn: "required return", longHorizon: "long horizon", willingness: "willingness" };
-    const padR = (s, n) => (String(s) + " ".repeat(n)).slice(0, n);
-    const fmtComp = (name) => {
-      const obj = comp[name];
-      const parts = Object.keys(obj).filter(k => Math.abs(obj[k]) > 0.05).map(k => `${obj[k]} (${labelMap[k] || k})`);
-      return `${padR(name.toUpperCase(), 11)}= ${parts.join("  +  ")}\n${padR("", 13)}= ${d.raw[name]}`;
+    /* one row = a bucket: its general FORMULA, then the actual numbers plugged in.
+       Terms are listed in the same order in both so they line up. */
+    const buckets = [
+      { key: "Growth", terms: [
+        ["8", "base", comp.Growth.base],
+        ["5 × required-return%", "", comp.Growth.requiredReturn],
+        ["3 × (horizon − 6)", "", comp.Growth.longHorizon],
+        [`${Wc} × willingness`, "", comp.Growth.willingness]
+      ]},
+      { key: "Income", terms: [
+        ["8", "base", comp.Income.base],
+        ["8 × income-draw%", "", comp.Income.incomeNeed],
+        ["8 × debt-service%", "", comp.Income.service],
+        ["0.6 × debt-load%", "", comp.Income.debtMatch],
+        ["15 (if drawdown)", "", comp.Income.drawdown],
+        ["18 × (1 − willingness)", "caution", comp.Income.caution]
+      ]},
+      { key: "Protection", terms: [
+        ["8", "base", comp.Protection.base],
+        ["1 × near-bill%", "", comp.Protection.nearBill],
+        ["0.3 × debt-load%", "", comp.Protection.debtBallast],
+        ["1 × (top-name% − 15)", "", comp.Protection.concentration],
+        ["15 (if drawdown)", "", comp.Protection.drawdown],
+        ["3 × (5 − horizon)", "", comp.Protection.shortHorizon],
+        ["28 × (1 − willingness)", "caution", comp.Protection.caution]
+      ]}
+    ];
+    const stepHTML = (b) => {
+      const formula = b.terms.map(t => t[0]).join("  +  ");
+      const calc = b.terms.map(t => t[2]).join(" + ");
+      return `<div class="gd-step">
+        <div class="gd-step-k">${b.key}</div>
+        <div class="gd-formula"><span class="lbl">formula:</span> ${formula}</div>
+        <div class="gd-calc">= ${calc} = <b>${raw[b.key]}</b></div>
+      </div>`;
     };
-    const willLine = w.stated == null
-      ? `Blended  = revealed only → ${w.value}`
-      : `Stated   = ${w.stated}   →   Blended = 0.5·stated + 0.5·revealed = ${w.value}`;
+
+    // measured inputs that actually feed the formulas (skip zeros for a clean line)
+    const inP = [];
+    if (i.requiredReturnPct > 0) inP.push(`required return <b>${i.requiredReturnPct}%</b>`);
+    inP.push(`horizon <b>${i.horizonYears}y</b>${i.phase === "drawdown" ? " (drawdown)" : ""}`);
+    if (i.incomeNeedPct > 0) inP.push(`income draw <b>${i.incomeNeedPct}%</b>`);
+    if (i.debtLoadPct > 0) inP.push(`debt load <b>${i.debtLoadPct}%</b>`);
+    if (i.nearBillPct > 0) inP.push(`near-term bill <b>${i.nearBillPct}%</b>`);
+    if (i.topNamePct > 0) inP.push(`top single name <b>${i.topNamePct}%</b>`);
+    inP.push(`willingness <b>${w.value}</b>`);
+
+    const willCalc = w.stated == null
+      ? `0.5 × ${w.R} + 0.3 × ${w.D} + 0.2 × ${w.C} = <b>${w.revealed}</b> &nbsp;·&nbsp; no stated profile, so willingness = <b>${w.value}</b>`
+      : `0.5 × ${w.R} + 0.3 × ${w.D} + 0.2 × ${w.C} = ${w.revealed} (revealed), then 0.5 × ${w.stated} (stated) + 0.5 × ${w.revealed} = <b>${w.value}</b>`;
 
     openModal(`
       <div class="modal-head"><span class="eyebrow">Goal derivation · ${esc(c.name)}</span><h2>How were these goals derived</h2></div>
-      <div class="modal-body">
-        <p class="rub-p">We don't ask ${esc(c.name)} to type target percentages — real clients don't think that way. Instead the goal is <b>inferred</b> from <b>both sides of the balance sheet</b> plus risk appetite, into three buckets: <b>Protection · Income · Growth</b>.</p>
+      <div class="modal-body goal-deriv">
+        <p>We don't ask ${esc(c.name)} to type target percentages — real clients don't think that way. Instead the goal is <b>inferred</b> from <b>both sides of the balance sheet</b> plus risk appetite, into three buckets: <b>Protection · Income · Growth</b>.</p>
 
-        <h3 class="rub-h">1 · In plain English</h3>
-        <p class="rub-p"><b>Evidence used: <span class="gd-src">${srcTag}</span>.</b> ${srcText}</p>
-        <p class="rub-p">The logic is: <b>fund the obligations first</b> (bills due and debt → Protection; a spending draw or debt servicing → Income), then <b>deploy the surplus by how hard the money must work</b> (a required return + a long horizon + appetite → Growth). Appetite is a <b>two-way dial</b> — a low appetite doesn't just shrink Growth, it adds ballast to Protection and Income. Crucially, the book sets the <em>appetite knob</em>, not the target itself, so the gap between what ${esc(c.name)} holds and what they need stays meaningful.</p>
-        <p class="rub-p">For ${esc(c.name)} specifically:</p>
+        <h3 class="gd-h">1 · In plain English</h3>
+        <p><b>Evidence used: <span class="gd-src">${srcTag}</span>.</b> ${srcText}</p>
+        <p>The logic: <b>fund the obligations first</b> (bills due and debt → Protection; a spending draw or debt servicing → Income), then <b>deploy the surplus by how hard the money must work</b> (required return + a long horizon + appetite → Growth). Appetite is a <b>two-way dial</b> — a low appetite doesn't just shrink Growth, it adds ballast to Protection and Income. Crucially, the book sets the <em>appetite knob</em>, not the target itself, so the gap between what ${esc(c.name)} holds and needs stays meaningful.</p>
+        <p>For ${esc(c.name)} specifically:</p>
         <ul class="gd-drivers">${d.drivers.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
 
-        <h3 class="rub-h">2 · In numbers</h3>
-        <p class="rub-p">Every <em>input</em> is measured off the book; every coefficient is a fixed, tunable setting. Willingness (0–1) is read two ways, then blended:</p>
-        <span class="formula">Willingness
-  Revealed = 0.5·${w.R} (risk-asset share) + 0.3·${w.D} (low-defensiveness) + 0.2·${w.C} (concentration appetite) = ${w.revealed}
-  ${willLine}</span>
-        <p class="rub-p">Each bucket's raw score is the sum of named terms; the three are normalised to 100:</p>
-        <span class="formula">${fmtComp("Growth")}
+        <h3 class="gd-h">2 · In numbers</h3>
+        <p>The model is the same for every client — here's the formula, then ${esc(c.name)}'s actual numbers plugged in. Measured off the book:</p>
+        <div class="gd-inputs">${inP.join(" &nbsp;·&nbsp; ")}</div>
 
-${fmtComp("Income")}
+        <div class="gd-step">
+          <div class="gd-step-k">Willingness (0–1)</div>
+          <div class="gd-formula"><span class="lbl">formula:</span> 0.5 × risk-asset share &nbsp;+&nbsp; 0.3 × low-defensiveness &nbsp;+&nbsp; 0.2 × concentration appetite</div>
+          <div class="gd-calc">= ${willCalc}</div>
+        </div>
 
-${fmtComp("Protection")}
+        <p>Each bucket's raw score is the sum of its terms (the same order below); the three are then normalised to 100:</p>
+        ${buckets.map(stepHTML).join("")}
 
-→ normalise(G ${d.raw.Growth}, I ${d.raw.Income}, P ${d.raw.Protection})
-   =  Growth ${v.Growth}%   ·   Income ${v.Income}%   ·   Protection ${v.Protection}%</span>
-        <p class="gd-now">Current book today: Growth <b>${cur.Growth}%</b> · Income <b>${cur.Income}%</b> · Protection <b>${cur.Protection}%</b> — the gap to the inferred goal is what drives client tagging across the other tabs. <span class="small">Confidence ${Math.round(d.confidence * 100)}% (${srcTag}).</span></p>
+        <div class="gd-step gd-final">
+          <div class="gd-step-k">Normalise to 100</div>
+          <div class="gd-calc">G ${raw.Growth} · I ${raw.Income} · P ${raw.Protection} &nbsp;→&nbsp; <b>Growth ${v.Growth}% · Income ${v.Income}% · Protection ${v.Protection}%</b></div>
+        </div>
+
+        <p class="gd-now">Current book today: Growth <b>${cur.Growth}%</b> · Income <b>${cur.Income}%</b> · Protection <b>${cur.Protection}%</b> — the gap between this and the inferred goal is what drives client tagging across the other tabs. Confidence ${Math.round(d.confidence * 100)}% (${srcTag}).</p>
       </div>
       <div class="modal-foot"><button class="btn btn-primary" id="gdClose">Got it</button></div>`);
     $("#gdClose").onclick = closeModal;
