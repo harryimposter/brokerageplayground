@@ -67,8 +67,10 @@
       lambda: 0.94,                                                  // month t weight = 0.94^t
       comfortByBucket: { Growth: 25, Income: 15, Preservation: 12 }, // comfort limit by the ASSET'S goal bucket (% of book)
       sectorComfort: {},                                             // optional per-sector overrides, e.g. { Gold: 12 } — wins if set
-      penaltyPerPp: 10, penaltyCap: 100                              // overshoot (pp over comfort) × 10, capped at 100
+      penaltyPerPp: 10, penaltyCap: 100,                             // overshoot (pp over comfort) × 10, capped at 100
+      penaltyCapAdd: 30                                              // SOFTER cap for ADD ideas — dampen over-concentration, don't ZERO a thematic client
     },
+    riskGateDivisor: 60,              // ADD-idea risk gate: fit ×= clamp(riskSuit/60,0,1); suitable ideas (>=60) pass through
     /* Concentration-within-sector axis: (1 − HHI) × 100 over in-sector holdings.
        invertForFit=true ⇒ a more CONCENTRATED sector position scores HIGHER fit
        (a new name diversifies it). Flip to false to reward diversified books. */
@@ -262,6 +264,44 @@
     return null;
   }
 
+  /* ---- POSITION-oriented vs ALLOCATION-oriented ideas ----------------------------
+     A PROTECT / HEDGE / TRIM / EARNINGS idea acts on an EXISTING position or exposure,
+     so OWNING the name (or carrying the FX/sector exposure) is the whole point — it must
+     RAISE fit, not be zeroed by the concentration penalty. A pure ADD / BUY-MORE growth
+     or income idea is allocation-oriented — there, ownership is NOT rewarded (gap drives). */
+  function actsOnPosition(idea) {
+    const intent = ideaIntent(idea);
+    if (intent === "trim") return true;
+    if (intent === "protect") {
+      if (idea.sector === "FX") return true;                 // FX hedge acts on the currency mismatch
+      if (idea.kind === "earnings") return true;             // protect a reporting holding (e.g. Micron)
+      const nat = naturalExpression(idea).toLowerCase();
+      return /collar|protective put|prepaid|variable forward|overwrite|covered call|risk reversal|\bput\b|seagull/.test(nat);
+    }
+    return false;
+  }
+  /* % of the book in currencies other than the base — the FX mismatch a hedge acts on. */
+  function fxMismatchPct(client) {
+    const base = client.ccy;
+    let nonBase = 0;
+    (client.positions || []).forEach(p => { if (p.ccy && p.ccy !== base && p.ccy !== "Cash") nonBase += (+p.weightPct || 0); });
+    return round(nonBase);
+  }
+  /* a "real", holdable, concentratable sector (so add-idea SECTOR headroom is meaningful) —
+     not a cross-asset / overlay / broad pseudo-sector. */
+  function isRealSector(idea) {
+    return idea.assetClass !== "Multi-Asset" && ["Broad", "FX", "Cash"].indexOf(idea.sector) === -1;
+  }
+  /* RELEVANCE (0–100) for a position-oriented idea: how much of THIS idea's underlying /
+     exposure the book actually carries. FX → the currency mismatch; else the held name,
+     then the held sector. Zero → the idea isn't about anything this client holds. */
+  function relevanceScore(idea, client, ctx) {
+    if (idea.sector === "FX") return clamp(ctx.fxMismatch * 1.4, 0, 100);   // 36%→50, ~72%→100
+    if (ctx.ownIsName) return clamp(45 + ctx.ownPct * 3, 0, 100);           // holds the actual name
+    if (ctx.sectorExp > 0) return clamp(15 + ctx.sectorExp * 1.8, 0, 100);  // holds the sector
+    return 0;
+  }
+
   /* ---- per idea×client context ---- */
   function buildCtx(idea, client) {
     const exp = window.Scanner.exposure(client);
@@ -272,7 +312,7 @@
     // (Broad / Multi-Asset, no sector match) should act on, regardless of sector
     const named = (client.positions || []).filter(p => p.ticker && p.ticker !== "—" && p.weightPct > 0);
     const topName = named.length ? named.reduce((a, b) => b.weightPct > a.weightPct ? b : a) : null;
-    return {
+    const ctx = {
       buckets,
       rh, topName,
       ownIsName: !!(rh && rh.kind === "name"),
@@ -283,8 +323,12 @@
       acExp: round(exp.byClass[idea.assetClass] || 0),
       gap: Math.max(0, round((goal[idea.bucket] || 0) - (buckets[idea.bucket] || 0))),
       intent: ideaIntent(idea),
-      risk: riskProfile(client)
+      risk: riskProfile(client),
+      fxMismatch: fxMismatchPct(client)
     };
+    ctx.positionIdea = actsOnPosition(idea);            // protect/hedge/trim/earnings → reward ownership
+    ctx.relevance = relevanceScore(idea, client, ctx);  // 0–100 ownership/exposure relevance
+    return ctx;
   }
 
   /* ============================== the five axes ============================ */
@@ -298,25 +342,34 @@
      bucket is full). Falls back to sector headroom vs the mandate peg only when the
      client has no goal target for that bucket. */
   function axisGap(idea, client, ctx) {
+    // POSITION-oriented idea (protect/hedge/trim/earnings): the "gap" is irrelevant — what
+    // matters is whether the client carries the exposure. Reward ownership/relevance.
+    if (ctx.positionIdea) {
+      const r = Math.round(ctx.relevance);
+      const what = idea.sector === "FX" ? `${ctx.fxMismatch}% non-base FX exposure`
+        : ctx.ownIsName ? `holds ${ctx.ownName} (${ctx.ownPct}%)`
+          : ctx.sectorExp > 0 ? `${ctx.sectorExp}% in ${idea.sector}`
+            : "no relevant exposure";
+      return { score: ctx.relevance, note: `Position relevance ${r} — ${what}; this idea acts on an existing position/exposure, so holding it RAISES fit.` };
+    }
+    // ADD/ALLOCATION idea: room to add. Use the larger of (a) the GOAL-BUCKET headroom and
+    // (b) the SECTOR headroom vs the comfort limit (so a diversifying NEW sector — e.g. a
+    // growth book with no healthcare — still scores, even when the bucket is at target).
     const bucket = idea.bucket;
     const goal = (window.GOALS && window.GOALS.goalsFor(client)) || {};
     const tgt = goal[bucket] || 0;
-    if (tgt > 0) {
-      const cur = (ctx.buckets && ctx.buckets[bucket]) || 0;   // current % of book in this goal bucket
-      const score = Math.max(0, (tgt - cur) / tgt * 100);
-      const note = cur >= tgt
-        ? `${bucket} bucket ${cur}% vs goal ${tgt}% — at/over target, no headroom.`
-        : `${bucket} bucket ${cur}% vs goal ${tgt}% → ${Math.round(score)}% headroom toward the goal.`;
-      return { score, note };
-    }
-    // fallback: no goal target for this bucket → sector headroom to the asset's comfort limit
-    const cur = ctx.sectorExp;
-    const peg = sectorPeg(client, idea.sector);
-    const assetBucket = sectorBucket(idea.sector);
-    const score = peg > 0 ? Math.max(0, (peg - cur) / peg * 100) : 0;
-    const note = cur >= peg
-      ? `${cur}% in ${idea.sector} vs the ${assetBucket} comfort limit ${peg}% — at/over, no headroom.`
-      : `${cur}% in ${idea.sector} vs the ${assetBucket} comfort limit ${peg}% → ${Math.round(score)}% headroom.`;
+    const curB = (ctx.buckets && ctx.buckets[bucket]) || 0;
+    const bucketHead = tgt > 0 ? Math.max(0, (tgt - curB) / tgt * 100) : 0;
+    let sectorHead = 0, peg = 0;
+    if (isRealSector(idea)) { peg = sectorPeg(client, idea.sector); sectorHead = peg > 0 ? Math.max(0, (peg - ctx.sectorExp) / peg * 100) : 0; }
+    const score = Math.max(bucketHead, sectorHead);
+    const note = (sectorHead > bucketHead)
+      ? `Room to diversify into ${idea.sector}: ${ctx.sectorExp}% vs the ${sectorBucket(idea.sector)} comfort limit ${peg}% → ${Math.round(sectorHead)}% headroom.`
+      : (tgt > 0
+        ? (curB >= tgt
+          ? `${bucket} bucket ${Math.round(curB)}% vs goal ${Math.round(tgt)}% — at/over target, no headroom.`
+          : `${bucket} bucket ${Math.round(curB)}% vs goal ${Math.round(tgt)}% → ${Math.round(bucketHead)}% headroom toward the goal.`)
+        : `${Math.round(score)}% headroom.`);
     return { score, note };
   }
 
@@ -332,6 +385,13 @@
     const sector = idea.sector;
     const cur = ctx.sectorExp;            // current % of the book in the idea's sector
     const A = PARAMS.affinity;
+
+    // POSITION-oriented idea: ownership/exposure IS the fit — reward it, no concentration
+    // penalty (concentration is exactly why you protect/hedge/trim a position).
+    if (ctx.positionIdea) {
+      const r = Math.round(ctx.relevance);
+      return { score: ctx.relevance, note: `Ownership/exposure relevance ${r} — for a protect/hedge/trim/earnings idea, holding the name (or carrying the exposure) is the point, so it is rewarded, not penalised.` };
+    }
 
     // ---- Part A: Thematic Affinity (0–100) ----
     let affinity, hnote;
@@ -356,7 +416,10 @@
     const assetBucket = sectorBucket(sector);  // the ASSET'S bucket drives the comfort limit (not the client mandate)
     const peg = sectorPeg(client, sector);     // comfort limit by the asset's bucket; shared with the Gap-fit fallback
     const overshoot = cur - peg;
-    const penalty = overshoot <= 0 ? 0 : Math.min(A.penaltyCap, overshoot * A.penaltyPerPp);
+    // SOFTER cap for add ideas — being over the comfort limit DAMPENS thematic affinity but
+    // no longer ZEROES it, so a client genuinely in the theme still surfaces (the gap-vs-
+    // comfort message still flags the breach separately).
+    const penalty = overshoot <= 0 ? 0 : Math.min(A.penaltyCapAdd, overshoot * A.penaltyPerPp);
 
     // ---- Part C ----
     const score = Math.max(0, affinity - penalty);
@@ -451,13 +514,27 @@
        Bounded 0.85–1.15. This is what makes Today's Focus / Views / Advisor Book all tag
        the clients whose GOALS the idea actually serves. goals.js loads after mapping.js,
        but this runs at call time, so window.GOALS is present (guarded for safety). */
-    const align = (window.GOALS && window.GOALS.goalAlignment)
+    /* Position ideas (protect/hedge/trim/earnings) are NOT dinged by the bucket-alignment
+       multiplier — being over a bucket is irrelevant when you're managing what you hold. */
+    const align = (!ctx.positionIdea && window.GOALS && window.GOALS.goalAlignment)
       ? window.GOALS.goalAlignment(idea, client) : { mult: 1, gap: 0, bucket: null, goal: 0, current: 0 };
     const alignedFit = bracketFit * align.mult;
 
+    /* RISK-SUITABILITY GATE (ADD ideas only) — a bucket gap must NOT override the client's
+       risk profile. An unsuitable idea (e.g. a high-beta single-name for a preservation/
+       income book) is scaled down; suitable ideas (riskSuit ≥ divisor) pass through. Protect/
+       trim/hedge ideas manage existing risk, so they are not gated. */
+    const riskSuit = riskSuitability(mandateClass(client), riskProfileOf(idea)).score;
+    // ideas at/above the divisor pass through; below it the cut is SQUARED so a clearly
+    // unsuitable idea (e.g. a high-beta single-name for an income/preservation book) is
+    // cut hard, while a mildly-off idea is only lightly trimmed.
+    const riskGate = ctx.positionIdea ? 1
+      : (riskSuit >= PARAMS.riskGateDivisor ? 1 : Math.pow(riskSuit / PARAMS.riskGateDivisor, 2));
+    const gatedFit = alignedFit * riskGate;
+
     /* GLOBAL TRADABILITY GATE — binary multiplier over the whole score. */
     const trad = tradability(idea, client);
-    const fit = trad.ok ? Math.round(alignedFit) : 0;
+    const fit = trad.ok ? Math.round(gatedFit) : 0;
     const suppressed = !trad.ok;
 
     const tier = fit >= PARAMS.tierStrong ? "Strong" : fit >= PARAMS.tierGood ? "Good" : "Marginal";
@@ -470,8 +547,10 @@
       naturalExpression: trad.natural, bracketFit,
       // goals-aware alignment multiplier (derived 3-bucket goal vs current)
       goalAlignment: align,
+      // position-relevance + risk gate (new)
+      positionIdea: ctx.positionIdea, relevance: Math.round(ctx.relevance), riskGate: Math.round(riskGate * 100) / 100,
       // back-compat fields for scanner.js / pre-trade / morgan.js
-      applies: trad.ok && alignedFit >= PARAMS.applyMin, score: fit, reason: why,
+      applies: trad.ok && gatedFit >= PARAMS.applyMin, score: fit, reason: why,
       gap: ctx.gap, secExp: ctx.sectorExp, acExp: ctx.acExp
     };
   }

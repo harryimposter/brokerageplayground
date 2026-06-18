@@ -39,6 +39,7 @@ const SEED_IDEAS = [
   },
   {
     id: "ai-software", themeId: "ai", intent: "add", title: "Software & the AI adopters",
+    riskProfile: { vol: "moderate", beta: "moderate", structured: false },
     type: "Thematic", assetClass: "Equity", sector: "Technology", bucket: "Growth",
     conviction: "Medium-High", horizon: "Strategic",
     thesis: "The next leg of the AI trade broadens from infrastructure to the software and services layer attaching AI to existing revenue. Quality compounders with pricing power.",
@@ -87,6 +88,7 @@ const SEED_IDEAS = [
   },
   {
     id: "international-value", themeId: "broaden", intent: "add", title: "International & value catch-up",
+    riskProfile: { vol: "low", beta: "low", structured: false },
     type: "Opportunistic", assetClass: "Equity", sector: "Broad", bucket: "Growth",
     conviction: "Medium", horizon: "12m",
     thesis: "International developed and value trade at a wide discount to US growth. A weaker-dollar regime and a broadening cycle argue for trimming home bias.",
@@ -112,6 +114,7 @@ const SEED_IDEAS = [
   /* ---- Resilience & Protection ---- */
   {
     id: "structured-protection", themeId: "resilience", intent: "protect", title: "Structured downside protection",
+    riskProfile: { vol: "moderate", beta: "low", structured: true },
     tradeStatement: "Buy downside protection on a concentrated equity winner — a buffered note or zero-cost collar to keep upside while defining the downside; protecting a gain (and deferring the tax), not a directional short.",
     type: "Strategic", assetClass: "Multi-Asset", sector: "Broad", bucket: "Preservation",
     conviction: "High", horizon: "Strategic",
@@ -157,6 +160,7 @@ const SEED_IDEAS = [
   /* ---- Structured Outcomes ---- */
   {
     id: "halo-acm", themeId: "structured", intent: "income", title: "HALO equal-weight basket autocall — CEG · MP Materials · CAT",
+    riskProfile: { vol: "high", beta: "high", structured: true },
     tradeStatement: "Sell volatility for a 24% p.a. USD coupon via an equal-weight autocall on CEG / MP Materials / CAT — a bet the basket holds above 80% (range-bound to up) so you collect the coupon; capped upside, capital at risk below the barrier — an income trade, not a directional long.",
     type: "Opportunistic", assetClass: "Structured", sector: "Broad", bucket: "Income",
     conviction: "High", horizon: "12m",
@@ -165,6 +169,7 @@ const SEED_IDEAS = [
   },
   {
     id: "struct-income", themeId: "structured", intent: "income", title: "Defined-income autocalls on names you'd own",
+    riskProfile: { vol: "moderate", beta: "moderate", structured: true },
     tradeStatement: "Sell volatility for a high coupon via autocalls / reverse convertibles on quality names you'd happily own — a bet they stay flat-to-up so you collect the coupon; worst case you own the stock at the barrier, not a directional long.",
     type: "Strategic", assetClass: "Structured", sector: "Broad", bucket: "Income",
     conviction: "Medium-High", horizon: "Strategic",
@@ -173,6 +178,7 @@ const SEED_IDEAS = [
   },
   {
     id: "struct-protect", themeId: "structured", intent: "protect", title: "Protected & buffered participation",
+    riskProfile: { vol: "low", beta: "low", structured: true },
     tradeStatement: "Stay invested with a floor — buffered / capital-protected notes giving equity-index upside (to a cap) while protecting the downside; a bet on participation-with-protection, not an unprotected directional long.",
     type: "Strategic", assetClass: "Structured", sector: "Broad", bucket: "Preservation",
     conviction: "High", horizon: "Strategic",
@@ -203,14 +209,14 @@ const SEED_CLIENTS = [
     positions: [
       { name: "NVIDIA",   ticker: "NVDA US", assetClass: "Equity", sector: "Technology", ccy: "USD", weightPct: 24.0, pnlPct: 15,  entryDate: "2025-11-04", entrySpot: 178.00, mat: null, note: "Largest position; near its highs ~$205." },
       { name: "Broadcom", ticker: "AVGO US", assetClass: "Equity", sector: "Technology", ccy: "USD", weightPct: 14.0, pnlPct: 30,  entryDate: "2026-02-10", entrySpot: 295.00, mat: null, note: "Dipped ~15% after the 3-Jun print, since recovered to ~$384." },
-      { name: "Micron",   ticker: "MU US",   assetClass: "Equity", sector: "Technology", ccy: "USD", weightPct: 13.0, pnlPct: 1582, entryDate: "2023-05-15", entrySpot: 62.00, mat: null, note: "HBM supercycle; ~17x unrealised gain at ~$1,043." },
+      { name: "Micron",   ticker: "MU US",   assetClass: "Equity", sector: "Technology", ccy: "USD", weightPct: 13.0, pnlPct: 142, entryDate: "2023-05-15", entrySpot: 62.00, mat: null, note: "HBM supercycle; ~2.4x unrealised gain at ~$150." },
       { name: "ASML",     ticker: "ASML NA", assetClass: "Equity", sector: "Technology", ccy: "EUR", weightPct: 19.0, pnlPct: 121, entryDate: "2024-09-20", entrySpot: 720.00, mat: null, note: "Semi-cap leader; ~€1,591." },
       { name: "Microsoft",ticker: "MSFT US", assetClass: "Equity", sector: "Technology", ccy: "USD", weightPct: 18.0, pnlPct: -4,  entryDate: "2024-03-12", entrySpot: 410.00, mat: null, note: "AI monetization core; modest drawdown YTD." },
       { name: "Phoenix autocall (semis)", ticker: "—", assetClass: "Structured", sector: "Technology", ccy: "USD", weightPct: 6.0, pnlPct: 4, entryDate: "2025-12-01", entrySpot: null, mat: "2027-12-01", note: "Yield on range-bound semis." },
       { name: "Short IG bonds", ticker: "—", assetClass: "Fixed Income", sector: "Credit", ccy: "USD", weightPct: 2.0, pnlPct: 0, entryDate: "2025-10-01", entrySpot: null, mat: "2027-10-01", note: "Thin core sleeve." },
       { name: "USD cash", ticker: "—", assetClass: "Cash", sector: "Cash", ccy: "USD", weightPct: 4.0, pnlPct: 0, entryDate: null, entrySpot: null, mat: null, note: "Idle." }
     ],
-    summary: "Concentrated, options-fluent AI-growth book — NVDA, AVGO and the semis supply chain at high single-stock weights, almost no cash. Micron is now a ~17x position after the memory supercycle and ASML has more than doubled, while AVGO has recovered from its post-print dip. The agenda is to keep the upside but get paid for the volatility: protect the outsized Micron and ASML gains, overwrite rich premium, and diversify the single-sector risk into the broader AI build-out."
+    summary: "Concentrated, options-fluent AI-growth book — NVDA, AVGO and the semis supply chain at high single-stock weights, almost no cash. Micron is now a ~2.4x position after the memory supercycle and ASML has more than doubled, while AVGO has recovered from its post-print dip. The agenda is to keep the upside but get paid for the volatility: protect the outsized Micron and ASML gains, overwrite rich premium, and diversify the single-sector risk into the broader AI build-out."
   },
 
   /* =========================== AURORA (real book) ======================== */
@@ -227,7 +233,7 @@ const SEED_CLIENTS = [
       funding: { headline: "Grow to €70m by 2035 while drawing income", metricLabel: "Projected value", current: 50.2, target: 70, unit: "€m", status: "On track" }
     },
     positions: [
-      { name: "Micron",        ticker: "MU US",  assetClass: "Equity", sector: "Technology", ccy: "USD", weightPct: 25.8, pnlPct: 2645, entryDate: "2019-06-10", entrySpot: 38.00, mat: null, note: "~27x gain at ~$1,043; FQ3 earnings 24-Jun; IVol rich." },
+      { name: "Micron",        ticker: "MU US",  assetClass: "Equity", sector: "Technology", ccy: "USD", weightPct: 25.8, pnlPct: 295, entryDate: "2019-06-10", entrySpot: 38.00, mat: null, note: "~4x gain at ~$150; FQ3 earnings 24-Jun; IVol rich." },
       { name: "SPDR S&P 500",  ticker: "SPY US", assetClass: "Equity", sector: "Broad",     ccy: "USD", weightPct: 25.2, pnlPct: 106, entryDate: "2021-02-01", entrySpot: 360.00, mat: null, note: "Core beta anchor." },
       { name: "NVIDIA",        ticker: "NVDA US",assetClass: "Equity", sector: "Technology", ccy: "USD", weightPct: 7.2,  pnlPct: 0,   entryDate: "2026-01-20", entrySpot: 205.00, mat: null, note: "Roughly flat since January; house still likes it." },
       { name: "US Treasury 1.25% '31", ticker: "T 1.25 08/31", assetClass: "Fixed Income", sector: "Rates", ccy: "USD", weightPct: 6.0, pnlPct: -15, entryDate: "2021-08-15", entrySpot: 98.50, mat: "2031-08-31", note: "Underwater on rates — bond-swap candidate." },
@@ -237,7 +243,7 @@ const SEED_CLIENTS = [
       { name: "US IG corporates", ticker: "—", assetClass: "Fixed Income", sector: "Credit", ccy: "USD", weightPct: 7.8, pnlPct: 0, entryDate: "2025-09-01", entrySpot: null, mat: "2030-09-01", note: "Core USD income sleeve." },
       { name: "EUR cash",      ticker: "—", assetClass: "Cash", sector: "Cash", ccy: "EUR", weightPct: 10.1, pnlPct: 0, entryDate: null, entrySpot: null, mat: null, note: "Idle; ~€5m equivalent." }
     ],
-    summary: "EMEA book dominated by a 25.8% Micron position on a ~27x gain into a 24-Jun print, 72% USD against an EUR base, with a bond underwater on rates and gold and TotalEnergies as deliberate hedges. The agenda: protect the outsized MU concentration, hedge the USD/EUR mismatch, harvest the underwater bond, monetize SAP's gain, and put idle cash to work — while protecting the gold and energy hedges, not trimming them."
+    summary: "EMEA book dominated by a 25.8% Micron position on a ~4x gain into a 24-Jun print, 72% USD against an EUR base, with a bond underwater on rates and gold and TotalEnergies as deliberate hedges. The agenda: protect the outsized MU concentration, hedge the USD/EUR mismatch, harvest the underwater bond, monetize SAP's gain, and put idle cash to work — while protecting the gold and energy hedges, not trimming them."
   },
 
   /* =========================== SCOTT (biggest book) ====================== */
@@ -399,7 +405,7 @@ const SEED_CLIENTS = [
          → source "stated-risk"). */
     },
     positions: [
-      { name: "NVIDIA",                ticker: "NVDA US", assetClass: "Equity",       sector: "Technology", ccy: "USD", weightPct: 24.0, pnlPct: 1264, entryDate: "2022-11-01", entrySpot: 15.00, mat: null, note: "Core AI position (split-adjusted entry) — huge unrealised gain, deliberately unhedged." },
+      { name: "NVIDIA",                ticker: "NVDA US", assetClass: "Equity",       sector: "Technology", ccy: "USD", weightPct: 24.0, pnlPct: 327, entryDate: "2022-11-01", entrySpot: 48.00, mat: null, note: "Core AI position — ~3.3x unrealised gain (~$205), deliberately unhedged." },
       { name: "Bitcoin",               ticker: "BTC",     assetClass: "Alternatives", altKind: "directional", sector: "Crypto",     ccy: "USD", weightPct: 18.0, pnlPct: 94,  entryDate: "2021-02-01", entrySpot: 33000.00, mat: null, note: "Direct digital-asset holding in custody; ~$64k." },
       { name: "Tesla",                 ticker: "TSLA US", assetClass: "Equity",       sector: "Consumer",   ccy: "USD", weightPct: 11.0, pnlPct: 230, entryDate: "2023-01-01", entrySpot: 120.00, mat: null, note: "High-beta growth." },
       { name: "S&P 500 index core",    ticker: "VOO US",  assetClass: "Equity",       sector: "Broad",      ccy: "USD", weightPct: 12.0, pnlPct: 92,  entryDate: "2022-06-01", entrySpot: 360.00, mat: null, note: "The only diversified sleeve." },
