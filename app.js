@@ -131,10 +131,11 @@
     "cash-secured-puts": { g: 1, i: 2, p: 0 }, "securities-backed-line": { g: 0, i: 1, p: 0 }, "diversifiers": { g: 0, i: 0, p: 2 },
     "extend-duration": { g: 0, i: 2, p: 1 }, "listed-infrastructure": { g: 1, i: 2, p: 1 }, "phoenix-autocall": { g: 1, i: 2, p: 0 },
     "call-spread": { g: 2, i: 0, p: 0 }, "leveraged-certificate": { g: 2, i: 0, p: 0 }, "halo-basket": { g: 1, i: 2, p: 0 },
-    "reverse-convertible": { g: 0, i: 2, p: 0 }, "capital-protected-note": { g: 1, i: 0, p: 2 }
+    "reverse-convertible": { g: 0, i: 2, p: 0 }, "capital-protected-note": { g: 1, i: 0, p: 2 },
+    "fx-forward-collar": { g: 0, i: 1, p: 2 }, "currency-hedged-sleeve": { g: 0, i: 0, p: 2 }, "dual-currency-deposit": { g: 0, i: 2, p: 0 }
   };
-  const PROTECTIVE = new Set(["capital-protected-note", "zero-cost-collar", "buffered-note", "protective-put", "prepaid-variable-forward"]);
-  const COUPON = new Set(["phoenix-autocall", "reverse-convertible", "halo-basket", "call-overwrite"]);
+  const PROTECTIVE = new Set(["capital-protected-note", "zero-cost-collar", "buffered-note", "protective-put", "prepaid-variable-forward", "fx-forward-collar", "currency-hedged-sleeve"]);
+  const COUPON = new Set(["phoenix-autocall", "reverse-convertible", "halo-basket", "call-overwrite", "dual-currency-deposit"]);
   const DIRECTIONAL = new Set(["direct-equity", "thematic-basket", "equal-weight-index", "leveraged-certificate", "call-spread", "index-core"]);
   function exprScore(profile, id) {
     const f = EXPR_FIT[id];

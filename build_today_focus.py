@@ -8,19 +8,32 @@ same input -> same output. The client mapping is intentionally NOT baked in here
 mapping.js scores each idea against the live Advisor Book at render time, so the
 "flagged clients" always reflect the current books.
 
-PIPELINE (how a daily scheduled run would use this):
+PIPELINE (how a daily run would use this):
   1. A Claude Code routine does the web sweep (Reuters/WSJ/Bloomberg/Yahoo/Seeking
      Alpha/Barron's), applying the >=2-source rule and tagging sourced vs estimated,
      and overwrites today_focus.json with the fresh ideas.
   2. Run:  python build_today_focus.py
   3. Commit today_focus.json + today_focus.js.
-The scheduler only needs to run steps 1-3; no manual editing of the app.
+NOTE: there is NO scheduler wired up in this repo (no cron, no GitHub Action). The
+"daily" cadence is a convention — the sweep is run ON DEMAND by a Claude Code
+routine. To truly automate it, add a scheduler that performs steps 1-3.
+
+COVERAGE SPEC (what every sweep MUST span — not just US equity/earnings):
+  The daily sweep is a WHOLE-MARKET sweep across ALL asset classes and the major
+  global regions, so the board never silently drops a market:
+    - asset classes: EQUITIES, RATES (govt/duration), CREDIT, FX, COMMODITIES
+      (and structured/defined-outcome where it fits);
+    - regions: US, Europe, UK, Asia (not US-only).
+  FX and RATES must be represented in EVERY run (they are the most often missed):
+  at least one idea tagged sector "FX", and at least one rates idea (sector "Rates"
+  or assetClass "Fixed Income"). The coverage check below WARNS when either is absent.
 
 This script also VALIDATES the payload (prints warnings, never silently passes):
   - every idea cites >=2 sources;
   - every fact is tagged sourced|estimated;
   - earnings report dates are not in the past relative to asOf (a forward event must
     not be described as already happened);
+  - the sweep spans the required asset classes (FX and rates present — see COVERAGE);
   - conviction is computed from the rubric below, not hand-entered.
 """
 import json
@@ -192,6 +205,27 @@ def validate(idea, as_of, warns):
             warns.append(f"{idea['id']}: bad reportDate {e['reportDate']}")
 
 
+# ---- Coverage spec: every sweep must span all asset classes / global markets -----
+# Required asset-class coverage so the board is never accidentally US-equity-only.
+# FX and RATES are the most-often-missed and are REQUIRED each run.
+REQUIRED_COVERAGE = ("FX", "Rates")
+
+
+def check_coverage(data, warns):
+    """Warn if the day's ideas don't span the required asset classes. RATES is met by
+    a sector 'Rates' OR an assetClass 'Fixed Income'; FX by a sector 'FX'."""
+    ideas = list(data.get("earnings", [])) + list(data.get("exEarnings", []))
+    sectors = {str(i.get("sector", "")).lower() for i in ideas}
+    classes = {str(i.get("assetClass", "")).lower() for i in ideas}
+    has_fx = "fx" in sectors
+    has_rates = ("rates" in sectors) or ("fixed income" in classes)
+    if not has_fx:
+        warns.append("COVERAGE: no FX idea in this sweep — every run must include FX (sector 'FX').")
+    if not has_rates:
+        warns.append("COVERAGE: no rates idea — every run must include rates (sector 'Rates' or assetClass 'Fixed Income').")
+    return has_fx and has_rates
+
+
 def main():
     if not SRC.exists():
         print(f"ERROR: {SRC.name} not found", file=sys.stderr)
@@ -206,6 +240,8 @@ def main():
             validate(idea, as_of, warns)
             ensure_intent(idea, warns)
             score_conviction(idea, warns)
+
+    check_coverage(data, warns)
 
     data["convictionRubric"] = {"earnings": EARNINGS_RUBRIC, "exEarnings": EXEARN_RUBRIC}
 

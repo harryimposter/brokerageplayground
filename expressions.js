@@ -667,6 +667,19 @@
       cons: ["Participation is below 100% (and may be capped)", "Protection only holds AT maturity; no dividends", "Issuer credit risk; ties up capital for 2–3 years"],
       whenToUse: "Putting cautious or drawdown-sensitive capital to work in equities with a guaranteed floor — or for clients who can't stomach a loss but need growth.",
       context: (u) => `On ${u.index}: a 3-year note, 100% capital protected with ~65% participation — protected access to ${u.name} for capital that can't take a drawdown.`
+    },
+
+    "dual-currency-deposit": {
+      label: "Dual-currency deposit (DCD)", complex: true,
+      what: "A short FX-linked deposit that pays an enhanced coupon in exchange for the bank's right to repay you in the weaker of two currencies.",
+      mechanics: "You deposit in a base currency and pick an alternate currency and a strike. You earn a coupon well above the cash rate (funded by the rate differential plus the option premium you're effectively selling). At maturity: if the alternate currency hasn't weakened past the strike you get principal + coupon back in your base; if it has, you're repaid (principal + coupon) converted into the alternate currency at the strike — i.e. you end up holding the currency you'd have been happy to own at that level. A bilateral, OTC structure — not Retail-eligible.",
+      underlying: "A liquid currency pair you're comfortable holding either side of (e.g. EUR/USD, USD/JPY).",
+      tenor: "1–3 months, rolled — short enough to keep the conversion risk tightly defined and re-coupon often.",
+      example: "EUR-base, USD alternate, 1-month, strike near spot: earn ~6–9% annualised vs ~2% cash; if EUR/USD ends below the strike you keep coupon + EUR, if above you take USD at the strike — your intended add level.",
+      pros: ["Enhanced yield from the wide rate differential", "Worst case is owning a currency you wanted at a level you chose", "Short, repeatable income on a range view"],
+      cons: ["Converted into the weaker currency if the pair moves through the strike (capped upside, real FX risk)", "OTC / complex — not MiFID Retail eligible; needs Professional classification", "Bank credit and roll risk"],
+      whenToUse: "Professional income books wanting to monetise a wide rate differential on a pair they'd hold either side of — get paid to wait for a target FX level.",
+      context: (u) => `On ${u.name}: a 1-month dual-currency deposit at a strike near spot — an enhanced coupon for agreeing to convert at your target level if the pair moves through it.`
     }
   };
 
@@ -707,6 +720,10 @@
     "gold (physical/etc)": "physical-gold",
     "gold accumulator": "gold-accumulator",
     "fx forward / collar": "fx-forward-collar",
+    "dual currency deposit / dcd": "dual-currency-deposit",
+    "dual-currency deposit (dcd)": "dual-currency-deposit",
+    "dual currency deposit": "dual-currency-deposit",
+    "dcd": "dual-currency-deposit",
     "currency-hedged sleeve": "currency-hedged-sleeve",
     "healthcare basket": "healthcare-basket",
     "prepaid variable forward": "prepaid-variable-forward",
@@ -774,6 +791,7 @@
     if (has("trim")) return "staged-trim";
     if (has("structured") || has("note")) return "structured-note";
     if (has("gold") || has("physical") || has("etc")) return "physical-gold";
+    if (has("dual currency") || has("dual-currency") || has("dcd") || has("dcs")) return "dual-currency-deposit";
     if (has("fx") || has("forward") || has("currency overlay")) return "fx-forward-collar";
     if (has("hedged")) return "currency-hedged-sleeve";
     if (has("reit")) return "reit-basket";
@@ -807,7 +825,7 @@
   const STRUCTURED_IDS = ["structured-note", "buffered-note", "phoenix-autocall", "leveraged-certificate",
     "halo-basket", "reverse-convertible", "capital-protected-note"];
   const OTC_IDS = ["call-overwrite", "zero-cost-collar", "gold-accumulator", "fx-forward-collar",
-    "prepaid-variable-forward", "protective-put", "cash-secured-puts", "call-spread"];
+    "prepaid-variable-forward", "protective-put", "cash-secured-puts", "call-spread", "dual-currency-deposit"];
   const PRIVATE_IDS = ["private-markets", "private-real-estate"];
   function clsOf(id) {
     if (STRUCTURED_IDS.indexOf(id) !== -1) return "structured";

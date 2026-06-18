@@ -793,6 +793,284 @@ window.TODAY_FOCUS = {
         }
       ],
       "kind": "ex-earnings"
+    },
+    {
+      "id": "fx-usd-hedge",
+      "intent": "protect",
+      "tickers": [
+        "DXY",
+        "EURUSD",
+        "GBPUSD"
+      ],
+      "name": "Hedge the USD concentration",
+      "ticker": "DXY",
+      "sector": "FX",
+      "assetClass": "Multi-Asset",
+      "bucket": "Preservation",
+      "goalType": "protection",
+      "riskProfile": {
+        "vol": "low",
+        "beta": "low",
+        "structured": false
+      },
+      "naturalExpression": "Currency-hedged sleeve",
+      "action": "Hedge",
+      "preferredExpression": "Currency-hedged sleeve",
+      "headline": "Dollar firm on the hawkish hold — a window to hedge USD-heavy non-dollar books",
+      "thesis": "The hawkish 17-Jun FOMC hold and the 4.2% May CPI have kept the dollar firm and range-bound (DXY in the high-90s), even as every 2026 bank outlook calls a post-peak dollar and a narrowing Fed-ECB spread that should weaken it into next year. For EUR- and GBP-base books carrying outsized USD sleeves, this firmer level is the window to hedge the currency mismatch — currency-hedged share classes for Retail, FX forwards or zero-cost collars for Professionals — sized to the mismatch, not run as a directional bet.",
+      "themeId": "gold",
+      "offThemeWhy": null,
+      "structures": [
+        "Currency-hedged sleeve",
+        "FX forward / collar"
+      ],
+      "variant": {
+        "street": "Major-bank consensus is a post-peak dollar — more USD weakness into 2026 as the Fed-ECB rate spread narrows",
+        "us": "Same direction; use the hawkish-hold firmness to put hedges on USD-heavy non-dollar books at a better level",
+        "gap": "The near-term firm dollar is a hedging gift, not a reason to stay unhedged"
+      },
+      "changeMyMind": "The Fed out-hiking every other central bank on a sustained CPI overshoot — a structurally higher-for-longer dollar would delay the turn the hedge is sized for.",
+      "conviction": {
+        "pillars": [
+          {
+            "key": "asymmetry",
+            "score": 1,
+            "dq": "estimated",
+            "note": "A hedge caps a tail (an adverse FX move on a large USD sleeve) rather than chasing a big gain — modest, defined asymmetry.",
+            "label": "Gap / asymmetry",
+            "max": 3
+          },
+          {
+            "key": "catalyst",
+            "score": 2,
+            "dq": "sourced",
+            "note": "Dated and landed: the 17-Jun hawkish hold and the 4.2% May CPI have firmed the dollar — a concrete window to hedge into.",
+            "label": "Catalyst",
+            "max": 2
+          },
+          {
+            "key": "consensus",
+            "score": 2,
+            "dq": "sourced",
+            "note": "Bank 2026 outlooks broadly agree on a post-peak dollar and a narrowing Fed-ECB spread; the firm spot is the confirming signal.",
+            "label": "Consensus + confirmation",
+            "max": 2
+          },
+          {
+            "key": "thesis",
+            "score": 1,
+            "dq": "estimated",
+            "note": "Specific driver (a book's non-base USD %) and a clear variant (hedge into the firmness), but the entry timing is a soft, estimated call.",
+            "label": "Fundamental thesis",
+            "max": 2
+          },
+          {
+            "key": "houseview",
+            "score": 2,
+            "dq": "sourced",
+            "note": "Direct expression of the Gold & Currency house view — currency diversification for concentrated-USD books.",
+            "label": "House-view fit",
+            "max": 2
+          },
+          {
+            "key": "positioning",
+            "score": 1,
+            "dq": "estimated",
+            "note": "Dollar longs are crowded after the hawkish repricing — hedging when the crowd is max-long USD is reasonable timing, not an extreme.",
+            "label": "Positioning",
+            "max": 2
+          },
+          {
+            "key": "technical",
+            "score": 1,
+            "dq": "estimated",
+            "note": "DXY firm but extended within a ~93-100 range — mixed; a level to fade rather than chase.",
+            "label": "Technical",
+            "max": 2
+          }
+        ],
+        "raw": 10,
+        "maxRaw": 15,
+        "score": 67,
+        "tier": "Medium",
+        "label": "Medium conviction",
+        "capped": true,
+        "model": "exEarnings"
+      },
+      "macro": {
+        "metric": "DXY ~99, range-bound",
+        "detail": "The dollar is firm on the hawkish 17-Jun hold and the 4.2% May CPI, but 2026 bank outlooks describe a post-peak dollar with the Fed-ECB spread set to narrow (EUR/USD seen ~1.15-1.22); USD/JPY has been propelled higher by the wider differential.",
+        "source": "sourced",
+        "watch": "The CPI path and the Fed-ECB / BOJ rate spreads; any US-Iran ceasefire-driven risk-on that turns the dollar."
+      },
+      "facts": [
+        {
+          "text": "Major-bank 2026 FX outlooks describe a post-peak dollar, with the Fed-ECB rate spread set to narrow and EUR/USD seen in the ~1.15-1.22 area",
+          "tag": "sourced"
+        },
+        {
+          "text": "The hawkish 17-Jun FOMC hold and re-accelerated 4.2% May CPI have kept the dollar firm near-term",
+          "tag": "sourced"
+        },
+        {
+          "text": "DXY trading around the high-90s, broadly range-bound (~93-100 for the year)",
+          "tag": "estimated"
+        }
+      ],
+      "sources": [
+        {
+          "name": "MUFG Research",
+          "kind": "analysis"
+        },
+        {
+          "name": "ABN AMRO",
+          "kind": "analysis"
+        },
+        {
+          "name": "Reuters / FXStreet",
+          "kind": "news"
+        }
+      ],
+      "kind": "ex-earnings"
+    },
+    {
+      "id": "fx-carry-income",
+      "intent": "income",
+      "tickers": [
+        "USDJPY",
+        "EURUSD"
+      ],
+      "name": "FX carry & dual-currency income",
+      "ticker": "USDJPY",
+      "sector": "FX",
+      "assetClass": "Multi-Asset",
+      "bucket": "Income",
+      "goalType": "yield",
+      "riskProfile": {
+        "vol": "moderate",
+        "beta": "low",
+        "structured": false
+      },
+      "naturalExpression": "Dual-currency deposit (DCD)",
+      "action": "Generate income",
+      "preferredExpression": "Dual-currency deposit (DCD)",
+      "headline": "Monetise the wide rate differential — FX carry and dual-currency income",
+      "thesis": "With the front end held high by the hawkish Fed and rate differentials wide, income books can be paid to express a range view on pairs they are happy to hold either side of. Dual-currency deposits and currency-hedged carry turn the differential into an enhanced coupon — you accept conversion at a set rate in return for yield. A Professional, range-bound income tool, not a directional dollar bet.",
+      "themeId": "gold",
+      "offThemeWhy": null,
+      "structures": [
+        "Dual-currency deposit (DCD)",
+        "FX forward / collar",
+        "Currency-hedged sleeve"
+      ],
+      "variant": {
+        "street": "Differentials favour the dollar now; a yen and euro recovery is a 2026 story as the gap narrows",
+        "us": "Earn the carry while the differential is wide, on pairs you would hold either side of",
+        "gap": "Get paid to wait for the FX moves the house expects later"
+      },
+      "changeMyMind": "A fast, disorderly dollar reversal — e.g. an abrupt dovish Fed pivot — that compresses the differential and collapses the carry.",
+      "conviction": {
+        "pillars": [
+          {
+            "key": "asymmetry",
+            "score": 1,
+            "dq": "estimated",
+            "note": "Carry is steady coupon income with a defined conversion risk — low, bounded asymmetry by design.",
+            "label": "Gap / asymmetry",
+            "max": 3
+          },
+          {
+            "key": "catalyst",
+            "score": 1,
+            "dq": "sourced",
+            "note": "Soft and ongoing: the hawkish hold keeps the front end and the differential wide, but there is no single dated trigger.",
+            "label": "Catalyst",
+            "max": 2
+          },
+          {
+            "key": "consensus",
+            "score": 2,
+            "dq": "sourced",
+            "note": "The wide US rate differential is a hard, confirmable macro fact and the income angle sits squarely in the house view.",
+            "label": "Consensus + confirmation",
+            "max": 2
+          },
+          {
+            "key": "thesis",
+            "score": 1,
+            "dq": "estimated",
+            "note": "Specific driver (the rate gap) and a clear variant (get paid to wait), but the entry and pair selection are soft, estimated calls.",
+            "label": "Fundamental thesis",
+            "max": 2
+          },
+          {
+            "key": "houseview",
+            "score": 2,
+            "dq": "sourced",
+            "note": "On the Gold & Currency house view — currency diversification and income from the rate differential.",
+            "label": "House-view fit",
+            "max": 2
+          },
+          {
+            "key": "positioning",
+            "score": 1,
+            "dq": "estimated",
+            "note": "Carry trades are well-populated but not at a clear unwind extreme — neutral.",
+            "label": "Positioning",
+            "max": 2
+          },
+          {
+            "key": "technical",
+            "score": 1,
+            "dq": "estimated",
+            "note": "USD/JPY trends with the differential — constructive for carry but not a clean entry signal; mixed.",
+            "label": "Technical",
+            "max": 2
+          }
+        ],
+        "raw": 9,
+        "maxRaw": 15,
+        "score": 60,
+        "tier": "Medium",
+        "label": "Medium conviction",
+        "capped": true,
+        "model": "exEarnings"
+      },
+      "macro": {
+        "metric": "US front end ~3.50-3.75%; differential wide",
+        "detail": "Hawkish-Fed repricing has widened US rate differentials and propelled USD/JPY higher; markets still lean to a BOJ hike and an eventual yen recovery that would narrow the gap into 2026.",
+        "source": "sourced",
+        "watch": "BOJ and ECB paths versus the Fed; any sharp differential compression that erodes the carry."
+      },
+      "facts": [
+        {
+          "text": "Hawkish-Fed repricing has widened US rate differentials, propelling USD/JPY higher",
+          "tag": "sourced"
+        },
+        {
+          "text": "Markets still lean to a BOJ hike and an eventual yen recovery that narrows the differential in 2026",
+          "tag": "sourced"
+        },
+        {
+          "text": "US front-end policy held in the 3.50-3.75% band at the 17-Jun FOMC",
+          "tag": "sourced"
+        }
+      ],
+      "sources": [
+        {
+          "name": "FOREX.com",
+          "kind": "analysis"
+        },
+        {
+          "name": "IG",
+          "kind": "analysis"
+        },
+        {
+          "name": "MUFG Research",
+          "kind": "analysis"
+        }
+      ],
+      "kind": "ex-earnings"
     }
   ],
   "convictionRubric": {

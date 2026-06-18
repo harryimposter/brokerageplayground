@@ -310,11 +310,14 @@
 
   /* fold the CURRENT book into the same three buckets (the "now" side of the bar).
      Liquidity (cash) and Structured are NOT their own buckets any more — they fold by
-     ROLE: cash + gold → Preservation, structured notes by their purpose, risk assets
-     (equity + alternatives incl. crypto/venture) → Growth, fixed income / real assets → Income. */
+     ROLE: cash + gold → Preservation, structured notes by their purpose, fixed income /
+     real assets → Income. ALTERNATIVES split by sub-type (altBucket3): UNCORRELATED
+     hedge funds / macro / market-neutral / multi-strat / diversifier sleeves → Preservation
+     (their role is ballast); DIRECTIONAL alts (crypto/bitcoin, PE/VC, growth-tilted) → Growth.
+     A bare "Alternatives" class with no position context defaults to Growth. */
   function classBucket3(cls) {
     cls = String(cls || "").replace(/_/g, " ");
-    if (cls === "Equity" || cls === "Alternatives") return "Growth";
+    if (cls === "Equity" || cls === "Alternatives") return "Growth"; // Alternatives: directional default (altBucket3 refines per position)
     if (cls === "Fixed Income" || cls === "Credit" || cls === "Real Assets") return "Income";
     return "Preservation"; // Commodity (gold), Cash, Structured (refined below)
   }
@@ -324,13 +327,30 @@
     if (/autocall|coupon|reverse conv|phoenix|memory|income|yield/.test(txt)) return "Income";
     return "Growth";
   }
+  /* an Alternatives holding/idea → bucket by sub-type. Explicit `altKind`
+     ("uncorrelated" | "directional") wins; else keyword-sniff name/note/sector/structures.
+     UNCORRELATED (hedge fund, market-neutral, macro, multi-strat, managed futures, trend,
+     CTA, relative value, absolute return, long/short, diversifier) → Preservation; everything
+     else (crypto/bitcoin, private equity, venture/VC, growth-tilted) → Growth. */
+  function altBucket3(item) {
+    item = item || {};
+    const k = String(item.altKind || "").toLowerCase();
+    if (k === "uncorrelated" || k === "diversifier" || k === "hedge") return "Preservation";
+    if (k === "directional" || k === "growth") return "Growth";
+    const txt = ((item.name || "") + " " + ((item.structures || []).join(" ")) + " " +
+      (item.note || "") + " " + (item.sector || "") + " " + (item.title || "") + " " + (item.headline || "")).toLowerCase();
+    if (/uncorrelated|market[- ]?neutral|macro|multi[- ]?strat|hedge fund|diversifier|managed futures|trend|\bcta\b|relative value|absolute return|long[\/ ]short/.test(txt)) return "Preservation";
+    return "Growth"; // crypto/bitcoin, private equity, venture/VC, growth-tilted alts
+  }
   function currentBuckets(client) {
     const out = { Growth: 0, Income: 0, Preservation: 0 };
     const pos = client.positions || [];
     if (pos.length) {
       pos.forEach((p) => {
         const cls = String(p.assetClass || "").replace(/_/g, " ");
-        const b = cls === "Structured" ? structuredBucket3(p) : classBucket3(cls);
+        const b = cls === "Structured" ? structuredBucket3(p)
+          : cls === "Alternatives" ? altBucket3(p)
+          : classBucket3(cls);
         out[b] += (+p.weightPct || 0);
       });
     } else if (client.split) {
@@ -376,6 +396,6 @@
 
   return {
     deriveGoals, parseHorizon, parseFunding, parseLiabilities, revealedWillingness, statedWillingness, PARAMS,
-    GOALS3, goalsFor, currentBuckets, bucketsFromSplit3, classBucket3, goalBucketOfIdea, goalAlignment
+    GOALS3, goalsFor, currentBuckets, bucketsFromSplit3, classBucket3, altBucket3, goalBucketOfIdea, goalAlignment
   };
 });
