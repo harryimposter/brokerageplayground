@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Goal Derivation — Methodology &amp; Worked Examples</title>
+<style>
+  @page { size: A4; margin: 20mm 16mm 18mm 16mm; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: "Georgia", "Times New Roman", serif;
+    color: #29211A; background: #FBF8F2; line-height: 1.5; font-size: 11pt; margin: 0; padding: 0;
+  }
+  .page { max-width: 880px; margin: 0 auto; padding: 28px 34px 60px 34px; }
+  h1, h2, h3, h4 { font-family: "Georgia", "Times New Roman", serif; color: #29211A; font-weight: 700; }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 4px 0; letter-spacing: -0.2px; }
+  h2 { font-size: 16pt; margin: 30px 0 8px 0; padding-bottom: 6px; border-bottom: 2px solid #9A7B4F; }
+  h3 { font-size: 12.5pt; margin: 20px 0 6px 0; color: #5A3E2B; }
+  h4 { font-size: 11pt; margin: 14px 0 4px 0; color: #5A3E2B; }
+  p { margin: 7px 0; }
+  a { color: #9A7B4F; }
+  strong { color: #29211A; } em { color: #5A3E2B; }
+  .kicker { font-family: "Helvetica","Arial",sans-serif; font-size: 8.5pt; letter-spacing: 2px;
+            text-transform: uppercase; color: #9A7B4F; font-weight: 700; margin: 0 0 10px 0; }
+  .subtitle { font-size: 12.5pt; color: #5A3E2B; font-style: italic; margin: 6px 0 0 0; }
+  .cover { border-bottom: 3px double #9A7B4F; padding-bottom: 18px; margin-bottom: 8px; }
+  .meta { font-family: "Helvetica","Arial",sans-serif; font-size: 8.5pt; color: #6E5A47; margin-top: 14px; }
+  .meta td { padding: 2px 18px 2px 0; vertical-align: top; }
+  .meta b { color: #29211A; }
+  .note, .proposed, .key {
+    border-left: 4px solid #9A7B4F; background: #F4ECE0; padding: 10px 14px; margin: 12px 0; font-size: 10pt; }
+  .key { border-left-color: #3F6B4E; background: #EDF2ED; }
+  .proposed { border-left-color: #6E7E8C; background: #ECEFF2; }
+  .tag { font-family: "Helvetica","Arial",sans-serif; font-size: 7.5pt; letter-spacing: 1.5px;
+         text-transform: uppercase; font-weight: 700; padding: 2px 7px; color: #FBF8F2; }
+  .tag-goal { background: #3F6B4E; } .tag-risk { background: #9A7B4F; } .tag-rev { background: #6E7E8C; }
+  table.data { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 9.5pt; }
+  table.data th { background: #29211A; color: #FBF8F2; text-align: left; padding: 7px 9px;
+    font-family: "Helvetica","Arial",sans-serif; font-size: 8.5pt; letter-spacing: 0.5px; font-weight: 700; border: 1px solid #29211A; }
+  table.data td { padding: 6px 9px; border: 1px solid #D8C9B2; vertical-align: top; }
+  table.data tr.alt td { background: #F4ECE0; }
+  table.data td.num { text-align: right; font-family: "Helvetica","Arial",sans-serif; }
+  table.data tr.total td { background: #E7D9C0; font-weight: 700; border-top: 2px solid #9A7B4F; }
+  .mono { font-family: "Consolas","Courier New",monospace; font-size: 9pt; }
+  .formula { font-family: "Consolas","Courier New",monospace; font-size: 9pt; background: #F1E8DA;
+             padding: 8px 11px; border: 1px solid #D8C9B2; margin: 8px 0; display: block; white-space: pre-wrap; }
+  code { font-family: "Consolas","Courier New",monospace; font-size: 9pt; background: #F1E8DA; padding: 1px 4px; }
+  ul { margin: 6px 0; padding-left: 22px; } li { margin: 3px 0; }
+  .small { font-size: 9pt; color: #6E5A47; }
+  .pagebreak { page-break-before: always; }
+  .client { border: 1px solid #D8C9B2; border-radius: 4px; padding: 4px 16px 14px; margin: 16px 0; background: #FCFAF5; page-break-inside: avoid; }
+  .client h3 { margin-top: 12px; }
+  .vec { font-family: "Helvetica","Arial",sans-serif; font-weight: 700; font-size: 10.5pt; }
+  .vec .g { color: #29211A; } .vec .i { color: #9A7B4F; } .vec .p { color: #3F6B4E; }
+  hr { border: none; border-top: 1px solid #D8C9B2; margin: 22px 0; }
+  .footer { margin-top: 30px; padding-top: 12px; border-top: 2px solid #9A7B4F;
+            font-family: "Helvetica","Arial",sans-serif; font-size: 8pt; color: #6E5A47; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ COVER ============ -->
+  <div class="cover">
+    <p class="kicker">Brokerage Playground · Methodology Reference</p>
+    <h1>Goal Derivation</h1>
+    <p class="subtitle">How a client's Protection / Income / Growth goal is inferred from the balance sheet — methodology, formula, and a worked example for every client</p>
+    <table class="meta">
+      <tr>
+        <td><b>Prepared</b><br/>18 June 2026</td>
+        <td><b>Scope</b><br/>deriveGoals() — inferred goal vector</td>
+        <td><b>Source of truth</b><br/>goals.js · data.js</td>
+        <td><b>Status</b><br/>Live engine · additive (not yet wired into fit scoring)</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="key">
+    <b>The one-line idea.</b> The old model assumed the client <em>handed you</em> a target split. Real clients
+    don't. So <code>GOALS.deriveGoals(client)</code> <b>infers</b> a three-bucket goal — <span class="vec"><span class="p">Protection</span> ·
+    <span class="i">Income</span> · <span class="g">Growth</span></span> — from <b>both sides of the balance sheet</b> plus the client's
+    <b>revealed risk appetite</b>, never from what they own for its own sake. Every number below was produced by running the
+    actual engine (<code>goals.js</code> + <code>PARAMS</code>) against the real seed book. They are exact, not illustrative.
+  </div>
+
+  <!-- ============ 1. THE REFRAME ============ -->
+  <h2>1 &nbsp;·&nbsp; The reframe — &ldquo;have&rdquo; vs &ldquo;need&rdquo;</h2>
+  <p>The engine separates two things the old <code>goals.target</code> conflated:</p>
+  <ul>
+    <li><b>Current allocation (&ldquo;have&rdquo;)</b> — what the book holds today. Read straight off positions.</li>
+    <li><b>Goal allocation (&ldquo;need&rdquo;)</b> — what the book <em>should</em> hold, given the client's obligations,
+        horizon and appetite. This is what <code>deriveGoals</code> computes — and what replaces the hand-typed target.</li>
+  </ul>
+  <p>The methodology is <b>liability-driven / goals-based</b> (after Chhabra's risk-allocation framework, where the
+    Safety / Market / Aspirational buckets map onto <span class="vec"><span class="p">Protection</span> / <span class="i">Income</span> /
+    <span class="g">Growth</span></span>). The principle: <b>fund the obligations first, then deploy the surplus by how hard the money
+    must work.</b></p>
+
+  <h3>1.1 &nbsp; The evidence ladder — the <code>source</code> field</h3>
+  <p>The inference uses the strongest evidence available and records which tier it leaned on, in priority order:</p>
+  <table class="data">
+    <tr><th>source</th><th>Has a $ goal?</th><th>Has a risk descriptor?</th><th>What it leans on</th><th>Confidence</th></tr>
+    <tr><td><span class="tag tag-goal">stated-goal</span></td><td>✓ → required return</td><td>usually</td>
+        <td>The funding number (objective &mdash; how hard the money must work) + willingness</td><td class="num">0.90</td></tr>
+    <tr class="alt"><td><span class="tag tag-risk">stated-risk</span></td><td>✗</td><td>✓ → willingness</td>
+        <td>The written appetite (&ldquo;aggressive&rdquo; / &ldquo;conservative&rdquo;) blended with the book</td><td class="num">0.70</td></tr>
+    <tr><td><span class="tag tag-rev">revealed</span></td><td>✗</td><td>✗</td>
+        <td>The portfolio alone — there is no form to read off</td><td class="num">0.55</td></tr>
+  </table>
+  <p class="small">A <b>goal</b> is a number (&ldquo;grow to $200m by 2045&rdquo;) → it gives a <em>required return</em>. A <b>risk
+    descriptor</b> is temperament in words (&ldquo;aggressive&rdquo;) → it gives <em>willingness</em>, but says nothing about the target.
+    <code>stated-risk</code> = appetite known, goal unknown.</p>
+
+  <!-- ============ 2. THE FORMULA ============ -->
+  <h2 class="pagebreak">2 &nbsp;·&nbsp; The formula</h2>
+  <p>Each of the three buckets gets a raw score built from measured drivers; the three are then normalised to 100%.
+     Every <em>input</em> is a real quantity off the balance sheet; every <em>coefficient</em> lives in <code>PARAMS</code> and is a
+     calibration choice.</p>
+
+  <h3>2.1 &nbsp; Willingness — read two ways, then blended</h3>
+  <p>Willingness (0–1) is the risk-appetite knob. It is read from the current book (<b>revealed</b>) and, if present, from
+     the free-text risk descriptor (<b>stated</b>):</p>
+  <span class="formula">Revealed  = 0.5·R + 0.3·D + 0.2·C
+   R = risk-asset share        (Equity + Alternatives, as a fraction of the book)
+   D = low-defensiveness       = 1 − min(1, defensiveShare / 0.55)   defensive = Cash + Fixed Income + Commodity
+   C = concentration appetite  = min(1, topSingleName / 0.25)        (index cores / fundless sleeves excluded)
+
+Stated   = aggressive→0.95 · growth→0.80 · moderate→0.50 · conservative/income→0.30 · (none)→null
+Willingness = (Stated is null) ? Revealed : 0.5·Stated + 0.5·Revealed</span>
+
+  <h3>2.2 &nbsp; The three raw scores</h3>
+  <span class="formula">caution = 1 − Willingness        // willingness is BIDIRECTIONAL: low appetite adds ballast
+
+PROTECTION = 8  + 1.0·nearBill%  + 0.3·debtLoad%  + max(0, topName%−15)
+                + 15·[drawdown]  + 3·max(0, 5−H)  + 28·caution
+
+INCOME     = 8  + 8·incomeNeed%  + 8·service%     + 0.6·debtLoad%
+                + 15·[drawdown]  + 18·caution
+
+GROWTH     = 8  + 5·requiredReturn%  + 3·max(0, H−6)  + Wᵥ·Willingness
+                Wᵥ = 30 if a funding goal exists, else 45  (lean harder on appetite when no goal)
+
+vector = normalise( Protection, Income, Growth )   → sums to 100</span>
+
+  <table class="data">
+    <tr><th>Symbol</th><th>Meaning (all measured off the client)</th><th>Drives</th></tr>
+    <tr><td class="mono">nearBill%</td><td>One-off bills due soon (tax, bridge), % of AUM</td><td>Protection</td></tr>
+    <tr class="alt"><td class="mono">debtLoad%</td><td>Total liabilities, % of AUM</td><td>Income (match) + Protection (ballast)</td></tr>
+    <tr><td class="mono">service%</td><td>Annual debt servicing (balance × ~6%), % of AUM</td><td>Income</td></tr>
+    <tr class="alt"><td class="mono">incomeNeed%</td><td>Stated annual spending draw, % of AUM</td><td>Income</td></tr>
+    <tr><td class="mono">topName%</td><td>Largest single-name position (index cores excluded)</td><td>Protection (above 15%)</td></tr>
+    <tr class="alt"><td class="mono">H</td><td>Horizon midpoint, years; <code>[drawdown]</code> = spend-down phase</td><td>Growth (long) / Protection (short, drawdown)</td></tr>
+    <tr><td class="mono">requiredReturn%</td><td>CAGR needed to hit the funding goal: (target/base)^(1/yrs) − 1</td><td>Growth</td></tr>
+  </table>
+
+  <div class="key">
+    <b>Why willingness is bidirectional.</b> Originally willingness only fed Growth, so a cautious client with no
+    liabilities or income needs still came out growth-heavy (Protection/Income only ever got weight from <em>needs</em>).
+    The <code>caution = 1 − willingness</code> term routes a <em>low</em> appetite into ballast: full-aggressive pushes ~45 points into
+    Growth, full-cautious pushes ~46 (28+18) into Protection+Income — a balanced two-way dial.
+  </div>
+
+  <h3>2.3 &nbsp; Anti-circularity</h3>
+  <p>The book sets the willingness <em>knob</em> (a scalar), <b>not</b> the target vector. The vector is always rebuilt by the
+     formula, so the gap between &ldquo;have&rdquo; and &ldquo;need&rdquo; stays meaningful — the engine never trivially concludes &ldquo;you already
+     own the right thing.&rdquo; A manual <code>client.goalOverride</code> pins a vector and short-circuits the model.</p>
+
+  <!-- ============ 3. WORKED EXAMPLES ============ -->
+  <h2 class="pagebreak">3 &nbsp;·&nbsp; Worked examples — every client</h2>
+  <p class="small">Each block shows the measured inputs, the willingness build, the three raw scores term-by-term, and the
+     normalised goal. Numbers are exact from <code>goals.js</code>.</p>
+
+  <!-- FABLE -->
+  <div class="client">
+    <h3>Fable &nbsp;<span class="tag tag-goal">stated-goal</span> <span class="small">· Professional · $38.0m · &ldquo;Aggressive&rdquo; · horizon 10y</span></h3>
+    <p class="small">Funding: &ldquo;Grow to $75m by 2034&rdquo;. AI-concentrated book — 88% equity, a 24% single name.</p>
+    <p><b>Willingness</b> = 0.5·0.95 (stated) + 0.5·[0.5·0.88(R) + 0.3·0.891(D) + 0.2·0.96(C) = 0.899] = <b>0.925</b></p>
+    <span class="formula">requiredReturn = (75/38)^(1/8) − 1 = 8.87%/yr
+PROTECTION = 8 + 9.0 (24%−15 conc) + 2.1 (caution 28·0.075)                       = 19.1
+INCOME     = 8 + 1.35 (caution 18·0.075)                                          =  9.4
+GROWTH     = 8 + 44.35 (5·8.87) + 12 (3·[10−6]) + 27.75 (30·0.925)                = 92.1
+→ normalise(19.1, 9.4, 92.1)</span>
+    <p class="vec">→ <span class="p">Protection 16</span> · <span class="i">Income 8</span> · <span class="g">Growth 76</span></p>
+    <p class="small">High required return (8.9%) and high appetite drive Growth; the 24% single name is the only real pull toward Protection.</p>
+  </div>
+
+  <!-- AURORA -->
+  <div class="client">
+    <h3>Aurora &nbsp;<span class="tag tag-goal">stated-goal</span> <span class="small">· Retail · €50.2m · &ldquo;Growth, with income needs&rdquo; · horizon 8.5y</span></h3>
+    <p class="small">Funding: &ldquo;Grow to €70m by 2035 while drawing income&rdquo;. Concentrated 25.8% Micron.</p>
+    <p><b>Willingness</b> = 0.5·0.80 (stated) + 0.5·[0.5·0.709(R) + 0.3·0.471(D) + 0.2·1.0(C) = 0.696] = <b>0.748</b></p>
+    <span class="formula">requiredReturn = (70/50.2)^(1/9) − 1 = 3.76%/yr
+PROTECTION = 8 + 10.8 (25.8%−15 conc) + 7.06 (caution 28·0.252)                   = 25.9
+INCOME     = 8 + 4.54 (caution 18·0.252)                                          = 12.5
+GROWTH     = 8 + 18.8 (5·3.76) + 7.5 (3·[8.5−6]) + 22.44 (30·0.748)               = 56.8
+→ normalise(25.9, 12.5, 56.8)</span>
+    <p class="vec">→ <span class="p">Protection 27</span> · <span class="i">Income 13</span> · <span class="g">Growth 60</span></p>
+    <p class="small"><b>Known limitation:</b> her &ldquo;income needs&rdquo; is qualitative with no $ figure, so Income reads only 13. A spending field would lift it. The 25.8% Micron lump drives Protection to 27.</p>
+  </div>
+
+  <!-- SCOTT -->
+  <div class="client">
+    <h3>Scott &nbsp;<span class="tag tag-risk">stated-risk</span> <span class="small">· Retail · $124.0m · &ldquo;Conservative income&rdquo; · drawdown, horizon 2.5y</span></h3>
+    <p class="small">Funding is income-only (&ldquo;Fund $3.6m/yr&rdquo;) → no required-return signal. Retiree, spending down.</p>
+    <p><b>Willingness</b> = 0.5·0.30 (stated) + 0.5·[0.5·0.30(R) + 0.3·0(D) + 0.2·0.36(C) = 0.222] = <b>0.261</b></p>
+    <span class="formula">incomeNeed = 3.6/124 = 2.9% of book ·  drawdown phase ·  Wᵥ = 45 (no goal)
+PROTECTION = 8 + 15 (drawdown) + 7.5 (3·[5−2.5] short H) + 20.69 (caution 28·0.739)   = 51.2
+INCOME     = 8 + 23.2 (8·2.9 draw) + 15 (drawdown) + 13.3 (caution 18·0.739)          = 59.5
+GROWTH     = 8 + 11.75 (45·0.261)                                                     = 19.7
+→ normalise(51.2, 59.5, 19.7)</span>
+    <p class="vec">→ <span class="p">Protection 39</span> · <span class="i">Income 46</span> · <span class="g">Growth 15</span></p>
+    <p class="small">Textbook preservation book: a real income draw, drawdown phase and low appetite all pile into Income and Protection. Growth collapses to 15.</p>
+  </div>
+
+  <!-- AMAR -->
+  <div class="client">
+    <h3>Amar &nbsp;<span class="tag tag-goal">stated-goal</span> <span class="small">· Professional · $71.0m · &ldquo;Growth, real-asset tilt&rdquo; · horizon 10y</span></h3>
+    <p class="small">Funding: &ldquo;Preserve real value, grow to $90m by 2036&rdquo;. Real-asset / commodity-heavy, BTC sleeve.</p>
+    <p><b>Willingness</b> = 0.5·0.80 (stated) + 0.5·[0.5·0.49(R) + 0.3·0.418(D) + 0.2·0.64(C) = 0.498] = <b>0.649</b></p>
+    <span class="formula">requiredReturn = (90/71)^(1/10) − 1 = 2.40%/yr
+PROTECTION = 8 + 1.0 (16%−15 conc) + 9.83 (caution 28·0.351)                       = 18.8
+INCOME     = 8 + 6.32 (caution 18·0.351)                                           = 14.3
+GROWTH     = 8 + 12.0 (5·2.4) + 12 (3·[10−6]) + 19.47 (30·0.649)                   = 51.5
+→ normalise(18.8, 14.3, 51.5)</span>
+    <p class="vec">→ <span class="p">Protection 22</span> · <span class="i">Income 17</span> · <span class="g">Growth 61</span></p>
+    <p class="small">A modest required return (2.4%) is offset by a long horizon and a growth appetite; the diversified book keeps Protection/Income moderate.</p>
+  </div>
+
+  <!-- JACOB -->
+  <div class="client">
+    <h3>Jacob &nbsp;<span class="tag tag-goal">stated-goal</span> <span class="small">· Professional · $96.0m · &ldquo;Moderate&rdquo; · horizon 9y · liabilities</span></h3>
+    <p class="small">Funding: &ldquo;Net worth to $120m by 2033&rdquo;. <b>$19m mortgage + $2.4m Q3 tax</b> — the balance-sheet client.</p>
+    <p><b>Willingness</b> = 0.5·0.50 (stated) + 0.5·[0.5·0.58(R) + 0.3·0.509(D) + 0.2·0.40(C) = 0.523] = <b>0.511</b></p>
+    <span class="formula">requiredReturn = (120/75)^(1/7) − 1 = 6.94%   ·  debtLoad 22.3%  ·  nearBill 2.5%  ·  service 1.19%
+PROTECTION = 8 + 2.5 (nearBill tax) + 6.69 (0.3·22.3 debt ballast) + 13.69 (caution 28·0.489)   = 30.9
+INCOME     = 8 + 9.52 (8·1.19 service) + 13.37 (0.6·22.3 debt match) + 8.8 (caution 18·0.489)    = 39.7
+GROWTH     = 8 + 34.7 (5·6.94) + 9 (3·[9−6]) + 15.33 (30·0.511)                                   = 67.1
+→ normalise(30.9, 39.7, 67.1)</span>
+    <p class="vec">→ <span class="p">Protection 22</span> · <span class="i">Income 29</span> · <span class="g">Growth 49</span></p>
+    <p class="small">The $19m floating mortgage does real work — ~20 points into Income (service + matching) and Protection (ballast + the tax reserve) — pulling a high-required-return book back to balanced.</p>
+  </div>
+
+  <!-- PRAHNAV -->
+  <div class="client">
+    <h3>Prahnav &nbsp;<span class="tag tag-goal">stated-goal</span> <span class="small">· Retail · $44.0m · &ldquo;Growth&rdquo; · horizon 8.5y</span></h3>
+    <p class="small">Funding: &ldquo;Grow to $70m by 2034; $4m house deposit by 2028&rdquo;. Concentrated 22% NVDA.</p>
+    <p><b>Willingness</b> = 0.5·0.80 (stated) + 0.5·[0.5·0.70(R) + 0.3·0.60(D) + 0.2·0.88(C) = 0.706] = <b>0.753</b></p>
+    <span class="formula">requiredReturn = (70/44)^(1/8) − 1 = 5.98%/yr
+PROTECTION = 8 + 7.0 (22%−15 conc) + 6.92 (caution 28·0.247)                       = 21.9
+INCOME     = 8 + 4.45 (caution 18·0.247)                                           = 12.4
+GROWTH     = 8 + 29.9 (5·5.98) + 7.5 (3·[8.5−6]) + 22.59 (30·0.753)                = 68.0
+→ normalise(21.9, 12.4, 68.0)</span>
+    <p class="vec">→ <span class="p">Protection 21</span> · <span class="i">Income 12</span> · <span class="g">Growth 67</span></p>
+    <p class="small">Solid growth profile; the 22% NVDA position is the main thing lifting Protection above its floor.</p>
+  </div>
+
+  <!-- BEN -->
+  <div class="client">
+    <h3>Ben &nbsp;<span class="tag tag-goal">stated-goal</span> <span class="small">· Retail · $29.0m · &ldquo;Moderate, value tilt&rdquo; · horizon 6.5y</span></h3>
+    <p class="small">Funding is dual: &ldquo;Fund $0.8m/yr income; grow to $45m by 2033&rdquo; — both signals fire.</p>
+    <p><b>Willingness</b> = 0.5·0.50 (stated) + 0.5·[0.5·0.82(R) + 0.3·0.745(D) + 0.2·0.72(C) = 0.778] = <b>0.639</b></p>
+    <span class="formula">requiredReturn = (45/29)^(1/7) − 1 = 6.48%   ·  incomeNeed = 0.8/29 = 2.76%
+PROTECTION = 8 + 3.0 (18%−15 conc) + 10.11 (caution 28·0.361)                      = 21.1
+INCOME     = 8 + 22.08 (8·2.76 draw) + 6.5 (caution 18·0.361)                      = 36.6
+GROWTH     = 8 + 32.4 (5·6.48) + 1.5 (3·[6.5−6]) + 19.17 (30·0.639)                = 61.1
+→ normalise(21.1, 36.6, 61.1)</span>
+    <p class="vec">→ <span class="p">Protection 18</span> · <span class="i">Income 31</span> · <span class="g">Growth 51</span></p>
+    <p class="small">His $0.8m income goal on a small $29m book (a demanding 2.8% draw) is what lifts Income to 31 — exactly why his book is &ldquo;behind&rdquo; on income at only 6% fixed income.</p>
+  </div>
+
+  <!-- MORGAN -->
+  <div class="client">
+    <h3>Morgan &nbsp;<span class="tag tag-risk">stated-risk</span> <span class="small">· Professional · $38.0m · &ldquo;Aggressive — maximum growth&rdquo; · horizon 17.5y · NO goal</span></h3>
+    <p class="small"><b>No funding goal on file.</b> 92% risk assets — 24% NVDA, 18% direct BTC, leveraged Nasdaq, venture.</p>
+    <p><b>Willingness</b> = 0.5·0.95 (stated) + 0.5·[0.5·0.92(R) + 0.3·0.855(D) + 0.2·0.96(C) = 0.908] = <b>0.929</b></p>
+    <span class="formula">no required-return signal  →  Wᵥ = 45 (lean harder on appetite)
+PROTECTION = 8 + 9.0 (24%−15 conc) + 1.99 (caution 28·0.071)                       = 19.0
+INCOME     = 8 + 1.28 (caution 18·0.071)                                           =  9.3
+GROWTH     = 8 + 34.5 (3·[17.5−6] horizon) + 41.8 (45·0.929)                       = 84.3
+→ normalise(19.0, 9.3, 84.3)</span>
+    <p class="vec">→ <span class="p">Protection 17</span> · <span class="i">Income 8</span> · <span class="g">Growth 75</span></p>
+    <p class="small">No goal number exists, so Growth comes <em>entirely</em> from temperament (long horizon + a 0.93 willingness via the no-goal coefficient). The only counterweight is his 24% NVDA lump. Confidence 0.70 — no hard goal to anchor on.</p>
+  </div>
+
+  <!-- TEJPAUL -->
+  <div class="client">
+    <h3>Tejpaul &nbsp;<span class="tag tag-rev">revealed</span> <span class="small">· Retail · $60.0m · not formally profiled · horizon 8.5y · NO goal</span></h3>
+    <p class="small"><b>Nothing stated at all</b> — no risk profile, no targets, no funding goal, no liabilities. The book is the only signal: balanced ~57% equity, ~35% defensive, no concentrated name.</p>
+    <p><b>Willingness</b> = revealed only (stated = null) = 0.5·0.57(R) + 0.3·0.364(D) + 0.2·0.36(C) = <b>0.466</b></p>
+    <span class="formula">no goal, no stated appetite  →  Wᵥ = 45
+PROTECTION = 8 + 14.95 (caution 28·0.534)                                          = 22.9
+INCOME     = 8 + 9.61 (caution 18·0.534)                                           = 17.6
+GROWTH     = 8 + 7.5 (3·[8.5−6] horizon) + 20.97 (45·0.466)                        = 36.5
+→ normalise(22.9, 17.6, 36.5)</span>
+    <p class="vec">→ <span class="p">Protection 30</span> · <span class="i">Income 23</span> · <span class="g">Growth 47</span></p>
+    <p class="small">The purest case: with no form to read, the system reads his balanced book and <b>independently concludes &ldquo;moderate&rdquo;</b> — Growth 47, with a defensive tilt from the caution term. Confidence 0.55 (lowest tier — confirm with the client).</p>
+  </div>
+
+  <!-- ============ 4. SUMMARY ============ -->
+  <h2 class="pagebreak">4 &nbsp;·&nbsp; The whole book at a glance</h2>
+  <table class="data">
+    <tr><th>Client</th><th>Source</th><th class="num">Protection</th><th class="num">Income</th><th class="num">Growth</th><th class="num">Willingness</th><th class="num">Conf.</th></tr>
+    <tr><td>Morgan</td><td><span class="tag tag-risk">stated-risk</span></td><td class="num">17</td><td class="num">8</td><td class="num">75</td><td class="num">0.93</td><td class="num">0.70</td></tr>
+    <tr class="alt"><td>Fable</td><td><span class="tag tag-goal">stated-goal</span></td><td class="num">16</td><td class="num">8</td><td class="num">76</td><td class="num">0.93</td><td class="num">0.90</td></tr>
+    <tr><td>Prahnav</td><td><span class="tag tag-goal">stated-goal</span></td><td class="num">21</td><td class="num">12</td><td class="num">67</td><td class="num">0.75</td><td class="num">0.90</td></tr>
+    <tr class="alt"><td>Amar</td><td><span class="tag tag-goal">stated-goal</span></td><td class="num">22</td><td class="num">17</td><td class="num">61</td><td class="num">0.65</td><td class="num">0.90</td></tr>
+    <tr><td>Aurora</td><td><span class="tag tag-goal">stated-goal</span></td><td class="num">27</td><td class="num">13</td><td class="num">60</td><td class="num">0.75</td><td class="num">0.90</td></tr>
+    <tr class="alt"><td>Ben</td><td><span class="tag tag-goal">stated-goal</span></td><td class="num">18</td><td class="num">31</td><td class="num">51</td><td class="num">0.64</td><td class="num">0.90</td></tr>
+    <tr><td>Jacob</td><td><span class="tag tag-goal">stated-goal</span></td><td class="num">22</td><td class="num">29</td><td class="num">49</td><td class="num">0.51</td><td class="num">0.90</td></tr>
+    <tr class="alt"><td>Tejpaul</td><td><span class="tag tag-rev">revealed</span></td><td class="num">30</td><td class="num">23</td><td class="num">47</td><td class="num">0.47</td><td class="num">0.55</td></tr>
+    <tr><td>Scott</td><td><span class="tag tag-risk">stated-risk</span></td><td class="num">39</td><td class="num">46</td><td class="num">15</td><td class="num">0.26</td><td class="num">0.70</td></tr>
+  </table>
+  <p>The spread is the point: from <b>Morgan/Fable</b> (~75% Growth) down to <b>Scott</b> (15% Growth, 46% Income), every
+     vector is traceable to facts — a required return, a mortgage, a spending draw, a concentrated name, or, where nothing is
+     stated, the shape of the book itself.</p>
+
+  <div class="proposed">
+    <b>Status &amp; next steps.</b> <code>deriveGoals</code> is live and exposed as <code>window.GOALS</code>, but <b>additive</b> — the
+    fit engine and UI still read the legacy five-bucket <code>goals.target</code>. Open items: (1) fold 5 buckets → 3 across the app;
+    (2) surface the inferred vector + drivers + an override editor in the Advisor Book; (3) capture a numeric spending field so
+    qualitative &ldquo;income needs&rdquo; (e.g. Aurora) are no longer lost. All coefficients above live in <code>PARAMS</code> and are tunable.
+  </div>
+
+  <div class="footer">
+    Brokerage Playground — Goal Derivation · Prepared 18 June 2026 · Source of truth: <span class="mono">goals.js, data.js</span> ·
+    All figures generated by running deriveGoals() against the live seed book. Methodology: liability-driven / goals-based
+    (Chhabra risk-allocation). Engine is additive — not yet wired into fit scoring.
+  </div>
+
+</div>
+</body>
+</html>

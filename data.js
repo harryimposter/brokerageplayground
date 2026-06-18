@@ -381,6 +381,65 @@ const SEED_CLIENTS = [
       { name: "USD cash",       ticker: "—",       assetClass: "Cash", sector: "Cash",         ccy: "USD", weightPct: 8.0,  pnlPct: 0,  entryDate: null, entrySpot: null, mat: null, note: "Idle." }
     ],
     summary: "An equity-heavy value book — energy, financials and quality compounders at 82% equity with barely any fixed income or protection. It has done well, but it is one drawdown away from a problem and it under-delivers income versus the goal. The agenda is to diversify: extend into core fixed income and infrastructure for income and ballast, trim the energy-sector concentration, and recover the Diageo loss — all with non-complex instruments, since Ben is Retail."
+  },
+
+  /* =========================== MORGAN (Pro, max-aggressive) ============== */
+  {
+    id: "morgan", name: "Morgan", ccy: "USD", aum: 38.0,
+    classification: "Professional", mifid: "MiFID Professional",
+    relationship: "3-yr relationship · Tech founder · Maximum growth",
+    risk: "Aggressive — maximum long-term capital growth, very high risk tolerance",
+    profile: "Young tech founder with post-exit liquidity, no liabilities and no income needs. Wants maximum compounding and is explicitly comfortable with large drawdowns and concentrated, illiquid and digital-asset risk. The book is ~92% risk assets — a 24% single-name NVIDIA position, direct crypto, a leveraged Nasdaq sleeve and late-stage venture — with only a token cash buffer. There is no goal split to read off a form; the goal has to be inferred from how the book is actually run.",
+    split: { Equity: 64, Alternatives: 28, Cash: 8 },
+    goals: {
+      objective: "Maximize long-term capital — high conviction, fully invested, drawdowns accepted",
+      horizon: "Long-term · 15–20 yrs",
+      target: { Growth: 80, Income: 5, Protection: 8, Structured: 2, Liquidity: 5 }
+      /* NO funding goal on file — the target above is legacy-only; nothing numeric is
+         stated. deriveGoals infers the goal from the book + the stated aggressive risk
+         appetite (no required-return signal → source "stated-risk"). */
+    },
+    positions: [
+      { name: "NVIDIA",                ticker: "NVDA US", assetClass: "Equity",       sector: "Technology", ccy: "USD", weightPct: 24.0, pnlPct: 320, entryDate: "2022-11-01", entrySpot: 140.00, mat: null, note: "Core AI position — huge unrealised gain, deliberately unhedged." },
+      { name: "Bitcoin",               ticker: "BTC",     assetClass: "Alternatives", sector: "Crypto",     ccy: "USD", weightPct: 18.0, pnlPct: 260, entryDate: "2021-02-01", entrySpot: 33000.00, mat: null, note: "Direct digital-asset holding in custody." },
+      { name: "Tesla",                 ticker: "TSLA US", assetClass: "Equity",       sector: "Consumer",   ccy: "USD", weightPct: 11.0, pnlPct: 90,  entryDate: "2023-01-01", entrySpot: 120.00, mat: null, note: "High-beta growth." },
+      { name: "S&P 500 index core",    ticker: "VOO US",  assetClass: "Equity",       sector: "Broad",      ccy: "USD", weightPct: 12.0, pnlPct: 40,  entryDate: "2022-06-01", entrySpot: 360.00, mat: null, note: "The only diversified sleeve." },
+      { name: "2x Nasdaq leveraged ETF", ticker: "—",     assetClass: "Equity",       sector: "Technology", ccy: "USD", weightPct: 10.0, pnlPct: 60,  entryDate: "2023-03-01", entrySpot: null, mat: null, note: "Daily-leveraged Nasdaq — tactical, high decay risk." },
+      { name: "Coinbase",              ticker: "COIN US", assetClass: "Equity",       sector: "Financials", ccy: "USD", weightPct: 7.0,  pnlPct: 140, entryDate: "2023-05-01", entrySpot: 55.00, mat: null, note: "Crypto-levered equity." },
+      { name: "Pre-IPO venture sleeve",ticker: "—",       assetClass: "Alternatives", sector: "Broad",      ccy: "USD", weightPct: 10.0, pnlPct: 0,   entryDate: "2024-01-01", entrySpot: null, mat: null, note: "Illiquid late-stage venture." },
+      { name: "USD cash",              ticker: "—",       assetClass: "Cash",         sector: "Cash",       ccy: "USD", weightPct: 8.0,  pnlPct: 0,   entryDate: null, entrySpot: null, mat: null, note: "Token buffer — fully invested by choice." }
+    ],
+    summary: "A max-aggressive founder book: ~92% in risk assets with a 24% NVIDIA single name, 18% direct Bitcoin, a leveraged Nasdaq sleeve and late-stage venture, against only 8% cash and no fixed income, gold or protection. No liabilities, no income draw, 15–20yr horizon. The whole point of this client is that the goal can't be taken off a form — it has to be inferred from the book, which screams growth. The standing risk note is concentration: NVDA and crypto dominate, so the real conversation is sizing and optional protection on the winners, not whether to add more risk."
+  },
+
+  /* =========================== TEJPAUL (unprofiled, balanced book) ======= */
+  {
+    id: "tejpaul", name: "Tejpaul", ccy: "USD", aum: 60.0,
+    classification: "Retail", mifid: "MiFID Retail",
+    relationship: "6-yr relationship · Inherited account · Not formally profiled",
+    risk: "Not formally risk-profiled",
+    profile: "Inherited the account and has never sat for a risk questionnaire or set explicit targets — there is no stated mandate and no funding goal on file. No liabilities and no income draw. The only evidence of intent is how the book is actually invested: a broadly balanced ~60/35 split — diversified equity core, investment-grade and Treasury fixed income, a little infrastructure and gold — with no large single name. The system has to read his goals off the portfolio alone.",
+    split: { Equity: 57, "Fixed Income": 20, "Real Assets": 8, Commodity: 3, Cash: 12 },
+    goals: {
+      objective: "No formal mandate on file — invests broadly for long-term growth with some income",
+      horizon: "Long-term · 7–10 yrs",
+      target: { Growth: 55, Income: 25, Protection: 10, Structured: 0, Liquidity: 10 }
+      /* NO funding goal and NO stated risk profile — deriveGoals must infer everything
+         from the current book (no required-return, no stated willingness → source
+         "revealed"). The balanced book should reveal a moderate appetite on its own. */
+    },
+    positions: [
+      { name: "S&P 500 index core",  ticker: "VOO US",  assetClass: "Equity",       sector: "Broad",      ccy: "USD", weightPct: 24.0, pnlPct: 35, entryDate: "2021-05-01", entrySpot: 410.00, mat: null, note: "Diversified core." },
+      { name: "Global equity fund",  ticker: "—",       assetClass: "Equity",       sector: "Broad",      ccy: "USD", weightPct: 16.0, pnlPct: 20, entryDate: "2021-09-01", entrySpot: null, mat: null, note: "Ex-US diversification." },
+      { name: "Microsoft",           ticker: "MSFT US", assetClass: "Equity",       sector: "Technology", ccy: "USD", weightPct: 9.0,  pnlPct: 45, entryDate: "2022-03-01", entrySpot: 290.00, mat: null, note: "Largest single name — still modest." },
+      { name: "Berkshire Hathaway",  ticker: "BRK/B US",assetClass: "Equity",       sector: "Financials", ccy: "USD", weightPct: 8.0,  pnlPct: 30, entryDate: "2022-01-01", entrySpot: 300.00, mat: null, note: "Quality compounder." },
+      { name: "IG corporate bonds",  ticker: "—",       assetClass: "Fixed Income", sector: "Credit",     ccy: "USD", weightPct: 12.0, pnlPct: 0,  entryDate: "2025-06-01", entrySpot: null, mat: "2030-06-01", note: "Core income sleeve." },
+      { name: "US Treasury ladder",  ticker: "—",       assetClass: "Fixed Income", sector: "Rates",      ccy: "USD", weightPct: 8.0,  pnlPct: 1,  entryDate: "2024-02-01", entrySpot: null, mat: "2031-02-01", note: "2–7yr ladder." },
+      { name: "Listed infra fund",   ticker: "—",       assetClass: "Real Assets",  sector: "Infrastructure", ccy: "USD", weightPct: 8.0, pnlPct: 6, entryDate: "2023-04-01", entrySpot: null, mat: null, note: "Contracted income diversifier." },
+      { name: "Gold ETF",            ticker: "GLD US",  assetClass: "Commodity",    sector: "Gold",       ccy: "USD", weightPct: 3.0,  pnlPct: 25, entryDate: "2021-06-01", entrySpot: 168.00, mat: null, note: "Small hedge sleeve." },
+      { name: "USD cash",            ticker: "—",       assetClass: "Cash",         sector: "Cash",       ccy: "USD", weightPct: 12.0, pnlPct: 0,  entryDate: null, entrySpot: null, mat: null, note: "Idle buffer." }
+    ],
+    summary: "A textbook 'no stated goal' case: never risk-profiled, no targets, no funding goal, no liabilities. The book itself is the only signal — broadly balanced (~57% equity, ~35% defensive, no concentrated name), which reads as a moderate appetite. The whole point of Tejpaul is to watch the system infer a moderate goal from the portfolio alone, with no form to read off."
   }
 ];
 

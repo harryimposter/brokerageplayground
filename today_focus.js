@@ -416,6 +416,12 @@ window.TODAY_FOCUS = {
         "Gold accumulator",
         "Capital-protected note"
       ],
+      "variant": {
+        "street": "Every major bank bullish — year-end targets 25-44% above spot; central banks net buyers",
+        "us": "Same direction — accumulate the pullback into under-protected books",
+        "gap": null
+      },
+      "changeMyMind": "Central banks turning net sellers for two consecutive quarters, or real yields breaking decisively higher.",
       "conviction": {
         "pillars": [
           {
@@ -443,6 +449,22 @@ window.TODAY_FOCUS = {
             "max": 2
           },
           {
+            "key": "thesis",
+            "score": 1,
+            "dq": "estimated",
+            "note": "Driver specificity yes (sourced central-bank tonnage and named bank targets), but no variant edge — this is the consensus call, not a differentiated one. A well-supported follow, not a thesis with an edge.",
+            "label": "Fundamental thesis",
+            "max": 2
+          },
+          {
+            "key": "houseview",
+            "score": 2,
+            "dq": "sourced",
+            "note": "Core to the Gold & Currency house view as strategic ballast.",
+            "label": "House-view fit",
+            "max": 2
+          },
+          {
             "key": "positioning",
             "score": 1,
             "dq": "estimated",
@@ -454,38 +476,14 @@ window.TODAY_FOCUS = {
             "key": "technical",
             "score": 1,
             "dq": "estimated",
-            "note": "Below the January high near-term, but the long-term uptrend is intact — mixed.",
+            "note": "Below the January high near-term, but the long-term uptrend is intact and not overbought — confirms on balance.",
             "label": "Technical",
-            "max": 2
-          },
-          {
-            "key": "stop",
-            "score": 1,
-            "dq": "estimated",
-            "note": "The pullback offers a structural level to lean on with 25%+ upside — reward well over risk.",
-            "label": "Stop / risk-reward",
-            "max": 1
-          },
-          {
-            "key": "rsi",
-            "score": 1,
-            "dq": "estimated",
-            "note": "Well off the highs — not overbought, no crowded-long extreme against a buyer.",
-            "label": "RSI flag",
-            "max": 1
-          },
-          {
-            "key": "houseview",
-            "score": 2,
-            "dq": "sourced",
-            "note": "Core to the Gold & Currency house view as strategic ballast.",
-            "label": "House-view fit",
             "max": 2
           }
         ],
-        "raw": 11,
+        "raw": 10,
         "maxRaw": 15,
-        "score": 73,
+        "score": 67,
         "tier": "Medium",
         "label": "Medium conviction",
         "capped": true,
@@ -544,6 +542,12 @@ window.TODAY_FOCUS = {
         "Thematic basket",
         "HALO basket (ACM+)"
       ],
+      "variant": {
+        "street": "Crowds the AI chip names to own the theme",
+        "us": "Own the power and grid bottleneck instead — lower-beta, contracted income, still under-owned",
+        "gap": "The market pays up for compute and underprices the electricity constraint behind it"
+      },
+      "changeMyMind": "Datacenter load-growth forecasts being cut, or utility rate-base and PPA approvals stalling.",
       "conviction": {
         "pillars": [
           {
@@ -571,36 +575,12 @@ window.TODAY_FOCUS = {
             "max": 2
           },
           {
-            "key": "positioning",
+            "key": "thesis",
             "score": 2,
             "dq": "estimated",
-            "note": "Still under-owned versus the chip names — the crowd is not yet with us, which is fuel.",
-            "label": "Positioning",
+            "note": "Quantified driver (IEA: datacenter load ~1,050 TWh, roughly doubling) and a real variant — own the power bottleneck rather than the crowded chips. Driver yes, variant yes.",
+            "label": "Fundamental thesis",
             "max": 2
-          },
-          {
-            "key": "technical",
-            "score": 1,
-            "dq": "estimated",
-            "note": "Multi-year rate-base and load growth; constructive but not a clean breakout.",
-            "label": "Technical",
-            "max": 2
-          },
-          {
-            "key": "stop",
-            "score": 0,
-            "dq": "estimated",
-            "note": "A thematic basket has no single clean stop — risk is managed by sizing, not a level.",
-            "label": "Stop / risk-reward",
-            "max": 1
-          },
-          {
-            "key": "rsi",
-            "score": 1,
-            "dq": "estimated",
-            "note": "The sector is not at a crowded extreme.",
-            "label": "RSI flag",
-            "max": 1
           },
           {
             "key": "houseview",
@@ -609,11 +589,27 @@ window.TODAY_FOCUS = {
             "note": "Core Power & Infrastructure house view.",
             "label": "House-view fit",
             "max": 2
+          },
+          {
+            "key": "positioning",
+            "score": 2,
+            "dq": "estimated",
+            "note": "Still under-owned versus the chip names — the crowd is clearly not yet with us, which is fuel.",
+            "label": "Positioning",
+            "max": 2
+          },
+          {
+            "key": "technical",
+            "score": 1,
+            "dq": "estimated",
+            "note": "Multi-year rate-base and load growth; constructive and not at a crowded extreme — confirms, though not a clean breakout.",
+            "label": "Technical",
+            "max": 2
           }
         ],
-        "raw": 10,
+        "raw": 11,
         "maxRaw": 15,
-        "score": 67,
+        "score": 73,
         "tier": "Medium",
         "label": "Medium conviction",
         "capped": true,
@@ -664,6 +660,12 @@ window.TODAY_FOCUS = {
         "Bond ladder",
         "Govt / IG bonds"
       ],
+      "variant": {
+        "street": "Consensus hold; extend-duration is both the Street and the house call",
+        "us": "Same — lock today's yields before the cuts land",
+        "gap": null
+      },
+      "changeMyMind": "The Fed signalling earlier or deeper cuts, or the curve re-steepening sharply.",
       "conviction": {
         "pillars": [
           {
@@ -691,6 +693,22 @@ window.TODAY_FOCUS = {
             "max": 2
           },
           {
+            "key": "thesis",
+            "score": 1,
+            "dq": "sourced",
+            "note": "Quantified, sourced drivers (FOMC 16-17 Jun hold at 3.50-3.75%, cuts pushed later), but it's the consensus path — no variant edge.",
+            "label": "Fundamental thesis",
+            "max": 2
+          },
+          {
+            "key": "houseview",
+            "score": 2,
+            "dq": "sourced",
+            "note": "Core Fixed Income house view — extend duration before the cutting cycle.",
+            "label": "House-view fit",
+            "max": 2
+          },
+          {
             "key": "positioning",
             "score": 1,
             "dq": "sourced",
@@ -702,38 +720,14 @@ window.TODAY_FOCUS = {
             "key": "technical",
             "score": 1,
             "dq": "estimated",
-            "note": "A duration trade; the curve picture is constructive but mixed.",
+            "note": "A duration trade; the curve picture is constructive and not at a crowding extreme — neutral-to-confirming.",
             "label": "Technical",
-            "max": 2
-          },
-          {
-            "key": "stop",
-            "score": 1,
-            "dq": "estimated",
-            "note": "High-quality bonds give a defined downside; carry plus convexity clears the risk.",
-            "label": "Stop / risk-reward",
-            "max": 1
-          },
-          {
-            "key": "rsi",
-            "score": 1,
-            "dq": "estimated",
-            "note": "Not a meaningful crowding flag for high-grade duration — treated as neutral.",
-            "label": "RSI flag",
-            "max": 1
-          },
-          {
-            "key": "houseview",
-            "score": 2,
-            "dq": "sourced",
-            "note": "Core Fixed Income house view — extend duration before the cutting cycle.",
-            "label": "House-view fit",
             "max": 2
           }
         ],
-        "raw": 11,
+        "raw": 10,
         "maxRaw": 15,
-        "score": 73,
+        "score": 67,
         "tier": "Medium",
         "label": "Medium conviction",
         "capped": true,
@@ -784,6 +778,12 @@ window.TODAY_FOCUS = {
         "Call overwrite",
         "Thematic basket"
       ],
+      "variant": {
+        "street": "Prices the US-Iran de-escalation as durable; the geopolitical premium is half-deflated",
+        "us": "Buy the cheap re-escalation hedge — the market is too relaxed on the Hormuz tail",
+        "gap": "Geopolitical tail risk underpriced after the de-escalation rally"
+      },
+      "changeMyMind": "A durable US-Iran deal that keeps the Strait of Hormuz open, removing the re-escalation tail.",
       "conviction": {
         "pillars": [
           {
@@ -811,6 +811,22 @@ window.TODAY_FOCUS = {
             "max": 2
           },
           {
+            "key": "thesis",
+            "score": 2,
+            "dq": "estimated",
+            "note": "Sourced price drivers (Brent ~$87 off the ~$118 April peak) and a genuine variant — bet against the de-escalation consensus the market has priced as durable. Driver and variant yes.",
+            "label": "Fundamental thesis",
+            "max": 2
+          },
+          {
+            "key": "houseview",
+            "score": 0,
+            "dq": "sourced",
+            "note": "Off-theme — explicitly a tactical hedge, not a strategic house view.",
+            "label": "House-view fit",
+            "max": 2
+          },
+          {
             "key": "positioning",
             "score": 1,
             "dq": "sourced",
@@ -822,38 +838,14 @@ window.TODAY_FOCUS = {
             "key": "technical",
             "score": 1,
             "dq": "estimated",
-            "note": "Brent has rolled off the April spike; the chart is mixed.",
+            "note": "Brent has rolled off the April spike and is not at a crowded extreme — chart neutral.",
             "label": "Technical",
-            "max": 2
-          },
-          {
-            "key": "stop",
-            "score": 0,
-            "dq": "estimated",
-            "note": "A majors-plus-overwrite hedge has no clean single stop.",
-            "label": "Stop / risk-reward",
-            "max": 1
-          },
-          {
-            "key": "rsi",
-            "score": 1,
-            "dq": "estimated",
-            "note": "Not at a crowded extreme.",
-            "label": "RSI flag",
-            "max": 1
-          },
-          {
-            "key": "houseview",
-            "score": 0,
-            "dq": "sourced",
-            "note": "Off-theme — explicitly a tactical hedge, not a strategic house view.",
-            "label": "House-view fit",
             "max": 2
           }
         ],
-        "raw": 7,
+        "raw": 8,
         "maxRaw": 15,
-        "score": 47,
+        "score": 53,
         "tier": "Watch",
         "label": "Watchlist",
         "capped": true,
@@ -891,8 +883,8 @@ window.TODAY_FOCUS = {
   "convictionRubric": {
     "earnings": {
       "model": "earnings",
-      "title": "Earnings ideas — Carter's print rubric",
-      "blurb": "Four pillars, each 0-2 (max 8), scaled to 100. The exact model Carter built for the Shark Tank earnings book.",
+      "title": "Earnings ideas — print rubric",
+      "blurb": "Four pillars, each 0-2 (max 8), scaled to 100. The print-reaction model for the earnings book.",
       "maxRaw": 8,
       "pillars": [
         {
@@ -924,8 +916,8 @@ window.TODAY_FOCUS = {
     },
     "exEarnings": {
       "model": "exEarnings",
-      "title": "Ex-earnings ideas — eight-pillar conviction",
-      "blurb": "Eight pillars summed to 15, scaled to 100. High ≥ 75 · Medium ≥ 55 · Watch ≥ 0.",
+      "title": "Ex-earnings ideas — seven-pillar conviction",
+      "blurb": "Seven pillars summed to 15, scaled to 100. Fundamental thesis and house view lead (11/15 ≈ 73%); technicals and positioning are capped confirmation (4/15 ≈ 27%). High ≥ 75 · Medium ≥ 55 · Watch ≥ 0.",
       "maxRaw": 15,
       "pillars": [
         {
@@ -944,37 +936,31 @@ window.TODAY_FOCUS = {
           "key": "consensus",
           "label": "Consensus + confirmation",
           "max": 2,
-          "desc": "Sell-side aligned (buy ratio ≥0.6, mean-PT upside, revisions ≥0) AND an independent signal (breakout / fund flow / options skew). Both → 2 · one → 1 · neither → 0."
+          "desc": "Either sell-side aligned (buy ratio ≥0.6, mean-PT upside, revisions ≥0) OR a defensible variant view, AND an independent signal (breakout / fund flow / options skew). Both legs → 2 · one → 1 · neither → 0. Alignment and a variant edge both count — they don't fight the thesis pillar."
         },
         {
-          "key": "positioning",
-          "label": "Positioning",
+          "key": "thesis",
+          "label": "Fundamental thesis",
           "max": 2,
-          "desc": "Crowd offside our trade is fuel; crowd already with us is unwind risk. A hard read (SI >10% float / extreme CoT) plus a price-crowding read (RSI + stretch from the 50/200-day). Either shows the crowd offside → 2 · either shows it with us → 0 · otherwise 1."
-        },
-        {
-          "key": "technical",
-          "label": "Technical",
-          "max": 2,
-          "desc": "50/100/200-day MA alignment, Bollinger entry quality, Fibonacci off the trailing 6-month swing. Trend agrees and entry not chasing an exhausted band → 2 · mixed → 1 · contradicts → 0."
-        },
-        {
-          "key": "stop",
-          "label": "Stop / risk-reward",
-          "max": 1,
-          "desc": "A clean technical / structural stop AND reward ≥ 2× risk → 1 · wide, arbitrary or undefined → 0."
-        },
-        {
-          "key": "rsi",
-          "label": "RSI flag",
-          "max": 1,
-          "desc": "Classic absolute 30/70 convention. Not at a crowded extreme against us → 1 · overbought on a long / oversold on a short → 0 (flagged)."
+          "desc": "Quality and edge of the underlying view — two checks, each 0/1: (1) driver specificity — named, quantified drivers (a margin/volume/pricing/policy path with numbers) vs narrative; (2) variant view — an articulated, computable gap vs consensus (our number vs the street's); pure consensus-hugging scores 0. Each idea also states the condition that would change our mind (the `changeMyMind` field), surfaced on the tile but not scored. dq is sourced only when the drivers trace to cited facts; an uncited thesis is estimated and trips the Medium cap."
         },
         {
           "key": "houseview",
           "label": "House-view fit",
           "max": 2,
           "desc": "Core desk theme, direct expression → 2 · on-theme / adjacent → 1 · off-theme or cuts against a house view → 0."
+        },
+        {
+          "key": "positioning",
+          "label": "Positioning",
+          "max": 2,
+          "desc": "Confirmation / veto, not a driver. Crowd offside our trade is fuel; crowd already with us is unwind risk — a hard read (SI >10% float / extreme CoT) plus a price-crowding read (RSI + stretch from the 50/200-day). Clearly offside → 2 · neutral / mixed → 1 · clearly with us (unwind risk) → 0."
+        },
+        {
+          "key": "technical",
+          "label": "Technical",
+          "max": 2,
+          "desc": "Confirmation / veto, not a driver. Trend and entry agree with the thesis — 50/100/200-day MA alignment, Bollinger entry quality, Fibonacci off the trailing 6-month swing, RSI not at a crowded extreme against us → 2 · mixed → 1 · contradicts → 0."
         }
       ],
       "tiers": [

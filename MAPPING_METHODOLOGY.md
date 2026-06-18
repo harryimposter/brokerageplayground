@@ -122,9 +122,9 @@ neutral `noHoldingScore` (50).
 ### 5.5 House-view fit — moved out of client-fit
 House-view fit is **no longer a client-fit axis**. It is an idea-level property (not a per-client
 signal) and was double-counting holdings already captured by Affinity (5.2) and Gap fit (5.1), so
-it now lives in the **conviction score** (see §5.5a). For *ex-earnings* ideas it is the 8th
-conviction pillar (0–2: core theme/direct → 2 · on-theme/adjacent → 1 · off-theme/against → 0).
-*Earnings* ideas are scored by Carter's rubric, which has no house-view pillar — the on-theme /
+it now lives in the **conviction score** (see §5.5a). For *ex-earnings* ideas it is one of the seven
+conviction pillars (0–2: core theme/direct → 2 · on-theme/adjacent → 1 · off-theme/against → 0).
+*Earnings* ideas are scored by the print rubric, which has no house-view pillar — the on-theme /
 off-theme tag still shows on the tile, it just doesn't enter the earnings conviction sum.
 
 ### 5.5a Conviction — two models by idea kind
@@ -135,8 +135,8 @@ scales to `/100` and bands it. Both models surface in the "How scoring works" mo
 **Earnings / Ex-earnings** toggle, and each idea's drawer renders its own model as collapsed pillar
 tiles (tap to reveal the one-line read).
 
-**Earnings ideas — Carter's Shark Tank print rubric (`EARNINGS_RUBRIC`, /8).** Four pillars, each
-**0–2**, verbatim from the Shark Tank `BUILD_GUIDE.md` earnings rubric:
+**Earnings ideas — print rubric (`EARNINGS_RUBRIC`, /8).** Four pillars, each
+**0–2**, the print-reaction pillars:
 
 | pillar | 0–2 criterion |
 |---|---|
@@ -145,18 +145,34 @@ tiles (tap to reveal the one-line read).
 | Catalyst clarity | pre: a dated, unpriced catalyst; post: a reaction disproportionate to print quality |
 | Positioning & sentiment | short interest >10% float OR extreme positioning |
 
-Carter's banding governs the label: **High** (raw ≥6, no 0 pillar, all sourced) · **High — data
+The banding governs the label: **High** (raw ≥6, no 0 pillar, all sourced) · **High — data
 gap** (same but ≥1 estimated input) · **Medium** (raw 4–5, or any 0 pillar, or consensus
 unverified) · **Low** (raw <4 or two-plus zeros → excluded).
 
-**Ex-earnings ideas — eight-pillar model (`EXEARN_RUBRIC`, /15).** Asymmetry (0–3) · Catalyst
-(0–2) · Consensus + confirmation (0–2) · Positioning (0–2) · Technical (0–2) · Stop / risk-reward
-(0–1) · RSI flag (0–1) · House-view fit (0–2). `score = raw ÷ 15 × 100`; **High ≥75 · Medium ≥55 ·
-Watch ≥0**.
+**Ex-earnings ideas — seven-pillar model (`EXEARN_RUBRIC`, /15).** Asymmetry (0–3) · Catalyst
+(0–2) · Consensus + confirmation (0–2) · **Fundamental thesis (0–2)** · House-view fit (0–2) ·
+Positioning (0–2) · Technical (0–2). `score = raw ÷ 15 × 100`; **High ≥75 · Medium ≥55 · Watch ≥0**.
+
+**The view drives; technicals confirm.** Fundamental thesis + house view + the thesis-bearing
+pillars (Asymmetry, Catalyst, Consensus) carry **11/15 (≈73%)**; Positioning + Technical carry
+**4/15 (≈27%)** and are framed as *confirmation / veto, not drivers* — they can support or kill a view
+but can't manufacture conviction. (Was ~60/40 before this rebalance.) The old Stop / risk-reward pillar
+was removed — a technical stop-loss construct that penalised strategic / thematic basket ideas for not
+being stop-and-target trades; Asymmetry already scores the upside. The **Fundamental thesis**
+pillar (0–2) scores the quality and edge of the view itself through two 0/1 checks — **driver
+specificity** (named, quantified drivers vs narrative) and **variant view** (an articulated, computable
+gap vs consensus — pure consensus-hugging scores 0; authored in the idea's `variant` `{street, us, gap}`
+field). Its `dq` is `sourced` only when the drivers trace to cited facts, so an uncited thesis trips
+the Medium cap. Each idea also carries a `changeMyMind` field — the condition that would invalidate
+the view — surfaced on the conviction tile but **not scored** (a discrete kill-switch would bias the
+score toward dated catalyst trades over strategic holds, the same flaw the Stop pillar had). The old
+standalone **RSI flag** pillar is folded into Technical (price-crowding) and Positioning, removing the
+double-count where RSI hit the score twice. **Consensus** now credits *either* sell-side alignment *or*
+a defensible variant, so it no longer fights the thesis pillar.
 
 **Data-quality cap (global modifier).** If any pillar's core input is `estimated`/`unverified`
 (`capped = true`), the ex-earnings label cannot exceed **Medium**; the earnings model expresses the
-same idea through Carter's "High — data gap" label. With the current playground data (straddle /
+same idea through the "High — data gap" label. With the current playground data (straddle /
 short-interest / RSI feeds not wired up, so those pillars are `estimated`), the cap is binding on
 every idea — wire sourced inputs in and Highs unlock.
 
@@ -240,12 +256,12 @@ it) via `sectorPeg(client, sector)`. There is no second copy.
    surfaced with the MiFID reason, not silently dropped.
 6. **House-view fit removed from client-fit and moved to conviction** (§5.5): it was an idea-level
    property double-counting holdings already in Affinity / Gap fit. It now lives in the conviction
-   score (the 8th pillar of the ex-earnings model; the earnings model has no house-view pillar). The
+   score (a pillar of the ex-earnings model; the earnings model has no house-view pillar). The
    remaining four client-fit weights are the original five rescaled by **1/0.85** (0.29 / 0.29 /
    0.24 / 0.18 — exact fractions in code, §6); client-fit is now a **four-axis** model.
-7. **Conviction split into two models by idea kind** (§5.5a): earnings ideas use Carter's original
-   Shark Tank /8 print rubric verbatim (asymmetry over the trailing 4 prints, consensus, catalyst,
-   positioning); ex-earnings ideas use the eight-pillar /15 model. A per-pillar data-quality tag
+7. **Conviction split into two models by idea kind** (§5.5a): earnings ideas use a four-pillar /8
+   print rubric (asymmetry over the trailing 4 prints, consensus, catalyst, positioning); ex-earnings
+   ideas use the seven-pillar /15 model. A per-pillar data-quality tag
    feeds a cap that holds estimated/unverified ideas at Medium. Both render as collapsed pillar
    tiles, and the "How scoring works" modal toggles between the two rubrics.
 

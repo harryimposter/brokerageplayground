@@ -33,17 +33,17 @@ SRC = HERE / "today_focus.json"
 OUT = HERE / "today_focus.js"
 
 # ---- Conviction rubrics (TWO models, selected by idea kind) -------------------
-# EARNINGS ideas are scored by Carter's original Shark Tank rubric verbatim: four
-# pillars, each 0-2 -> /8, with his own rule-based banding. EX-EARNINGS ideas use
-# the eight-pillar /15 model. Each pillar carries its own `max`, and each pillar's
+# EARNINGS ideas are scored by the print rubric: four pillars, each 0-2 -> /8,
+# with rule-based banding. EX-EARNINGS ideas use the seven-pillar /15 model. Each
+# pillar carries its own `max`, and each pillar's
 # core input is tagged sourced|estimated|unverified (the `dq` field) so the
 # data-quality treatment can read it. Pillar scores + dq are authored in the
 # research file; labels, max, totals, score/100 and the tier are computed here.
 
 EARNINGS_RUBRIC = {
     "model": "earnings",
-    "title": "Earnings ideas — Carter's print rubric",
-    "blurb": "Four pillars, each 0-2 (max 8), scaled to 100. The exact model Carter built for the Shark Tank earnings book.",
+    "title": "Earnings ideas — print rubric",
+    "blurb": "Four pillars, each 0-2 (max 8), scaled to 100. The print-reaction model for the earnings book.",
     "maxRaw": 8,
     "pillars": [
         {"key": "asymmetry",   "label": "Asymmetry signal",      "max": 2, "desc": "Implied straddle move into the print ÷ average absolute realised move over the trailing 4 prints. Materially below 1 (the market is underpricing the event) → 2 · near fair → 1 · implied rich → 0. Wide estimate dispersion can also carry it."},
@@ -56,18 +56,17 @@ EARNINGS_RUBRIC = {
 
 EXEARN_RUBRIC = {
     "model": "exEarnings",
-    "title": "Ex-earnings ideas — eight-pillar conviction",
-    "blurb": "Eight pillars summed to 15, scaled to 100. High ≥ 75 · Medium ≥ 55 · Watch ≥ 0.",
+    "title": "Ex-earnings ideas — seven-pillar conviction",
+    "blurb": "Seven pillars summed to 15, scaled to 100. Fundamental thesis and house view lead (11/15 ≈ 73%); technicals and positioning are capped confirmation (4/15 ≈ 27%). High ≥ 75 · Medium ≥ 55 · Watch ≥ 0.",
     "maxRaw": 15,
     "pillars": [
         {"key": "asymmetry",   "label": "Gap / asymmetry",          "max": 3, "desc": "Thesis expected move (entry → target) ÷ the name's normal move over the same horizon. ≥2.0 → 3 · 1.5-2.0 → 2 · 1.0-1.5 → 1 · <1.0 → 0. The thesis target is a soft input → tagged estimated."},
         {"key": "catalyst",    "label": "Catalyst",                 "max": 2, "desc": "A dated, hard reason it moves soon (earnings, FOMC, CPI, ECB) with a clear trigger → 2 · soft / undated → 1 · none → 0."},
-        {"key": "consensus",   "label": "Consensus + confirmation", "max": 2, "desc": "Sell-side aligned (buy ratio ≥0.6, mean-PT upside, revisions ≥0) AND an independent signal (breakout / fund flow / options skew). Both → 2 · one → 1 · neither → 0."},
-        {"key": "positioning", "label": "Positioning",              "max": 2, "desc": "Crowd offside our trade is fuel; crowd already with us is unwind risk. A hard read (SI >10% float / extreme CoT) plus a price-crowding read (RSI + stretch from the 50/200-day). Either shows the crowd offside → 2 · either shows it with us → 0 · otherwise 1."},
-        {"key": "technical",   "label": "Technical",                "max": 2, "desc": "50/100/200-day MA alignment, Bollinger entry quality, Fibonacci off the trailing 6-month swing. Trend agrees and entry not chasing an exhausted band → 2 · mixed → 1 · contradicts → 0."},
-        {"key": "stop",        "label": "Stop / risk-reward",       "max": 1, "desc": "A clean technical / structural stop AND reward ≥ 2× risk → 1 · wide, arbitrary or undefined → 0."},
-        {"key": "rsi",         "label": "RSI flag",                 "max": 1, "desc": "Classic absolute 30/70 convention. Not at a crowded extreme against us → 1 · overbought on a long / oversold on a short → 0 (flagged)."},
+        {"key": "consensus",   "label": "Consensus + confirmation", "max": 2, "desc": "Either sell-side aligned (buy ratio ≥0.6, mean-PT upside, revisions ≥0) OR a defensible variant view, AND an independent signal (breakout / fund flow / options skew). Both legs → 2 · one → 1 · neither → 0. Alignment and a variant edge both count — they don't fight the thesis pillar."},
+        {"key": "thesis",      "label": "Fundamental thesis",       "max": 2, "desc": "Quality and edge of the underlying view — two checks, each 0/1: (1) driver specificity — named, quantified drivers (a margin/volume/pricing/policy path with numbers) vs narrative; (2) variant view — an articulated, computable gap vs consensus (our number vs the street's); pure consensus-hugging scores 0. Each idea also states the condition that would change our mind (the `changeMyMind` field), surfaced on the tile but not scored. dq is sourced only when the drivers trace to cited facts; an uncited thesis is estimated and trips the Medium cap."},
         {"key": "houseview",   "label": "House-view fit",           "max": 2, "desc": "Core desk theme, direct expression → 2 · on-theme / adjacent → 1 · off-theme or cuts against a house view → 0."},
+        {"key": "positioning", "label": "Positioning",              "max": 2, "desc": "Confirmation / veto, not a driver. Crowd offside our trade is fuel; crowd already with us is unwind risk — a hard read (SI >10% float / extreme CoT) plus a price-crowding read (RSI + stretch from the 50/200-day). Clearly offside → 2 · neutral / mixed → 1 · clearly with us (unwind risk) → 0."},
+        {"key": "technical",   "label": "Technical",                "max": 2, "desc": "Confirmation / veto, not a driver. Trend and entry agree with the thesis — 50/100/200-day MA alignment, Bollinger entry quality, Fibonacci off the trailing 6-month swing, RSI not at a crowded extreme against us → 2 · mixed → 1 · contradicts → 0."},
     ],
     "tiers": [
         {"key": "High",   "min": 75, "label": "High conviction"},
@@ -141,7 +140,7 @@ def _norm_pillars(idea, rubric, warns):
 
 
 def _earnings_label(raw, pillars, capped):
-    """Carter's Shark Tank banding, verbatim."""
+    """Earnings print-rubric banding."""
     zeros = sum(1 for p in pillars if p.get("score", 0) == 0)
     if raw < 4 or zeros >= 2:
         return "Low", "Watch"
@@ -158,10 +157,10 @@ def score_conviction(idea, warns):
     # data-quality: any pillar whose core input isn't sourced trips the modifier
     capped = any(p.get("dq", DQ_OK) != DQ_OK for p in pillars)
     if idea["kind"] == "earnings":
-        # Carter's own labels (incl. "High — data gap") govern the earnings book.
+        # The print rubric's own labels (incl. "High — data gap") govern the earnings book.
         label, tier = _earnings_label(raw, pillars, capped)
     else:
-        # eight-pillar model: tier off the /100 score, then the hard Medium cap.
+        # seven-pillar model: tier off the /100 score, then the hard Medium cap.
         tier = tier_for(score, rubric)
         if capped and tier == "High":
             tier = "Medium"

@@ -803,7 +803,7 @@
       : { type: "ok", title: "Concentration — within range", detail: `Largest position is ${top ? top.weightPct : 0}%; a ${notional}% trade keeps single-name risk in range.` });
 
     checks.push({ type: closer ? "ok" : neutral ? "info" : "warn", title: "Long-term goal alignment",
-      detail: `${c.name}'s objective: "${esc(c.goals.objective)}" (${esc(c.goals.horizon)}). This lifts the <b>${bucket}</b> sleeve and moves the book ${neutral ? "broadly neutrally vs" : (closer ? `~${moveMag}pts closer to` : `~${moveMag}pts further from`)} the strategic target. Funding goal: ${esc(c.goals.funding.headline)} — <b>${esc(c.goals.funding.status)}</b>.` });
+      detail: `${c.name}'s objective: "${esc(c.goals.objective)}" (${esc(c.goals.horizon)}). This lifts the <b>${bucket}</b> sleeve and moves the book ${neutral ? "broadly neutrally vs" : (closer ? `~${moveMag}pts closer to` : `~${moveMag}pts further from`)} the strategic target.${c.goals.funding ? ` Funding goal: ${esc(c.goals.funding.headline)} — <b>${esc(c.goals.funding.status)}</b>.` : ""}` });
 
     if (c.ccy !== "USD")
       checks.push({ type: "info", title: "Currency", detail: `Book base is ${c.ccy}; most ideas are USD-denominated. Consider an FX overlay or ${c.ccy}-hedged sleeve.` });
@@ -1073,11 +1073,12 @@
           <span class="conv-score ${convTierClass(conv.tier)}" title="${conv.score}/100">${conv.score}</span>
           <div class="conv-meta">
             <div class="conv-label">${esc(conv.label || conv.tier)}</div>
-            <div class="conv-sub">${idea.kind === "earnings" ? "Carter's print rubric" : "Eight-pillar model"} · ${conv.raw}/${conv.maxRaw} across ${conv.pillars.length} pillars${conv.capped ? ` · <span class="conv-cap" title="A core input is estimated/unverified">data-quality cap</span>` : ""}</div>
+            <div class="conv-sub">${idea.kind === "earnings" ? "Print rubric" : "Seven-pillar model"} · ${conv.raw}/${conv.maxRaw} across ${conv.pillars.length} pillars${conv.capped ? ` · <span class="conv-cap" title="A core input is estimated/unverified">data-quality cap</span>` : ""}</div>
           </div>
         </div>
         <div class="fcd-head">Tap a pillar to see the read</div>
         <div class="conv-pillars">${conv.pillars.map(pillarHTML).join("")}</div>
+        ${idea.changeMyMind ? `<div class="conv-cmm"><b>What would change our mind:</b> ${esc(idea.changeMyMind)}</div>` : ""}
       </div>
 
       ${intel ? `<div class="drawer-section"><span class="eyebrow">${idea.kind === "earnings" ? "Earnings intelligence" : "The setup"}</span>${intel}</div>` : ""}
@@ -1234,7 +1235,7 @@
       <div class="modal-head"><span class="eyebrow">Methodology</span><h2>How an idea is scored</h2></div>
       <div class="modal-body">
         <h3 class="rub-h">1 · Conviction score — “how good is the idea”</h3>
-        <p class="rub-p">Conviction uses two models, picked by idea type. <b>Earnings</b> ideas use Carter's original Shark Tank print rubric; <b>ex-earnings</b> ideas use the eight-pillar model. Tap a pillar to read its rule.</p>
+        <p class="rub-p">Conviction uses two models, picked by idea type. <b>Earnings</b> ideas use a four-pillar print rubric; <b>ex-earnings</b> ideas use the seven-pillar model. Tap a pillar to read its rule.</p>
         <div class="rub-toggle seg-group" role="tablist">
           <button type="button" class="seg active" data-rubtab="earnings" role="tab">Earnings</button>
           <button type="button" class="seg" data-rubtab="exEarnings" role="tab">Ex-earnings</button>

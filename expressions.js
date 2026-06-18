@@ -860,8 +860,6 @@
       <p class="xd-what">${esc(d.what)}</p>
       <div class="xd-grid">
         <div class="xd-row"><span class="xd-k">How it's built</span><span class="xd-v">${esc(d.mechanics)}</span></div>
-        <div class="xd-row"><span class="xd-k">Underlying</span><span class="xd-v">${esc(d.underlying)}</span></div>
-        <div class="xd-row"><span class="xd-k">Tenor</span><span class="xd-v">${esc(d.tenor)}</span></div>
         <div class="xd-row"><span class="xd-k">Example terms</span><span class="xd-v">${esc(d.example)}</span></div>
       </div>
       <div class="xd-pc">

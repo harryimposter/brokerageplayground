@@ -184,16 +184,17 @@
       "themeId": "gold",
       "offThemeWhy": null,
       "structures": ["Physical / ETC", "Gold accumulator", "Capital-protected note"],
+      "variant": { "street": "Every major bank bullish — year-end targets 25-44% above spot; central banks net buyers", "us": "Same direction — accumulate the pullback into under-protected books", "gap": null },
+      "changeMyMind": "Central banks turning net sellers for two consecutive quarters, or real yields breaking decisively higher.",
       "conviction": {
         "pillars": [
           { "key": "asymmetry", "score": 2, "dq": "estimated", "note": "Bank targets 25-44% above spot versus gold's normal trailing move — roughly a 1.5-2x asymmetry to the upside." },
           { "key": "catalyst", "score": 1, "dq": "sourced", "note": "No single dated catalyst — a structural accumulation on a price pullback." },
           { "key": "consensus", "score": 2, "dq": "sourced", "note": "Every major bank's year-end target sits above spot and central banks are net buyers — sell-side and flow both confirm." },
+          { "key": "thesis", "score": 1, "dq": "estimated", "note": "Driver specificity yes (sourced central-bank tonnage and named bank targets), but no variant edge — this is the consensus call, not a differentiated one. A well-supported follow, not a thesis with an edge." },
+          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core to the Gold & Currency house view as strategic ballast." },
           { "key": "positioning", "score": 1, "dq": "estimated", "note": "~25% off the highs with positioning reset — neither washed-out nor crowded; mild fuel." },
-          { "key": "technical", "score": 1, "dq": "estimated", "note": "Below the January high near-term, but the long-term uptrend is intact — mixed." },
-          { "key": "stop", "score": 1, "dq": "estimated", "note": "The pullback offers a structural level to lean on with 25%+ upside — reward well over risk." },
-          { "key": "rsi", "score": 1, "dq": "estimated", "note": "Well off the highs — not overbought, no crowded-long extreme against a buyer." },
-          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core to the Gold & Currency house view as strategic ballast." }
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "Below the January high near-term, but the long-term uptrend is intact and not overbought — confirms on balance." }
         ]
       },
       "macro": {
@@ -226,16 +227,17 @@
       "themeId": "power",
       "offThemeWhy": null,
       "structures": ["Utility basket", "Thematic basket", "HALO basket (ACM+)"],
+      "variant": { "street": "Crowds the AI chip names to own the theme", "us": "Own the power and grid bottleneck instead — lower-beta, contracted income, still under-owned", "gap": "The market pays up for compute and underprices the electricity constraint behind it" },
+      "changeMyMind": "Datacenter load-growth forecasts being cut, or utility rate-base and PPA approvals stalling.",
       "conviction": {
         "pillars": [
           { "key": "asymmetry", "score": 2, "dq": "estimated", "note": "Datacenter power demand roughly doubling — a large structural move versus the sector's normal drift." },
           { "key": "catalyst", "score": 1, "dq": "sourced", "note": "A structural demand story rather than a single dated event." },
           { "key": "consensus", "score": 1, "dq": "estimated", "note": "IEA data and some sell-side support, but no independent breakout / flow confirmation yet." },
-          { "key": "positioning", "score": 2, "dq": "estimated", "note": "Still under-owned versus the chip names — the crowd is not yet with us, which is fuel." },
-          { "key": "technical", "score": 1, "dq": "estimated", "note": "Multi-year rate-base and load growth; constructive but not a clean breakout." },
-          { "key": "stop", "score": 0, "dq": "estimated", "note": "A thematic basket has no single clean stop — risk is managed by sizing, not a level." },
-          { "key": "rsi", "score": 1, "dq": "estimated", "note": "The sector is not at a crowded extreme." },
-          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core Power & Infrastructure house view." }
+          { "key": "thesis", "score": 2, "dq": "estimated", "note": "Quantified driver (IEA: datacenter load ~1,050 TWh, roughly doubling) and a real variant — own the power bottleneck rather than the crowded chips. Driver yes, variant yes." },
+          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core Power & Infrastructure house view." },
+          { "key": "positioning", "score": 2, "dq": "estimated", "note": "Still under-owned versus the chip names — the crowd is clearly not yet with us, which is fuel." },
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "Multi-year rate-base and load growth; constructive and not at a crowded extreme — confirms, though not a clean breakout." }
         ]
       },
       "macro": {
@@ -266,16 +268,17 @@
       "themeId": "duration",
       "offThemeWhy": null,
       "structures": ["Extend duration", "Bond ladder", "Govt / IG bonds"],
+      "variant": { "street": "Consensus hold; extend-duration is both the Street and the house call", "us": "Same — lock today's yields before the cuts land", "gap": null },
+      "changeMyMind": "The Fed signalling earlier or deeper cuts, or the curve re-steepening sharply.",
       "conviction": {
         "pillars": [
           { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Locking ~4.3-4.5% plus convexity if cuts land is a modest expected move versus normal bond ranges." },
           { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Dated FOMC decision 16-17 Jun; a hold is consensus — a hard, dated reason." },
           { "key": "consensus", "score": 2, "dq": "sourced", "note": "Reuters poll consensus is a hold and the rate path backs extending duration — aligned with an independent macro read." },
+          { "key": "thesis", "score": 1, "dq": "sourced", "note": "Quantified, sourced drivers (FOMC 16-17 Jun hold at 3.50-3.75%, cuts pushed later), but it's the consensus path — no variant edge." },
+          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core Fixed Income house view — extend duration before the cutting cycle." },
           { "key": "positioning", "score": 1, "dq": "sourced", "note": "The crowd is still parked in cash and bills; extending is the contrarian-leaning move." },
-          { "key": "technical", "score": 1, "dq": "estimated", "note": "A duration trade; the curve picture is constructive but mixed." },
-          { "key": "stop", "score": 1, "dq": "estimated", "note": "High-quality bonds give a defined downside; carry plus convexity clears the risk." },
-          { "key": "rsi", "score": 1, "dq": "estimated", "note": "Not a meaningful crowding flag for high-grade duration — treated as neutral." },
-          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core Fixed Income house view — extend duration before the cutting cycle." }
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "A duration trade; the curve picture is constructive and not at a crowding extreme — neutral-to-confirming." }
         ]
       },
       "macro": {
@@ -306,16 +309,17 @@
       "themeId": null,
       "offThemeWhy": "There is no standing desk theme on oil — this is a tactical, event-driven idea off Middle-East supply risk, sized as a hedge, not a strategic house view.",
       "structures": ["Direct equity", "Call overwrite", "Thematic basket"],
+      "variant": { "street": "Prices the US-Iran de-escalation as durable; the geopolitical premium is half-deflated", "us": "Buy the cheap re-escalation hedge — the market is too relaxed on the Hormuz tail", "gap": "Geopolitical tail risk underpriced after the de-escalation rally" },
+      "changeMyMind": "A durable US-Iran deal that keeps the Strait of Hormuz open, removing the re-escalation tail.",
       "conviction": {
         "pillars": [
           { "key": "asymmetry", "score": 2, "dq": "sourced", "note": "A Hormuz re-escalation could retrace much of the move from ~$118 — a large potential move versus oil's normal range." },
           { "key": "catalyst", "score": 1, "dq": "sourced", "note": "Headline-driven — hinges on the Hormuz / Iran path rather than a dated event." },
           { "key": "consensus", "score": 1, "dq": "estimated", "note": "Off-theme tactical; no standing sell-side alignment behind it." },
+          { "key": "thesis", "score": 2, "dq": "estimated", "note": "Sourced price drivers (Brent ~$87 off the ~$118 April peak) and a genuine variant — bet against the de-escalation consensus the market has priced as durable. Driver and variant yes." },
+          { "key": "houseview", "score": 0, "dq": "sourced", "note": "Off-theme — explicitly a tactical hedge, not a strategic house view." },
           { "key": "positioning", "score": 1, "dq": "sourced", "note": "The geopolitical premium is half-deflated — positioning two-sided, no clear edge." },
-          { "key": "technical", "score": 1, "dq": "estimated", "note": "Brent has rolled off the April spike; the chart is mixed." },
-          { "key": "stop", "score": 0, "dq": "estimated", "note": "A majors-plus-overwrite hedge has no clean single stop." },
-          { "key": "rsi", "score": 1, "dq": "estimated", "note": "Not at a crowded extreme." },
-          { "key": "houseview", "score": 0, "dq": "sourced", "note": "Off-theme — explicitly a tactical hedge, not a strategic house view." }
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "Brent has rolled off the April spike and is not at a crowded extreme — chart neutral." }
         ]
       },
       "macro": {

@@ -1,0 +1,284 @@
+/* ============================================================================
+   Brokerage Playground — GOAL INFERENCE engine  (deriveGoals)
+   ----------------------------------------------------------------------------
+   The old model assumed the client HANDED YOU a target split
+   (goals.target = {Growth, Income, Protection, Structured, Liquidity}). Real
+   clients never do that — they say "I want to grow capital," "I have a $19m
+   mortgage," "I need $0.8m/yr." So we INFER the goal from BOTH sides of the
+   balance sheet plus the client's revealed risk appetite, into THREE buckets:
+
+       PROTECTION · INCOME · GROWTH
+
+   Methodology (liability-driven / goals-based, à la Chhabra's risk-allocation):
+     1. Fund the floor first — obligations are not preferences:
+          • near-term bills + debt + a concentrated single name  → PROTECTION
+          • spending draw + debt servicing + debt-matching        → INCOME
+     2. Deploy the surplus by how hard the money must work:
+          • required return (from the funding goal) + horizon + WILLINGNESS → GROWTH
+     3. Normalise the three raw scores to 100%.
+
+   WILLINGNESS is read two ways and blended:
+     • STATED   — parsed from the free-text `risk` string (if any).
+     • REVEALED — read off the CURRENT BOOK: risk-asset share, how little is
+                  parked in safety, and appetite for single-name concentration.
+   When the client states no hard goal, the required-return term goes silent and
+   we lean harder on willingness (confidence reweight) — a missing written goal
+   must never quietly de-risk an obviously aggressive book.
+
+   IMPORTANT — anti-circularity: the book sets the *willingness knob* (a scalar),
+   NOT the target vector. The target is still BUILT by the bucket logic, so the
+   gap between "have" and "need" stays meaningful (≠ "you're always on target").
+
+   Every coefficient below is a calibration choice (like the affinity λ) and lives
+   in PARAMS so it is visible and tunable. Every INPUT, by contrast, is a real
+   measured quantity off the balance sheet.
+
+   Pure function over a single client object. A `client.goalOverride`
+   {Protection, Income, Growth} pins a manual vector and short-circuits the model.
+   Exposed as window.GOALS (browser) and module.exports (Node tests).
+   ========================================================================== */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  if (typeof window !== "undefined") window.GOALS = api;
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  /* today, for converting "...by 2045" into a holding period (env: 2026-06-18) */
+  const NOW_YEAR = 2026;
+
+  const PARAMS = {
+    base: 8,                       // every bucket starts with a small baseline weight
+    /* PROTECTION drivers */
+    nearBillW: 1.0,                // × (near-term bullet liabilities, % of AUM)
+    debtBallastW: 0.3,             // × (total debt load, % of AUM) — stable assets vs leverage
+    concPivot: 15,                 // single-name % above which it creates a protection need
+    concW: 1.0,                    // × (topName% − concPivot)
+    drawdownBump: 15,              // spend-down phase → can't ride out drawdowns
+    shortHorizonW: 3,              // × max(0, 5 − H years)
+    /* INCOME drivers */
+    incomeNeedW: 8,                // × (annual spending draw, % of AUM) — capitalises the draw
+    serviceW: 8,                   // × (annual debt service, % of AUM)
+    debtMatchW: 0.6,              // × (total debt load, % of AUM) — income-match the debt
+    /* GROWTH drivers */
+    reqReturnW: 5,                 // × (required return, %/yr)
+    longHorizonW: 3,               // × max(0, H years − 6)
+    willingW: 30,                  // × willingness, when a required-return signal EXISTS
+    willingWNoGoal: 45,            // × willingness, when there is NO goal signal (lean harder)
+    /* CAUTION — willingness is BIDIRECTIONAL: a LOW appetite must add ballast, not
+       merely shrink Growth. Without this, a client with no liabilities/income needs
+       comes out growth-heavy no matter how cautious they are (Income/Protection only
+       ever got weight from NEEDS). These add (1 − willingness) × W to the defensives. */
+    cautionProtW: 28,              // × (1 − willingness) → Protection (temperament ballast)
+    cautionIncW: 18,               // × (1 − willingness) → Income (stable cash preference)
+    /* WILLINGNESS — revealed blend */
+    revealRiskW: 0.5,              // weight on risk-asset share
+    revealDefenseW: 0.3,           // weight on low-defensiveness
+    revealConcW: 0.2,              // weight on single-name concentration appetite
+    fullDefenseAt: 0.55,           // 55%+ in cash/bonds/gold ⇒ fully cautious (defense signal → 0)
+    fullConcAt: 0.25,              // 25%+ single name ⇒ maxed concentration appetite
+    serviceRate: 0.06              // assumed annual servicing rate on debt-like liabilities
+  };
+
+  /* asset-class roles for the revealed-willingness read (self-contained) */
+  const RISK_ON = ["Equity", "Alternatives"];        // growth / risk assets
+  const DEFENSIVE = ["Cash", "Fixed Income", "Commodity"]; // ballast (gold sits in Commodity)
+
+  const clamp01 = (x) => Math.max(0, Math.min(1, x));
+  const sum = (arr) => arr.reduce((s, v) => s + v, 0);
+
+  /* ---- horizon: phase (accumulate vs draw down) + a midpoint in years ---- */
+  function parseHorizon(client) {
+    const h = String((client.goals && client.goals.horizon) || "").toLowerCase();
+    const phase = /drawdown|decumulat|retire/.test(h) ? "drawdown" : "accumulation";
+    const nums = (h.match(/\d+/g) || []).map(Number);
+    let years = 7;
+    if (nums.length >= 2) years = (nums[0] + nums[1]) / 2;
+    else if (nums.length === 1) years = nums[0];
+    return { phase, years };
+  }
+
+  /* ---- funding goal → required return (%/yr) and/or income need ($/yr) ----
+     Handles three headline shapes seen in the book:
+       • value target   "Grow to €70m by 2035"        → required return
+       • income target  "Fund $3.6m/yr ..."           → income need
+       • BOTH           "Fund $0.8m/yr; grow to $45m"  → both signals on */
+  function parseFunding(client, H) {
+    const f = (client.goals && client.goals.funding) || {};
+    const head = String(f.headline || "").toLowerCase();
+    const unit = String(f.unit || "");
+    const aum = client.aum || 0;
+    const isIncomeUnit = /\/\s*yr/.test(unit);
+
+    // annual income draw
+    let incomeNeed = null;
+    const yrMatch = head.match(/[\$€£]?\s*([\d.]+)\s*m?\s*\/\s*yr/);
+    if (isIncomeUnit || yrMatch) {
+      incomeNeed = yrMatch ? parseFloat(yrMatch[1]) : (typeof f.target === "number" ? f.target : null);
+    }
+
+    // terminal value target → required return
+    let terminalTarget = null;
+    const toMatch = head.match(/to\s*[\$€£]?\s*([\d.]+)\s*m\b/);
+    if (toMatch) terminalTarget = parseFloat(toMatch[1]);
+    else if (!isIncomeUnit && typeof f.target === "number") terminalTarget = f.target;
+
+    // base value the return compounds from: explicit funding.current (value goals), else AUM
+    const baseValue = (!isIncomeUnit && typeof f.current === "number" && f.current > 0) ? f.current : aum;
+
+    // holding period: prefer an explicit "by 20xx", else the horizon midpoint
+    let years = H;
+    const byMatch = head.match(/by\s*(20\d\d)/);
+    if (byMatch) years = Math.max(1, parseInt(byMatch[1], 10) - NOW_YEAR);
+
+    let requiredReturn = null;
+    if (terminalTarget && baseValue > 0 && years > 0 && terminalTarget > baseValue) {
+      requiredReturn = (Math.pow(terminalTarget / baseValue, 1 / years) - 1) * 100;
+    }
+    return { incomeNeed, requiredReturn, years };
+  }
+
+  /* ---- liabilities → near-term bullets vs serviceable debt (both % of AUM) ---- */
+  function parseLiabilities(client) {
+    const aum = client.aum || 0;
+    const list = client.liabilities || [];
+    let nearBill = 0, debtLoad = 0, service = 0;
+    list.forEach((l) => {
+      const amt = +l.amount || 0;
+      const txt = ((l.name || "") + " " + (l.note || "")).toLowerCase();
+      debtLoad += amt;
+      // one-off bill due soon → protection reserve (no recurring servicing)
+      const oneOff = l.near === true || /tax|due|bridge|bill|payable|q[1-4]\b|settlement/.test(txt);
+      // serviceable debt (mortgage / loan / line of credit) → recurring income need
+      const debtLike = /mortgage|loan|line|credit|leverage|margin|borrow/.test(txt);
+      if (oneOff) nearBill += amt;
+      if (debtLike) service += amt * (typeof l.rate === "number" ? l.rate : PARAMS.serviceRate);
+    });
+    const pct = (x) => (aum > 0 ? (x / aum) * 100 : 0);
+    return { nearBillPct: pct(nearBill), debtLoadPct: pct(debtLoad), servicePct: pct(service) };
+  }
+
+  /* ---- willingness: stated (free text) and revealed (the current book) ---- */
+  function statedWillingness(client) {
+    const r = String(client.risk || "").toLowerCase();
+    if (/aggressive|maximum|max\b/.test(r)) return 0.95;
+    if (/growth/.test(r)) return 0.80;
+    if (/moderate|balanced/.test(r)) return 0.50;
+    if (/conservative|cautious|income|preservation|protect/.test(r)) return 0.30;
+    return null;
+  }
+
+  function revealedWillingness(client) {
+    const pos = client.positions || [];
+    const total = sum(pos.map((p) => +p.weightPct || 0)) || 100;
+    const shareOf = (classes) =>
+      sum(pos.filter((p) => classes.includes(p.assetClass)).map((p) => +p.weightPct || 0)) / total;
+
+    const R = clamp01(shareOf(RISK_ON));                          // risk-asset share
+    const defense = shareOf(DEFENSIVE);                           // cash / bonds / gold
+    const D = clamp01(1 - Math.min(1, defense / PARAMS.fullDefenseAt));
+
+    // largest genuine single name (index cores / fundless sleeves excluded)
+    const names = pos.filter((p) => p.ticker && p.ticker !== "—" && p.sector !== "Broad" && (+p.weightPct || 0) > 0);
+    const topName = names.length ? Math.max.apply(null, names.map((p) => +p.weightPct || 0)) : 0;
+    const C = clamp01((topName / 100) / PARAMS.fullConcAt);
+
+    const value = PARAMS.revealRiskW * R + PARAMS.revealDefenseW * D + PARAMS.revealConcW * C;
+    return { value: clamp01(value), R, D, C, topName, riskShare: R, defenseShare: defense };
+  }
+
+  /* ---- largest-remainder rounding so the vector sums to EXACTLY 100 ---- */
+  function normalizeTo100(raw) {
+    const keys = Object.keys(raw);
+    const tot = sum(keys.map((k) => raw[k])) || 1;
+    const exact = keys.map((k) => ({ k, v: (raw[k] / tot) * 100 }));
+    const floored = exact.map((e) => ({ k: e.k, base: Math.floor(e.v), rem: e.v - Math.floor(e.v) }));
+    let left = 100 - sum(floored.map((f) => f.base));
+    floored.sort((a, b) => b.rem - a.rem);
+    const out = {};
+    floored.forEach((f, i) => { out[f.k] = f.base + (i < left ? 1 : 0); });
+    return out;
+  }
+
+  /* ===================== the inference ===================== */
+  function deriveGoals(client) {
+    // manual override short-circuits the model
+    if (client.goalOverride) {
+      const v = normalizeTo100({
+        Protection: +client.goalOverride.Protection || 0,
+        Income: +client.goalOverride.Income || 0,
+        Growth: +client.goalOverride.Growth || 0
+      });
+      return { vector: v, source: "override", confidence: 1, drivers: ["Manually pinned by advisor"],
+               raw: v, willingness: null, inputs: null };
+    }
+
+    const { phase, years: H } = parseHorizon(client);
+    const liab = parseLiabilities(client);
+    const fund = parseFunding(client, H);
+    const rev = revealedWillingness(client);
+    const stated = statedWillingness(client);
+
+    // blend stated + revealed willingness (revealed always available)
+    const willingness = stated == null ? rev.value : 0.5 * stated + 0.5 * rev.value;
+
+    const incomeNeedPct = fund.incomeNeed != null && client.aum ? (fund.incomeNeed / client.aum) * 100 : 0;
+    const reqReturn = fund.requiredReturn || 0;
+    const hasGoalSignal = reqReturn > 0;
+    const willingCoef = hasGoalSignal ? PARAMS.willingW : PARAMS.willingWNoGoal;
+    const isDrawdown = phase === "drawdown";
+
+    const concExcess = Math.max(0, rev.topName - PARAMS.concPivot);
+    const caution = 1 - willingness;   // low appetite → ballast (bidirectional willingness)
+
+    const P = PARAMS.base
+      + PARAMS.nearBillW * liab.nearBillPct
+      + PARAMS.debtBallastW * liab.debtLoadPct
+      + PARAMS.concW * concExcess
+      + (isDrawdown ? PARAMS.drawdownBump : 0)
+      + PARAMS.shortHorizonW * Math.max(0, 5 - H)
+      + PARAMS.cautionProtW * caution;
+
+    const I = PARAMS.base
+      + PARAMS.incomeNeedW * incomeNeedPct
+      + PARAMS.serviceW * liab.servicePct
+      + PARAMS.debtMatchW * liab.debtLoadPct
+      + (isDrawdown ? PARAMS.drawdownBump : 0)
+      + PARAMS.cautionIncW * caution;
+
+    const G = PARAMS.base
+      + PARAMS.reqReturnW * reqReturn
+      + PARAMS.longHorizonW * Math.max(0, H - 6)
+      + willingCoef * willingness;
+
+    const raw = { Protection: +P.toFixed(1), Income: +I.toFixed(1), Growth: +G.toFixed(1) };
+    const vector = normalizeTo100(raw);
+
+    const source = hasGoalSignal ? "stated-goal" : (stated != null ? "stated-risk" : "revealed");
+    // confidence: highest with a hard goal, lowest when leaning purely on the book
+    const confidence = hasGoalSignal ? 0.9 : (stated != null ? 0.7 : 0.55);
+
+    const drivers = [];
+    if (reqReturn > 0) drivers.push(`Needs ~${reqReturn.toFixed(1)}%/yr over ${fund.years}y to hit the funding goal → Growth`);
+    if (incomeNeedPct > 0) drivers.push(`Income draw ${incomeNeedPct.toFixed(1)}% of book → Income`);
+    if (liab.servicePct > 0) drivers.push(`Debt servicing ${liab.servicePct.toFixed(1)}% of book → Income`);
+    if (liab.debtLoadPct > 0) drivers.push(`Debt load ${liab.debtLoadPct.toFixed(0)}% of book → Income/Protection matching`);
+    if (liab.nearBillPct > 0) drivers.push(`Near-term bill ${liab.nearBillPct.toFixed(1)}% of book → Protection reserve`);
+    if (concExcess > 0) drivers.push(`${rev.topName.toFixed(0)}% single-name concentration → Protection`);
+    if (isDrawdown) drivers.push(`Drawdown phase → Income/Protection`);
+    drivers.push(`Willingness ${willingness.toFixed(2)} (${stated == null ? "revealed only" : "stated+revealed"}: ${Math.round(rev.riskShare * 100)}% risk assets, ${Math.round(rev.defenseShare * 100)}% defensive, ${rev.topName.toFixed(0)}% top name) → Growth`);
+
+    return {
+      vector, raw, source, confidence, drivers,
+      willingness: { value: +willingness.toFixed(3), stated, revealed: +rev.value.toFixed(3), R: +rev.R.toFixed(3), D: +rev.D.toFixed(3), C: +rev.C.toFixed(3) },
+      inputs: {
+        aum: client.aum, horizonYears: H, phase,
+        requiredReturnPct: +reqReturn.toFixed(2), incomeNeedPct: +incomeNeedPct.toFixed(2),
+        nearBillPct: +liab.nearBillPct.toFixed(2), debtLoadPct: +liab.debtLoadPct.toFixed(2),
+        servicePct: +liab.servicePct.toFixed(2), topNamePct: +rev.topName.toFixed(1)
+      }
+    };
+  }
+
+  return { deriveGoals, parseHorizon, parseFunding, parseLiabilities, revealedWillingness, statedWillingness, PARAMS };
+});
