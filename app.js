@@ -20,6 +20,7 @@
   let DATA = { themes: [], ideas: [], clients: window.SEED.clients };
   let activeThemeId = null;
   let selectedClientId = null;
+  let currentDrawer = null;   // {type:"focus"|"idea", id} — so live recompute can re-render the open drawer
   let ptFindings = [];
   let viewsQuery = "";   // Solutions Views search
   let focusQuery = "";   // Today's Focus search
@@ -84,6 +85,64 @@
     if (selectedClientId) renderClientDetail(clientById(selectedClientId));
   }
   const isDismissed = (id) => (userData.dismissedFocus || []).includes(id);
+
+  /* ---------- advisor comfort / concentration limits (editable, persisted) ----------
+     The per-bucket single-sector caps (+ optional per-sector overrides) live in
+     mapping.js PARAMS.affinity (comfortByBucket / sectorComfort) and are READ by
+     sectorPeg — the Affinity over-limit penalty. We let the advisor amend them here,
+     persist to the same bp_user_data store, apply them into PARAMS, and recompute all
+     fits live. Defaults are captured at boot so "reset" can restore them. NO scoring
+     math changes — only the cap VALUES the existing penalty already reads. */
+  const COMFORT_BUCKETS = ["Growth", "Income", "Preservation"];
+  const COMFORT_DEFAULTS = Object.assign({}, (window.MAPPING && window.MAPPING.PARAMS.affinity.comfortByBucket) || { Growth: 25, Income: 15, Preservation: 12 });
+  const COMFORT_SECTORS = ["Technology", "Broad", "Utilities", "Energy", "Healthcare", "Financials", "Industrials", "Consumer", "Materials", "Rates", "Credit", "Gold", "Infrastructure", "Real Estate", "FX", "Crypto"];
+  function applyStoredComfort() {
+    const A = window.MAPPING && window.MAPPING.PARAMS.affinity; if (!A) return;
+    const c = userData.comfort || {};
+    COMFORT_BUCKETS.forEach(k => { const v = c.byBucket && c.byBucket[k]; if (typeof v === "number" && isFinite(v)) A.comfortByBucket[k] = v; });
+    A.sectorComfort = Object.assign({}, c.bySector || {});
+  }
+  function persistComfort() {
+    const A = window.MAPPING.PARAMS.affinity;
+    userData.comfort = { byBucket: Object.assign({}, A.comfortByBucket), bySector: Object.assign({}, A.sectorComfort) };
+    saveUser(userData);
+  }
+  function recomputeFits() {
+    renderFocus();
+    if (selectedClientId) renderClientDetail(clientById(selectedClientId));
+    refitOpenDrawer();
+  }
+  function refitOpenDrawer() {
+    const dr = $("#drawer");
+    if (!currentDrawer || !dr || !dr.classList.contains("open")) return;
+    if (currentDrawer.type === "focus") openFocusDrawer(currentDrawer.id);
+    else if (currentDrawer.type === "idea") openIdeaDrawer(currentDrawer.id);
+  }
+  const clampPct = (raw) => { const v = Math.round(parseFloat(raw)); return isFinite(v) ? Math.max(1, Math.min(100, v)) : null; };
+  function setCapBucket(bucket, raw) {
+    const v = clampPct(raw); if (v == null) return;
+    window.MAPPING.PARAMS.affinity.comfortByBucket[bucket] = v; persistComfort(); recomputeFits();
+  }
+  function setCapSector(sector, raw) {
+    const v = clampPct(raw); if (v == null) return;
+    window.MAPPING.PARAMS.affinity.sectorComfort[sector] = v; persistComfort(); recomputeFits();
+  }
+  function removeCapSector(sector) {
+    delete window.MAPPING.PARAMS.affinity.sectorComfort[sector]; persistComfort(); recomputeFits(); openRubric();
+  }
+  function addCapSector(sector, raw) {
+    if (!sector) return;
+    const v = clampPct(raw); if (v == null) return;
+    window.MAPPING.PARAMS.affinity.sectorComfort[sector] = v; persistComfort(); recomputeFits(); openRubric();
+  }
+  function resetComfort() {
+    const A = window.MAPPING.PARAMS.affinity;
+    A.comfortByBucket = Object.assign({}, COMFORT_DEFAULTS);
+    A.sectorComfort = {};
+    delete userData.comfort; saveUser(userData);
+    recomputeFits(); openRubric();
+  }
+  applyStoredComfort();   // apply any persisted overrides into PARAMS before the first render
 
   /* ---------- helpers ---------- */
   const clientById = (id) => DATA.clients.find(c => c.id === id);
@@ -227,6 +286,7 @@
       <div class="rec-line"><span class="rec-k">Action</span><span class="rec-v"><span class="rec-action">${esc(action)}</span></span></div>
       ${pref ? `<div class="rec-line"><span class="rec-k">Preferred</span><span class="rec-v">${esc(exprLabel(pref))}${why ? ` <span class="rec-why">— ${esc(why)}</span>` : ""}</span></div>` : ""}
       ${profs ? `<div class="rec-line"><span class="rec-k">By profile</span><span class="rec-v rec-prof">${profs}</span></div>` : ""}
+      ${(() => { const cap = window.MAPPING.sectorPeg(null, idea.sector); return `<div class="rec-line"><span class="rec-k">Comfort cap</span><span class="rec-v">${esc(idea.sector)} <b>${cap}%</b> <span class="rec-why">— your single-sector limit (editable in “How scoring works”)</span></span></div>`; })()}
     </div>`;
   }
   // FEATURE 2 — the per-client best-implementation tag (client context only)
@@ -234,6 +294,44 @@
     const b = bestExpr(idea.structures, clientProfile(client), client);
     if (!b) return "";
     return `<span class="best-impl">Best for ${esc(client.name)}: <b>${esc(exprLabel(b))}</b></span>`;
+  }
+
+  /* CHANGE 2 — combined gap-vs-comfort line for a client: the client's GOAL gap
+     (their strategic target) and YOUR comfort limit (concentration cap) for the
+     idea's sector, side by side. Wording only — reads the same values the engine
+     already scores (goalsFor / currentBuckets / sectorPeg / exposure); no math. */
+  function gapComfortNote(idea, client) {
+    if (!window.GOALS || !window.MAPPING || !idea || !client) return "";
+    const bucket = idea.bucket;
+    const goal = window.GOALS.goalsFor(client) || {};
+    const cur = window.GOALS.currentBuckets(client) || {};
+    const tgt = Math.round(goal[bucket] || 0);
+    const have = Math.round(cur[bucket] || 0);
+    const gap = tgt - have;                       // + = under target (room to add)
+    const fitsGap = tgt > 0 && gap >= 2;
+    const sector = idea.sector;
+    let exp = 0; try { exp = window.Scanner.exposure(client).bySector[sector] || 0; } catch (e) {}
+    const sx = Math.round(exp * 10) / 10;
+    const cap = window.MAPPING.sectorPeg(client, sector);
+    const overComfort = sx > cap;
+    const C = esc(client.name), B = esc(bucket), S = esc(sector);
+    const capTxt = `${sx}% vs your ${cap}% cap`;
+    let state, msg;
+    if (fitsGap && overComfort) {
+      state = "flag";
+      msg = `Fits ${C}'s ${B} gap (${gap}pts under target) — but ${C} is <b>over your comfort limit on ${S}</b> (${capTxt}). Recommend, but flagged for your call.`;
+    } else if (fitsGap) {
+      state = "clean";
+      msg = `Fits ${C}'s ${B} gap (${gap}pts under target) and sits within your ${S} comfort limit (${capTxt}). Clean to recommend.`;
+    } else if (overComfort) {
+      state = "trim";
+      msg = `${C} is at/over their ${B} goal <b>and over your comfort limit on ${S}</b> (${capTxt}) — trim rather than add.`;
+    } else {
+      state = "neutral";
+      const goalState = gap < 0 ? `already at/over their ${B} goal` : `near their ${B} goal`;
+      msg = `${C} is ${goalState}, and within your ${S} comfort limit (${capTxt}).`;
+    }
+    return `<p class="gap-comfort gc-${state}">${msg}</p>`;
   }
 
   const sourceTag = (src) => src === "Portfolio"
@@ -354,6 +452,7 @@
   function openIdeaDrawer(ideaId) {
     const idea = ideaById(ideaId);
     if (!idea) return;
+    currentDrawer = { type: "idea", id: ideaId };
     const theme = themeById(idea.themeId);
     const clients = clientsForIdea(idea);
 
@@ -368,6 +467,7 @@
         </div>
         <p class="why">${esc(x.reason)}</p>
         ${blocked ? `<p class="why" style="color:var(--neg)">⚠️ Retail — complex structure; needs a non-complex alternative.</p>` : ""}
+        ${gapComfortNote(idea, cl)}
         ${bestForClientTag(idea, cl)}
         <div class="go">View in Advisor Book ›</div>
       </div>`;
@@ -416,6 +516,7 @@
     $("#drawer").setAttribute("aria-hidden", "false");
   }
   function closeDrawer() {
+    currentDrawer = null;
     $("#overlay").classList.remove("open");
     $("#drawer").classList.remove("open");
     $("#drawer").setAttribute("aria-hidden", "true");
@@ -1105,6 +1206,7 @@
         <span class="fcl-fit ${fitTierClass(flag.tier)}" title="Client-fit score">${flag.fit}<span class="fcl-fit-lbl">fit</span></span>
       </div>
       <p class="fcl-why">${esc(flag.why)}</p>
+      ${gapComfortNote(idea, c)}
       ${bestForClientTag(idea, c)}
       <button type="button" class="fcl-expand">Why ${esc(c.name)}? See the per-axis breakdown ›</button>
       <div class="fcl-axes" hidden>
@@ -1259,6 +1361,7 @@
   function openFocusDrawer(ideaOrId) {
     const idea = typeof ideaOrId === "string" ? FOCUS_BY_ID[ideaOrId] : ideaOrId;
     if (!idea) return;
+    currentDrawer = { type: "focus", id: idea.id };
     $("#drawer").innerHTML = `
       <div class="drawer-head">
         <button class="drawer-close" id="drawerClose" aria-label="Close">×</button>
@@ -1402,16 +1505,31 @@
           <h3 class="rub-h">Global tradability gate — binary, applied last</h3>
           <p class="rub-p"><b>Final Client-Fit = Tradability × (weighted sum of the four axes).</b> Tradability is binary (MiFID): if the client can't trade the idea's natural expression — e.g. a Retail client and an OTC derivative — Tradability is 0, so the fit is 0 and the idea is <b>suppressed</b> for that client (shown with the reason, not silently dropped). Otherwise it's 1 and passes the weighted sum straight through — the four weights already sum to 1.00, so nothing is re-normalised.</p>
         </div>
-        ${(() => { const P = window.MAPPING.PARAMS.affinity.comfortByBucket; return `
-        <div class="rub-pegs">
-          <h3 class="rub-h">Comfort limits — by the asset's goal bucket</h3>
-          <p class="rub-p">The <b>Affinity fit</b> penalty punishes overshoot <i>beyond</i> a sector's comfort limit. The limit is set by the <b>asset's goal bucket</b> (e.g. gold → Preservation), <i>not</i> the client's mandate — so gold is held to the Preservation limit for every client alike.</p>
-          <div class="peg-row">
-            <span class="peg"><b>Growth</b> ${P.Growth}%</span>
-            <span class="peg"><b>Income</b> ${P.Income}%</span>
-            <span class="peg"><b>Preservation</b> ${P.Preservation}%</span>
+        ${(() => {
+          const A = window.MAPPING.PARAMS.affinity, P = A.comfortByBucket, SC = A.sectorComfort || {};
+          const ovRows = Object.keys(SC).length
+            ? Object.keys(SC).map(s => `<div class="cap-ov-row"><span class="cap-ov-sec">${esc(s)}</span><input class="cap-input" type="number" min="1" max="100" step="1" data-cap-sector="${esc(s)}" value="${SC[s]}"><span class="cap-pct">%</span><button type="button" class="cap-ov-rm" data-cap-remove="${esc(s)}" title="Remove override">✕</button></div>`).join("")
+            : `<div class="cap-ov-none">No per-sector overrides — the bucket cap applies to every sector.</div>`;
+          const opts = COMFORT_SECTORS.filter(s => SC[s] == null).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+          return `
+        <div class="rub-pegs cap-editor">
+          <h3 class="rub-h">Your comfort / concentration limits — <span class="cap-editable">editable</span></h3>
+          <p class="rub-p">The maximum single-sector exposure <b>you</b> are comfortable with, by the asset's goal bucket (gold → Preservation, tech → Growth, etc.). The <b>Affinity-fit</b> penalty kicks in when a book runs <i>over</i> this cap for an idea's sector. These are <b>your</b> limits — distinct from each client's goal target — and every fit recomputes live as you change them.</p>
+          <div class="cap-grid">
+            ${COMFORT_BUCKETS.map(k => `<label class="cap-field"><span class="cap-lbl">${k}</span><input class="cap-input" type="number" min="1" max="100" step="1" data-cap-bucket="${k}" value="${P[k]}"><span class="cap-pct">%</span></label>`).join("")}
           </div>
-        </div>`; })()}
+          <div class="cap-ov">
+            <div class="cap-ov-h">Per-sector overrides <span class="cap-ov-hint">optional — a tighter (or looser) cap for one sector wins over its bucket cap</span></div>
+            <div id="capOvList">${ovRows}</div>
+            <div class="cap-ov-add">
+              <select id="capOvSector" class="cap-sel">${opts}</select>
+              <input id="capOvVal" class="cap-input" type="number" min="1" max="100" step="1" placeholder="%">
+              <button type="button" class="btn btn-ghost cap-add-btn" id="capOvAdd">+ Add override</button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-ghost cap-reset" id="capReset">↺ Reset to defaults (${COMFORT_DEFAULTS.Growth} / ${COMFORT_DEFAULTS.Income} / ${COMFORT_DEFAULTS.Preservation})</button>
+        </div>`;
+        })()}
       </div>
       <div class="modal-foot"><button class="btn btn-primary" id="rubClose">Got it</button></div>`);
     $("#rubClose").onclick = closeModal;
@@ -1430,6 +1548,12 @@
       btn.setAttribute("aria-expanded", String(open));
       item.classList.toggle("open", open);
     }));
+    // editable comfort limits — live recompute on change (no modal re-render while typing)
+    $$("[data-cap-bucket]", modal).forEach(inp => inp.addEventListener("input", () => setCapBucket(inp.dataset.capBucket, inp.value)));
+    $$("[data-cap-sector]", modal).forEach(inp => inp.addEventListener("input", () => setCapSector(inp.dataset.capSector, inp.value)));
+    $$("[data-cap-remove]", modal).forEach(b => b.addEventListener("click", () => removeCapSector(b.dataset.capRemove)));
+    const capAdd = $("#capOvAdd"); if (capAdd) capAdd.addEventListener("click", () => addCapSector($("#capOvSector").value, $("#capOvVal").value));
+    const capReset = $("#capReset"); if (capReset) capReset.addEventListener("click", resetComfort);
   }
 
   /* ----------------------- goal-bucket glossary modal ----------------- */
