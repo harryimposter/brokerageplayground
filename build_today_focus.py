@@ -33,6 +33,18 @@ COVERAGE SPEC (what every sweep MUST span — not just US equity/earnings):
   unwind) / stop — carried in a `levels` block — primarily across FX (and where relevant
   rates/equity). The coverage check WARNS if no tactical idea (or no tactical FX idea) is present.
 
+  TACTICAL TRIGGER GATE (event/move-driven ideas don't sit on the board permanently):
+  a tactical idea (one carrying a `levels` block) MUST also carry:
+    - `trigger`   — the stated condition that justifies it NOW (e.g. "USD/JPY pushed into
+                    the 158 sell-zone overnight"); and
+    - `triggered` — a boolean: true only when that condition is actually met today.
+  Only TRIGGERED tactical ideas are written into today_focus.js (so the app only ever
+  surfaces/flags a tactical idea with a live justification, shown as "Why now: <trigger>").
+  Tactical ideas that are NOT triggered are dropped from the output and reported. Tactical
+  options are short-dated DIRECTIONAL/VOL trades — bucket "Growth" / goalType "appreciation"
+  (a directional FX option is a growth expression, not a hedge). Non-tactical (strategic /
+  earnings) ideas are unaffected by this gate.
+
   EARNINGS must include BOTH stances:
     - "pre-position" — enter INTO the print (report date in the FUTURE);
     - "post-print"   — play the REACTION of a name that has ALREADY reported (report
@@ -207,6 +219,45 @@ def score_conviction(idea, warns):
     return idea
 
 
+# ---- Tactical trigger gate ---------------------------------------------------
+# A tactical idea is a short-dated option trade carrying a `levels` block (defined
+# entry/target/stop). Tactical ideas are event/move-driven and must not sit on the
+# board permanently: each MUST declare a `trigger` (the condition that justifies it
+# now) and a `triggered` boolean; only triggered ones ship.
+def is_tactical(idea):
+    return bool(idea.get("levels"))
+
+
+def validate_tactical(idea, warns):
+    """Enforce the trigger contract on tactical ideas (warn, never silently pass)."""
+    if not is_tactical(idea):
+        return
+    trig = idea.get("trigger")
+    if not (trig and str(trig).strip()):
+        warns.append(f"{idea['id']}: tactical idea (has a `levels` block) but no `trigger` text — REQUIRED (the live condition that justifies surfacing it now)")
+    if not isinstance(idea.get("triggered"), bool):
+        warns.append(f"{idea['id']}: tactical idea needs a boolean `triggered` (true only when the trigger is actually met today) — defaulting to false so it does NOT surface")
+        idea["triggered"] = False
+    # a directional/vol FX option is a GROWTH expression, not a hedge — nudge if mis-bucketed
+    if idea.get("bucket") == "Preservation":
+        warns.append(f"{idea['id']}: tactical option bucketed 'Preservation' — short-dated directional/vol option trades are Growth/appreciation; check the classification")
+
+
+def gate_tactical(data, warns):
+    """Drop tactical ideas that are not triggered from the shipped sections. Returns the
+    list of (id, trigger) dropped, and logs what shipped vs what was held back."""
+    dropped = []
+    for section in ("earnings", "exEarnings"):
+        kept = []
+        for idea in data.get(section, []):
+            if is_tactical(idea) and idea.get("triggered") is not True:
+                dropped.append((idea.get("id"), idea.get("trigger", "")))
+            else:
+                kept.append(idea)
+        data[section] = kept
+    return dropped
+
+
 def validate(idea, as_of, warns):
     if len(idea.get("sources", [])) < 2:
         warns.append(f"{idea['id']}: fewer than 2 sources cited")
@@ -291,8 +342,13 @@ def main():
         for idea in data.get(section, []):
             idea["kind"] = "earnings" if section == "earnings" else "ex-earnings"
             validate(idea, as_of, warns)
+            validate_tactical(idea, warns)
             ensure_intent(idea, warns)
             score_conviction(idea, warns)
+
+    # tactical gate: only TRIGGERED tactical ideas ship. Validation above ran on the full
+    # set (so a missing trigger always warns); the drop happens here, before coverage/output.
+    dropped_tactical = gate_tactical(data, warns)
 
     check_coverage(data, warns)
 
@@ -308,6 +364,10 @@ def main():
     n = len(data.get("earnings", [])) + len(data.get("exEarnings", []))
     print(f"Wrote {OUT.name}: {n} ideas "
           f"({len(data.get('earnings', []))} earnings, {len(data.get('exEarnings', []))} ex-earnings) for {data.get('asOf')}.")
+    if dropped_tactical:
+        print(f"TACTICAL GATE: held back {len(dropped_tactical)} un-triggered tactical idea(s) (not on the board):")
+        for tid, trig in dropped_tactical:
+            print(f"  - {tid}: trigger not met — {trig}")
     if warns:
         print("VALIDATION WARNINGS:")
         for w in warns:

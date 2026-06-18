@@ -262,6 +262,7 @@
     return `<div class="drawer-section rec-block">
       <span class="eyebrow">Recommendation</span>${stanceTag(idea)}
       ${trade ? `<div class="rec-trade">${esc(trade)}</div>` : ""}
+      ${idea.trigger ? `<div class="rec-whynow"><b>Why now —</b> ${esc(idea.trigger)}</div>` : ""}
       <div class="rec-line"><span class="rec-k">Action</span><span class="rec-v"><span class="rec-action">${esc(action)}</span></span></div>
       ${pref ? `<div class="rec-line"><span class="rec-k">Preferred</span><span class="rec-v">${esc(exprLabel(pref))}${why ? ` <span class="rec-why">— ${esc(why)}</span>` : ""}</span></div>` : ""}
       ${profs ? `<div class="rec-line"><span class="rec-k">By profile</span><span class="rec-v rec-prof">${profs}</span></div>` : ""}
@@ -1287,6 +1288,7 @@
           <div class="ft-headline">${esc(idea.headline)}</div>
         </div>
       </div>
+      ${idea.trigger ? `<div class="ft-whynow"><b>Why now</b> ${esc(idea.trigger)}</div>` : ""}
       <div class="ft-tags">
         <span class="fc-tag ${idea.kind === "earnings" ? "earn" : "macro"}">${idea.kind === "earnings" ? "Earnings" : "Ex-earnings"}</span>
         ${stanceTag(idea)}
@@ -1511,7 +1513,7 @@
           <h3 class="rub-h">Your comfort / concentration limits — <span class="cap-editable">editable</span></h3>
           <p class="rub-p">The maximum single-sector exposure <b>you</b> are comfortable with, by the asset's goal bucket (gold → Preservation, tech → Growth, etc.). The <b>Affinity-fit</b> penalty kicks in when a book runs <i>over</i> this cap for an idea's sector. These are <b>your</b> limits — distinct from each client's goal target — and every fit recomputes live as you change them.</p>
           <div class="cap-grid">
-            ${COMFORT_BUCKETS.map(k => `<label class="cap-field"><span class="cap-lbl">${k}</span><input class="cap-input" type="number" min="1" max="100" step="1" data-cap-bucket="${k}" value="${P[k]}"><span class="cap-pct">%</span></label>`).join("")}
+            ${COMFORT_BUCKETS.map(k => { const overridden = P[k] !== COMFORT_DEFAULTS[k]; return `<label class="cap-field"><span class="cap-lbl">${k}</span><input class="cap-input" type="number" min="1" max="100" step="1" data-cap-bucket="${k}" value="${P[k]}"><span class="cap-pct">%</span>${overridden ? `<span class="cap-ovr" title="Your saved override — differs from the ${COMFORT_DEFAULTS[k]}% default">overridden · default ${COMFORT_DEFAULTS[k]}%</span>` : ""}</label>`; }).join("")}
           </div>
           <div class="cap-ov">
             <div class="cap-ov-h">Per-sector overrides <span class="cap-ov-hint">optional — a tighter (or looser) cap for one sector wins over its bucket cap</span></div>

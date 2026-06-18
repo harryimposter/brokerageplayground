@@ -1320,21 +1320,24 @@ window.TODAY_FOCUS = {
     {
       "id": "tac-usdjpy-puts",
       "tradeStatement": "Long short-dated USD/JPY puts — buy ~156-strike 4–6wk puts (~1% premium) to play a yen-strength snapback: 158 is in MoF-intervention territory and the BoJ is set to hike late June. Entry ~158, take profit / unwind into 153–154, cut if spot breaks back above ~161.",
-      "intent": "protect",
-      "action": "Buy puts (tactical hedge, defined-risk)",
+      "intent": "add",
+      "action": "Buy puts (tactical, defined-risk)",
       "preferredExpression": "FX puts (USD/JPY)",
       "name": "USD/JPY downside",
       "ticker": "USD/JPY",
       "sector": "FX",
       "assetClass": "Multi-Asset",
-      "bucket": "Preservation",
-      "goalType": "protection",
+      "bucket": "Growth",
+      "goalType": "appreciation",
       "riskProfile": {
         "vol": "high",
         "beta": "moderate",
         "structured": false
       },
       "naturalExpression": "FX puts (USD/JPY)",
+      "tactical": true,
+      "triggered": true,
+      "trigger": "USD/JPY has pushed up to ~158 overnight — into the MoF-intervention sell-zone — ahead of the late-June BoJ decision; the level itself is the live trigger for short-dated downside.",
       "levels": {
         "tenor": "4–6 weeks",
         "entry": "~158 (sell-zone)",
@@ -1460,307 +1463,26 @@ window.TODAY_FOCUS = {
       "kind": "ex-earnings"
     },
     {
-      "id": "tac-eurusd-callspread",
-      "tradeStatement": "Long a EUR/USD call spread — buy 1.18 / sell 1.21 calls, 4–6wk (~0.7% net) to play euro upside after the 11-Jun ECB hike to 2.25% narrows the Fed-ECB gap. Entry ~1.17, target 1.20–1.21, max loss = the ~0.7% net premium; thesis fails if a hawkish-Fed risk-off drags EUR/USD back below ~1.155.",
-      "intent": "add",
-      "action": "Buy call spread (tactical, defined-risk)",
-      "preferredExpression": "FX call spread (EUR/USD)",
-      "name": "EUR/USD upside",
-      "ticker": "EUR/USD",
-      "sector": "FX",
-      "assetClass": "Multi-Asset",
-      "bucket": "Growth",
-      "goalType": "appreciation",
-      "riskProfile": {
-        "vol": "high",
-        "beta": "moderate",
-        "structured": false
-      },
-      "naturalExpression": "FX call spread (EUR/USD)",
-      "levels": {
-        "tenor": "4–6 weeks",
-        "entry": "~1.17",
-        "target": "1.20–1.21",
-        "stop": "max loss = ~0.7% net premium; fails below ~1.155"
-      },
-      "headline": "ECB just hiked to 2.25% — a defined-risk EUR/USD call spread for euro catch-up",
-      "thesis": "The ECB raised its policy rate 25bp to 2.25% on 11 June as euro-area inflation ran near 3.0%, while the Fed's hawkish hold keeps it on pause — the Fed-ECB spread is set to narrow, the core of the post-peak-dollar / euro-recovery view. With EUR/USD around 1.17 and 2026 outlooks clustering at 1.15–1.19 (and seasonality eyeing 1.18+), express the upside cheaply and with capped risk: a 1.18/1.21 call spread for a few weeks. Max loss is the ~0.7% net premium; target 1.20–1.21. Invalidated by a hawkish-Fed-driven risk-off that re-bids the dollar and pulls EUR/USD under ~1.155.",
-      "themeId": null,
-      "offThemeWhy": "Tactical post-ECB directional trade — a short-dated, defined-risk expression of the euro-recovery lean, not the standing house view.",
-      "structures": [
-        "FX call spread (EUR/USD)",
-        "FX calls (EUR/USD)",
-        "FX risk reversal"
-      ],
-      "variant": {
-        "street": "Bulls see a narrowing Fed-ECB spread lifting EUR/USD into 2026",
-        "us": "Same direction, expressed cheap and capped post-hike — own the catch-up without paying full premium",
-        "gap": "Near-term firm dollar makes the option spread an efficient way in"
-      },
-      "changeMyMind": "A hawkish-Fed risk-off (or a dovish ECB walk-back) that re-bids the dollar and drives EUR/USD back below ~1.155.",
-      "conviction": {
-        "pillars": [
-          {
-            "key": "asymmetry",
-            "score": 1,
-            "dq": "estimated",
-            "note": "A capped call spread offers a defined, moderate payoff to the target band — bounded by design.",
-            "label": "Gap / asymmetry",
-            "max": 3
-          },
-          {
-            "key": "catalyst",
-            "score": 2,
-            "dq": "sourced",
-            "note": "Dated, landed catalyst — the 11-Jun ECB hike to 2.25% against a Fed on hold.",
-            "label": "Catalyst",
-            "max": 2
-          },
-          {
-            "key": "consensus",
-            "score": 1,
-            "dq": "estimated",
-            "note": "2026 outlooks lean euro-constructive, but the near-term firm dollar splits the timing.",
-            "label": "Consensus + confirmation",
-            "max": 2
-          },
-          {
-            "key": "thesis",
-            "score": 2,
-            "dq": "sourced",
-            "note": "Specific driver (Fed-ECB spread narrowing post-hike) and a clear, computable level target.",
-            "label": "Fundamental thesis",
-            "max": 2
-          },
-          {
-            "key": "houseview",
-            "score": 1,
-            "dq": "sourced",
-            "note": "Adjacent to the post-peak-dollar lean, expressed tactically.",
-            "label": "House-view fit",
-            "max": 2
-          },
-          {
-            "key": "positioning",
-            "score": 1,
-            "dq": "estimated",
-            "note": "Euro longs building but not extreme — neutral fuel.",
-            "label": "Positioning",
-            "max": 2
-          },
-          {
-            "key": "technical",
-            "score": 1,
-            "dq": "estimated",
-            "note": "EUR/USD basing around 1.17 with 1.18+ in view on seasonality — constructive, not a clean breakout yet.",
-            "label": "Technical",
-            "max": 2
-          }
-        ],
-        "raw": 9,
-        "maxRaw": 15,
-        "score": 60,
-        "tier": "Medium",
-        "label": "Medium conviction",
-        "capped": true,
-        "model": "exEarnings"
-      },
-      "macro": {
-        "metric": "EUR/USD ~1.17 · post-ECB hike",
-        "detail": "Buy a 1.18/1.21 4–6wk call spread (~0.7% net). Target 1.20–1.21; max loss = premium. Driver: ECB hiked to 2.25% (11 Jun) while the Fed holds — the spread narrows.",
-        "source": "sourced",
-        "watch": "ECB follow-through vs the Fed path, euro-area inflation, and US risk sentiment."
-      },
-      "facts": [
-        {
-          "text": "The ECB raised its policy rate 25bp to 2.25% on 11 Jun 2026 as euro-area inflation ran near 3.0%",
-          "tag": "sourced"
-        },
-        {
-          "text": "EUR/USD ~1.17, with 2026 outlooks clustering at 1.15-1.19 as the Fed-ECB spread narrows",
-          "tag": "estimated"
-        },
-        {
-          "text": "The Fed held (hawkish) on 17 Jun, keeping the near-term dollar firm — the main risk to euro upside",
-          "tag": "sourced"
-        }
-      ],
-      "sources": [
-        {
-          "name": "Reuters",
-          "kind": "news"
-        },
-        {
-          "name": "MUFG Research",
-          "kind": "analysis"
-        },
-        {
-          "name": "FOREX.com",
-          "kind": "analysis"
-        }
-      ],
-      "kind": "ex-earnings"
-    },
-    {
-      "id": "tac-gbpusd-rr",
-      "tradeStatement": "Bullish GBP/USD via a risk reversal — sell the 1.31 put / buy the 1.37 call, 4–6wk (~zero cost) to lever cable upside on a BoE hold at 3.75% and a soft post-peak dollar. Entry ~1.34, target 1.37–1.38, unwind/cut if spot breaks 1.315 (you are put the pair at the short strike).",
-      "intent": "add",
-      "action": "Risk reversal (zero-cost, geared)",
-      "preferredExpression": "FX risk reversal (GBP/USD)",
-      "name": "GBP/USD upside",
-      "ticker": "GBP/USD",
-      "sector": "FX",
-      "assetClass": "Multi-Asset",
-      "bucket": "Growth",
-      "goalType": "appreciation",
-      "riskProfile": {
-        "vol": "high",
-        "beta": "moderate",
-        "structured": false
-      },
-      "naturalExpression": "FX risk reversal (GBP/USD)",
-      "levels": {
-        "tenor": "4–6 weeks",
-        "entry": "~1.34",
-        "target": "1.37–1.38",
-        "stop": "break below 1.315 (put assignment)"
-      },
-      "headline": "Cable ~1.34 with the BoE on hold at 3.75% — a near-zero-cost bullish risk reversal",
-      "thesis": "GBP/USD trades around 1.34 with the Bank of England holding Bank Rate at 3.75% — a relatively high carry against a Fed that is on pause and a post-peak, range-bound dollar. With forecasts spanning ~1.33–1.40, express the bullish lean efficiently: a near-zero-cost risk reversal — sell the 1.31 put to fund the 1.37 call. You get geared upside above 1.37; the risk is real — you are long the pair at 1.31 if cable sells off, so this is for books happy to own GBP lower. Target 1.37–1.38; unwind if spot breaks 1.315. Invalidated by a hawkish-Fed dollar surge or a dovish BoE turn.",
-      "themeId": null,
-      "offThemeWhy": "Tactical, carry-supported cable trade — a short-dated geared expression, not the strategic currency house view.",
-      "structures": [
-        "FX risk reversal (GBP/USD)",
-        "FX call spread",
-        "FX calls (GBP/USD)"
-      ],
-      "variant": {
-        "street": "Cable seen drifting up on BoE carry and a soft dollar",
-        "us": "Lever it for ~zero cost via the risk reversal — accept being put GBP lower in exchange for free upside",
-        "gap": "The skew makes zero-cost upside attractive for a carry-positive pair"
-      },
-      "changeMyMind": "A hawkish-Fed dollar surge or a dovish BoE shift that breaks cable through 1.315.",
-      "conviction": {
-        "pillars": [
-          {
-            "key": "asymmetry",
-            "score": 1,
-            "dq": "estimated",
-            "note": "Zero-cost upside is attractive, but assignment risk at the short put caps the clean-asymmetry case.",
-            "label": "Gap / asymmetry",
-            "max": 3
-          },
-          {
-            "key": "catalyst",
-            "score": 1,
-            "dq": "sourced",
-            "note": "Soft catalyst — a BoE hold and a range-bound dollar; carry/drift rather than a single dated event.",
-            "label": "Catalyst",
-            "max": 2
-          },
-          {
-            "key": "consensus",
-            "score": 1,
-            "dq": "estimated",
-            "note": "Cable forecasts lean higher (1.33-1.40) but with wide dispersion.",
-            "label": "Consensus + confirmation",
-            "max": 2
-          },
-          {
-            "key": "thesis",
-            "score": 2,
-            "dq": "sourced",
-            "note": "Specific drivers (BoE 3.75% carry, post-peak dollar) and a clear structure/level plan.",
-            "label": "Fundamental thesis",
-            "max": 2
-          },
-          {
-            "key": "houseview",
-            "score": 1,
-            "dq": "sourced",
-            "note": "Adjacent to the post-peak-dollar lean, expressed tactically.",
-            "label": "House-view fit",
-            "max": 2
-          },
-          {
-            "key": "positioning",
-            "score": 1,
-            "dq": "estimated",
-            "note": "GBP positioning neutral-to-long — no clear extreme.",
-            "label": "Positioning",
-            "max": 2
-          },
-          {
-            "key": "technical",
-            "score": 2,
-            "dq": "estimated",
-            "note": "Cable holding a constructive uptrend around 1.34 with room to 1.37-1.38.",
-            "label": "Technical",
-            "max": 2
-          }
-        ],
-        "raw": 9,
-        "maxRaw": 15,
-        "score": 60,
-        "tier": "Medium",
-        "label": "Medium conviction",
-        "capped": true,
-        "model": "exEarnings"
-      },
-      "macro": {
-        "metric": "GBP/USD ~1.34 · BoE on hold 3.75%",
-        "detail": "Sell 1.31 put / buy 1.37 call, 4–6wk (~zero cost). Target 1.37–1.38; cut below 1.315. Driver: BoE carry at 3.75% plus a soft post-peak dollar.",
-        "source": "sourced",
-        "watch": "BoE guidance, UK data, and the broad dollar trend."
-      },
-      "facts": [
-        {
-          "text": "The Bank of England held Bank Rate at 3.75% in June 2026",
-          "tag": "sourced"
-        },
-        {
-          "text": "GBP/USD ~1.34, with 2026 forecasts spanning roughly 1.33-1.40",
-          "tag": "estimated"
-        },
-        {
-          "text": "A post-peak, range-bound dollar underpins cable near-term",
-          "tag": "sourced"
-        }
-      ],
-      "sources": [
-        {
-          "name": "Reuters",
-          "kind": "news"
-        },
-        {
-          "name": "Cambridge Currencies",
-          "kind": "analysis"
-        },
-        {
-          "name": "FOREX.com",
-          "kind": "analysis"
-        }
-      ],
-      "kind": "ex-earnings"
-    },
-    {
       "id": "tac-usdjpy-strangle",
       "tradeStatement": "Long USD/JPY volatility into the BoJ — buy a 2–4wk strangle (~155 put / ~161 call, ~1.3% total premium) to own the event move either way: a BoJ hike or MoF intervention could snap it lower, a dovish hold sends it higher through 160. Entry ~158, take profit on a break beyond 154 or 162, let it expire / cut if it sits in 156–160 (theta).",
-      "intent": "protect",
-      "action": "Buy strangle (long volatility, defined-risk hedge)",
+      "intent": "add",
+      "action": "Buy strangle (long volatility, defined-risk)",
       "preferredExpression": "FX strangle (USD/JPY)",
       "name": "USD/JPY event volatility",
       "ticker": "USD/JPY",
       "sector": "FX",
       "assetClass": "Multi-Asset",
-      "bucket": "Preservation",
-      "goalType": "protection",
+      "bucket": "Growth",
+      "goalType": "appreciation",
       "riskProfile": {
         "vol": "high",
         "beta": "moderate",
         "structured": false
       },
       "naturalExpression": "FX strangle (USD/JPY)",
+      "tactical": true,
+      "triggered": true,
+      "trigger": "USD/JPY is coiled at ~158 into a live, imminent BoJ decision later this month — the binary, two-sided event is the live trigger to own the move either way.",
       "levels": {
         "tenor": "2–4 weeks",
         "entry": "~158",
