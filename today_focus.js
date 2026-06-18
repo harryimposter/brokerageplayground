@@ -34,6 +34,7 @@ window.TODAY_FOCUS = {
         "Buffered note",
         "Direct equity"
       ],
+      "changeMyMind": "Guidance pointing to 2027 HBM pricing rolling over, or the booked-capacity contracts being renegotiated — the 2027 pricing path, not the quarter just reported, is the thesis.",
       "conviction": {
         "pillars": [
           {
@@ -134,6 +135,7 @@ window.TODAY_FOCUS = {
         "Call overwrite",
         "Structured note"
       ],
+      "changeMyMind": "New-bookings / GenAI bookings growth stalling, or management flagging AI cannibalising legacy services — that breaks the 'enterprises are converting AI spend' read.",
       "conviction": {
         "pillars": [
           {
@@ -226,6 +228,7 @@ window.TODAY_FOCUS = {
         "Call overwrite",
         "Quality basket"
       ],
+      "changeMyMind": "The FY27 guide cut on weak freight demand or tariff drag, or the DRIVE cost programme slipping — a deteriorating industrial cycle kills the broadening-rotation read.",
       "conviction": {
         "pillars": [
           {
@@ -318,6 +321,7 @@ window.TODAY_FOCUS = {
         "Cash-secured puts",
         "Buffered note"
       ],
+      "changeMyMind": "Gross margins failing to recover or China deteriorating further — the turnaround thesis depends on margin and China inflecting, not the wholesale reset alone.",
       "conviction": {
         "pillars": [
           {

@@ -82,16 +82,26 @@ unparseable.
 
 Weights are the exact fractions in §6 (shown rounded here for readability).
 
-### 5.1 Gap fit (`gap`, weight 0.24)
-`Gap = max(0, (peg − current) / peg × 100)`, where `current` is the book's % in the idea's
-sector and `peg = sectorPeg(client, sector)`. 0 once at/over the peg.
-Worked (growth, peg 25): current 5 → 80, 15 → 40, 26 → 0.
+### 5.1 Gap fit (`gap`, weight 0.24) — bucket-aware
+`Gap = max(0, (bucketTarget − bucketCurrent) / bucketTarget × 100)`, where `bucketTarget`
+is the client's **goal-allocation target** for the idea's bucket (`client.goals.target[idea.bucket]`,
+e.g. Protection 35%) and `bucketCurrent` is the book's current allocation to that bucket
+(`bucketAlloc(split)[idea.bucket]`). **0 once that goal bucket is at/over target** — so a Protection
+idea (gold) scores 0 for a client whose Protection bucket is already full, rather than being scored
+against the mandate's sector-comfort ceiling. Worked (Protection goal 35): current 10 → 71, 25 → 29,
+35 → 0. If the client has **no goal target** for that bucket, it falls back to the old sector-headroom
+calc against the mandate peg (`sectorPeg`).
+Worked example: **gold × Amar** — his Protection bucket is 35% against a 35% goal → Gap fit **0** (no
+headroom), dropping his overall fit from a misleading Strong 70 to Good 58. Clients *under* their
+Protection target (Scott, Tejpaul, Aurora) score high instead.
 
 ### 5.2 Affinity fit (`holdings`, weight 0.29)
 `max(0, ThematicAffinity − ConcentrationPenalty)`.
 - **Thematic Affinity** = recency-weighted (λ=0.94) percentile of the current sector
   allocation within the 24-mo `client.sectorHistory[sector]` (Σ weights of months ≤ current).
-- **Penalty** = `max(0, current − peg) × 10`, capped 100. Same `peg` as Gap fit.
+- **Penalty** = `max(0, current − peg) × 10`, capped 100, where `peg = sectorPeg(client, sector)`
+  (the mandate sector-comfort limit). Affinity is **sector-based**; Gap fit (5.1) is now
+  **bucket-based**, so the two no longer share one peg.
 
 ### 5.3 Mandate & Risk (`mandate`, weight 0.29)
 `Mandate & Risk = 0.6·RiskSuitability + 0.4·IntentFit`. **Tradability is no longer on this
@@ -164,8 +174,9 @@ pillar (0–2) scores the quality and edge of the view itself through two 0/1 ch
 specificity** (named, quantified drivers vs narrative) and **variant view** (an articulated, computable
 gap vs consensus — pure consensus-hugging scores 0; authored in the idea's `variant` `{street, us, gap}`
 field). Its `dq` is `sourced` only when the drivers trace to cited facts, so an uncited thesis trips
-the Medium cap. Each idea also carries a `changeMyMind` field — the condition that would invalidate
-the view — surfaced on the conviction tile but **not scored** (a discrete kill-switch would bias the
+the Medium cap. **Every idea — earnings and ex-earnings alike — carries a `changeMyMind` field** —
+the condition that would invalidate the view (for an earnings idea, the print outcome that breaks the
+thesis) — surfaced on the conviction tile but **not scored** (a discrete kill-switch would bias the
 score toward dated catalyst trades over strategic holds, the same flaw the Stop pillar had). The old
 standalone **RSI flag** pillar now lives in **Positioning** only, as the crowding/sentiment read
 (alongside short interest, CoT and flows); **Technical** is purely trend + entry — moving-average
@@ -221,10 +232,11 @@ defaults to `fit ≥ 50` (`flagMin`), top 6 (suppressed clients have `fit 0`, so
 are surfaced separately per §5.5b). `why` = the suppression reason when gated, else the
 highest-contribution axis's note.
 
-**Single source of truth for the peg:** `PARAMS.affinity.comfort = {growth:25, income:15,
-preservation:10}` (+ optional `PARAMS.affinity.sectorComfort` per-sector overrides), read by
-**both** Gap fit (rewards headroom toward it) and the Affinity penalty (punishes overshoot beyond
-it) via `sectorPeg(client, sector)`. There is no second copy.
+**The sector-comfort peg:** `PARAMS.affinity.comfort = {growth:25, income:15, preservation:10}`
+(+ optional `PARAMS.affinity.sectorComfort` per-sector overrides), read via `sectorPeg(client, sector)`
+by the **Affinity penalty** (punishes overshoot beyond it). Gap fit (5.1) no longer uses this peg —
+it now reads the client's **goal-bucket target** (`client.goals.target[idea.bucket]`) — and only falls
+back to `sectorPeg` when the client has no goal target for that bucket.
 
 ---
 
@@ -239,7 +251,8 @@ it) via `sectorPeg(client, sector)`. There is no second copy.
 - **Concentration within sector** — one name → raw 0; five equal → raw 80. Fable's 6 spread
   Technology names → HHI 0.19, diversification 81, inverted fit contribution **19** (already
   diversified within tech, so a new tech name adds little).
-- **Gap fit** — Prahnav 15% Utilities (growth peg 25) → **40**; Fable 94% Technology → **0**.
+- **Gap fit (bucket-aware)** — gold × Amar: Protection bucket 35% vs 35% goal → **0** (bucket full);
+  a client under their Protection target scores high on the same idea.
 
 ---
 
@@ -250,8 +263,10 @@ it) via `sectorPeg(client, sector)`. There is no second copy.
 2. **Added** the new **Mandate & Risk** (Tradability × Risk × Intent) and **Concentration within
    sector** (Herfindahl, inverted-for-fit) axes.
 3. **Flat weights** replace the intent-conditional weight matrix.
-4. Gap fit is **sector headroom to the shared peg** (was the goal-bucket gap); Affinity fit and
-   Gap fit read that **one** peg constant.
+4. Gap fit is **bucket-aware** — headroom from the current goal-bucket allocation up to the client's
+   goal target for that bucket (a Protection idea scores 0 once the Protection bucket is full),
+   falling back to sector headroom vs the mandate peg only when no goal target exists. Affinity fit
+   still reads the sector-comfort peg; the two axes no longer share one peg.
 5. **Tradability moved off the Mandate & Risk axis to a global gate** (§5.5b): it now multiplies
    the whole weighted sum (`fit = tradability × bracketFit`) instead of zeroing one 0.25-weighted
    term, so a non-tradable idea is fully suppressed (`fit 0`) rather than scoring up to ~75. The

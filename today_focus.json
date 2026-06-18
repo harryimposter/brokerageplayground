@@ -20,6 +20,7 @@
       "themeId": "ai",
       "offThemeWhy": null,
       "structures": ["Phoenix autocall", "Zero-cost collar", "Buffered note", "Direct equity"],
+      "changeMyMind": "Guidance pointing to 2027 HBM pricing rolling over, or the booked-capacity contracts being renegotiated — the 2027 pricing path, not the quarter just reported, is the thesis.",
       "conviction": {
         "pillars": [
           { "key": "asymmetry", "score": 0, "dq": "estimated", "note": "Implied straddle ~8.5% vs ~6.5% average realised over recent prints — the market is paying up for the move, so little edge buying the event." },
@@ -62,6 +63,7 @@
       "themeId": "ai",
       "offThemeWhy": null,
       "structures": ["Direct equity", "Call overwrite", "Structured note"],
+      "changeMyMind": "New-bookings / GenAI bookings growth stalling, or management flagging AI cannibalising legacy services — that breaks the 'enterprises are converting AI spend' read.",
       "conviction": {
         "pillars": [
           { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Implied ~6% vs ~5% realised — only modestly rich, so some edge but not a clean misprice." },
@@ -102,6 +104,7 @@
       "themeId": "broaden",
       "offThemeWhy": null,
       "structures": ["Direct equity", "Call overwrite", "Quality basket"],
+      "changeMyMind": "The FY27 guide cut on weak freight demand or tariff drag, or the DRIVE cost programme slipping — a deteriorating industrial cycle kills the broadening-rotation read.",
       "conviction": {
         "pillars": [
           { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Implied ~7% vs ~6% realised — modestly rich into a two-sided guide." },
@@ -142,6 +145,7 @@
       "themeId": null,
       "offThemeWhy": "No standing desk theme on consumer discretionary — this is a single-name turnaround catalyst, judged on its own merit, not a strategic house view.",
       "structures": ["Direct equity", "Cash-secured puts", "Buffered note"],
+      "changeMyMind": "Gross margins failing to recover or China deteriorating further — the turnaround thesis depends on margin and China inflecting, not the wholesale reset alone.",
       "conviction": {
         "pillars": [
           { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Implied ~8% vs ~7% realised — modestly rich for a turnaround print." },

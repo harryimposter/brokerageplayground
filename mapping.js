@@ -264,19 +264,33 @@
 
   /* ============================== the five axes ============================ */
 
-  /* GAP FIT — headroom from the current sector allocation up to the strategic peg.
-       Gap Fit = max(0, (target − current) / target × 100), 0–100.
-     Uses the SAME current sector exposure and the SAME peg constant as the
-     Affinity axis (via sectorPeg) — Gap rewards headroom toward the peg, the
-     Affinity penalty punishes overshoot beyond it. */
+  /* GAP FIT — bucket-aware: does this idea fill a GOAL BUCKET the client is UNDER on?
+       Gap Fit = max(0, (bucketTarget − bucketCurrent) / bucketTarget × 100), 0–100.
+     Pegs the idea's bucket (Growth / Income / Protection / Structured) to the client's
+     own goal-allocation target (client.goals.target), NOT the mandate sector-comfort
+     ceiling — so a Protection idea is judged against the Protection goal and scores 0
+     once that bucket is already at/over target (e.g. gold for a client whose Protection
+     bucket is full). Falls back to sector headroom vs the mandate peg only when the
+     client has no goal target for that bucket. */
   function axisGap(idea, client, ctx) {
-    const cur = ctx.sectorExp;                  // current % of book in the idea's sector
-    const peg = sectorPeg(client, idea.sector); // shared strategic target
+    const bucket = idea.bucket;
+    const tgt = (client.goals && client.goals.target && client.goals.target[bucket]) || 0;
+    if (tgt > 0) {
+      const cur = (ctx.buckets && ctx.buckets[bucket]) || 0;   // current % of book in this goal bucket
+      const score = Math.max(0, (tgt - cur) / tgt * 100);
+      const note = cur >= tgt
+        ? `${bucket} bucket ${cur}% vs goal ${tgt}% — at/over target, no headroom.`
+        : `${bucket} bucket ${cur}% vs goal ${tgt}% → ${Math.round(score)}% headroom toward the goal.`;
+      return { score, note };
+    }
+    // fallback: no goal target for this bucket → sector headroom to the mandate comfort peg
+    const cur = ctx.sectorExp;
+    const peg = sectorPeg(client, idea.sector);
     const mc = mandateClass(client);
     const score = peg > 0 ? Math.max(0, (peg - cur) / peg * 100) : 0;
     const note = cur >= peg
-      ? `${cur}% in ${idea.sector} vs the ${mc} target ${peg}% — at/over target, no headroom.`
-      : `${cur}% in ${idea.sector} vs the ${mc} target ${peg}% → ${Math.round(score)}% headroom to the strategic peg.`;
+      ? `${cur}% in ${idea.sector} vs the ${mc}-mandate comfort ${peg}% — at/over, no headroom.`
+      : `${cur}% in ${idea.sector} vs the ${mc}-mandate comfort ${peg}% → ${Math.round(score)}% headroom.`;
     return { score, note };
   }
 
