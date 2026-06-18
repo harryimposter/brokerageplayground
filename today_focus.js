@@ -920,12 +920,12 @@ window.TODAY_FOCUS = {
     },
     {
       "id": "rate-range-accrual",
-      "tradeStatement": "Buy a ~12-month SOFR range accrual note — earn an enhanced ~7.5% p.a. coupon (vs ~4.0% on cash) for each day SOFR fixes inside a 3.50–4.25% band; you are paid to hold the view that the hawkish June hold keeps the front end range-bound at elevated levels, forgoing the coupon on any day the rate fixes outside the band.",
+      "tradeStatement": "Buy a ~12-month 10-year Treasury range accrual note — earn an enhanced ~7.5% p.a. coupon (vs ~4.0% on cash) for each day the 10Y yield fixes inside a 4.00–4.90% band; with the 10Y at ~4.5% you are paid to hold the view that a hawkish-hold Fed keeps the long end boxed below the proven 5% ceiling, forgoing the coupon only on a decisive break above 4.90% or below 4.00%.",
       "intent": "income",
       "action": "Generate income",
       "preferredExpression": "Range accrual note",
-      "name": "SOFR range accrual",
-      "ticker": "SOFR",
+      "name": "10Y range accrual",
+      "ticker": "US 10Y",
       "sector": "Rates",
       "assetClass": "Fixed Income",
       "bucket": "Income",
@@ -936,9 +936,9 @@ window.TODAY_FOCUS = {
         "structured": true
       },
       "naturalExpression": "Range accrual note",
-      "trigger": "Yesterday's hawkish FOMC hold (Warsh's first meeting, dot-plot up, cuts pushed toward 2027) pins the front end range-bound at elevated levels — exactly the regime a range accrual is paid to harvest.",
-      "headline": "The hawkish hold pins the front end — get paid an enhanced coupon to hold the range",
-      "thesis": "The FOMC held at 3.50-3.75% on 17 June, but the June dots turned hawkish in Warsh's first meeting — the median now implies a possible hike, no cuts in 2026, and the easing cycle pushed into 2027 on a 4.2% energy-driven CPI. With the policy rate anchored and cuts pushed out, the front end is set to stay range-bound at elevated levels — the ideal regime for a range accrual. A 12-month SOFR range accrual pays an enhanced ~7.5% p.a. coupon (vs ~4.0% on cash) for each day SOFR fixes inside a 3.50–4.25% band: you are effectively paid to hold the higher-for-longer view, with the coupon forgone only on days the rate breaks out. Capital is returned at par at maturity (issuer credit aside) — income for a book that wants more than cash without taking duration or equity risk.",
+      "trigger": "Yesterday's hawkish FOMC hold (Warsh's first meeting, dot-plot up, cuts pushed toward 2027) caps the 10Y from both sides — no cuts to rally it under 4%, a policy rate anchored on hold to stop it running through 5% — exactly the boxed-in regime a range accrual is paid to harvest.",
+      "headline": "The hawkish hold boxes the 10Y below 5% — get paid an enhanced coupon to hold the range",
+      "thesis": "The FOMC held at 3.50-3.75% on 17 June with hawkish dots (a possible hike, no 2026 cuts, easing pushed to 2027) — a stance that boxes in the 10Y from both sides, with the 10Y at ~4.5% sitting mid-range. The TOP of the band is the harder call and the case is specific: 5% has been a proven ceiling — the 10Y peaked near 5.0% in October 2023 and has failed there on every test since, because at ~5% nominal (~2%+ real) duration is the cheapest in two decades and each approach draws heavy real-money buying — pensions and insurers matching liabilities, foreign reserve managers, and asset allocators rotating out of richly-valued equities. A Fed on hold (its next move a cut, not a hike) means the long end has no hiking cycle to un-anchor it, so it cannot sustainably run through 5% without the front end leading. The BOTTOM (~4.00%) is held by sticky inflation — May CPI re-accelerated to 4.2% (core 2.9%) on the energy shock — plus no cuts until 2027 to fuel a rally and an elevated term premium on heavy Treasury supply, all of which keep a floor under long yields. So a 12-month 10Y range accrual pays an enhanced ~7.5% p.a. coupon (vs ~4.0% on cash) for each day the yield fixes inside 4.00–4.90%: you are paid to hold the boxed-in view, with the coupon forgone only on the days it breaks out. Capital is returned at par at maturity (issuer credit aside) — more than cash without an outright duration bet.",
       "themeId": "duration",
       "offThemeWhy": null,
       "structures": [
@@ -948,18 +948,18 @@ window.TODAY_FOCUS = {
         "T-bill / muni ladder"
       ],
       "variant": {
-        "street": "Higher-for-longer keeps the front end anchored; cash and bills are the default income parking spot",
-        "us": "Don't just park in cash — monetise the range: a range accrual pays ~7.5% vs ~4% for the same range-bound view",
-        "gap": "The market under-pays for selling front-end rate-range optionality when the Fed has explicitly pinned the path"
+        "street": "Bears see fiscal/supply pushing the 10Y toward 5%; bulls wait for cuts to pull it under 4% — both expect a break",
+        "us": "Neither break holds: 5% is a proven buyer's ceiling and ~4% a sticky-inflation floor — monetise the range rather than bet on the break",
+        "gap": "The market pays up for the tail break in either direction and under-prices the 10Y simply staying boxed around 4.5%"
       },
-      "changeMyMind": "A clear break in the data — inflation rolling over (pulling the first cut forward) or an actual hawkish hike — that drives SOFR out of the 3.50–4.25% band and zeros the accrual.",
+      "changeMyMind": "A decisive break of the box — a growth scare or sharp disinflation that pulls the 10Y below 4.00% (cuts brought forward), or a fiscal/supply/inflation shock that drives it through 5.00% — either zeros the accrual.",
       "conviction": {
         "pillars": [
           {
             "key": "asymmetry",
             "score": 1,
             "dq": "estimated",
-            "note": "An enhanced coupon (~7.5% vs ~4% cash) for a range-bound view — a steady carry pickup with capped, income-style upside rather than a large directional move.",
+            "note": "An enhanced coupon (~7.5% vs ~4% cash) for the 10Y simply staying boxed in — a steady carry pickup with capped, income-style upside rather than an outright duration bet.",
             "label": "Gap / asymmetry",
             "max": 3
           },
@@ -967,7 +967,7 @@ window.TODAY_FOCUS = {
             "key": "catalyst",
             "score": 2,
             "dq": "sourced",
-            "note": "Dated, landed catalyst — the 17 Jun FOMC hawkish hold (dots up, cuts to 2027) that pins the front-end range.",
+            "note": "Dated, landed catalyst — the 17 Jun FOMC hawkish hold (dots up, cuts to 2027) that caps the 10Y from both ends.",
             "label": "Catalyst",
             "max": 2
           },
@@ -975,7 +975,7 @@ window.TODAY_FOCUS = {
             "key": "consensus",
             "score": 1,
             "dq": "estimated",
-            "note": "The higher-for-longer / range-bound front-end read is broadly shared, but the precise band and the coupon edge are an estimated structuring call.",
+            "note": "The higher-for-longer, range-bound-10Y read is broadly shared, but the precise 4.00–4.90% band and the coupon edge are an estimated structuring call.",
             "label": "Consensus + confirmation",
             "max": 2
           },
@@ -983,7 +983,7 @@ window.TODAY_FOCUS = {
             "key": "thesis",
             "score": 2,
             "dq": "sourced",
-            "note": "Quantified, sourced drivers (held 3.50-3.75%, hawkish dots, cuts to 2027, 4.2% CPI) and a clear variant: monetise the pinned range rather than sit in cash.",
+            "note": "Sourced drivers (held 3.50-3.75%, hawkish dots, cuts to 2027, 4.2% CPI, 10Y ~4.5%) plus a specific two-sided case: a proven 5% buyer's ceiling above and a sticky-CPI / supply term-premium floor below.",
             "label": "Fundamental thesis",
             "max": 2
           },
@@ -991,7 +991,7 @@ window.TODAY_FOCUS = {
             "key": "houseview",
             "score": 2,
             "dq": "sourced",
-            "note": "Core Fixed Income / income house view — paid carry from a range-bound front end, no duration or equity risk.",
+            "note": "Core Fixed Income / income house view — paid carry from a boxed-in long end, no outright duration call.",
             "label": "House-view fit",
             "max": 2
           },
@@ -999,7 +999,7 @@ window.TODAY_FOCUS = {
             "key": "positioning",
             "score": 1,
             "dq": "estimated",
-            "note": "The crowd is parked in cash and bills; selling front-end rate-range optionality for an enhanced coupon is the contrarian-leaning income move.",
+            "note": "The crowd is parked in cash and bills or positioned for a 10Y break either way; selling 10Y rate-range optionality for an enhanced coupon is the contrarian income move.",
             "label": "Positioning",
             "max": 2
           },
@@ -1007,7 +1007,7 @@ window.TODAY_FOCUS = {
             "key": "technical",
             "score": 1,
             "dq": "estimated",
-            "note": "SOFR fixing in the upper part of the policy band and coiled after the hold — consistent with a pinned range, the accrual's friend.",
+            "note": "The 10Y at ~4.5% mid-range, repeatedly rejected at 5% and bid toward 4% — a well-defined range, the accrual's friend.",
             "label": "Technical",
             "max": 2
           }
@@ -1021,23 +1021,23 @@ window.TODAY_FOCUS = {
         "model": "exEarnings"
       },
       "macro": {
-        "metric": "FOMC held 3.50-3.75%; hawkish dots, cuts to 2027",
-        "detail": "12-month SOFR range accrual: ~3.50–4.25% band, ~7.5% p.a. enhanced coupon vs ~4.0% on cash, A-rated issuer, capital at par. Coupon accrues daily for each in-range fixing; forgone on out-of-range days.",
+        "metric": "FOMC held 3.50-3.75%; hawkish dots; 10Y ~4.5%, capped at 5%",
+        "detail": "12-month 10Y Treasury range accrual: ~4.00–4.90% band, ~7.5% p.a. enhanced coupon vs ~4.0% on cash, A-rated issuer, capital at par. Coupon accrues daily for each in-range fixing; forgone on a break above 4.90% or below 4.00%.",
         "source": "sourced",
-        "watch": "The 14 Jul CPI and the 29-30 Jul FOMC — a hike or cut surprise that breaks SOFR out of the band and zeros the accrual."
+        "watch": "The 14 Jul CPI, the 29-30 Jul FOMC and Treasury supply/auctions — a shock that drives the 10Y through 5% or under 4% and zeros the accrual."
       },
       "facts": [
         {
-          "text": "FOMC held at 3.50-3.75% on 17 June (Warsh's first meeting as Chair) — fourth consecutive hold",
+          "text": "FOMC held at 3.50-3.75% on 17 June (Warsh's first meeting as Chair); the June dots turned hawkish — a possible hike, no 2026 cuts, easing pushed to 2027",
           "tag": "sourced"
         },
         {
-          "text": "The June dot plot turned hawkish: median end-2026 ~3.8%, implying a possible hike and no cuts in 2026; easing pushed to 2027",
+          "text": "The 10Y Treasury yield backed up to ~4.5% on the hawkish hold; it last peaked near 5.0% in Oct 2023 and has failed at that level on every test since",
           "tag": "sourced"
         },
         {
-          "text": "SOFR fixing in the upper part of the 3.50-3.75% policy band with the front end range-bound after the hold",
-          "tag": "estimated"
+          "text": "May CPI re-accelerated to 4.2% y/y (core 2.9%) on an energy shock, keeping an inflation/term premium in long yields",
+          "tag": "sourced"
         }
       ],
       "sources": [

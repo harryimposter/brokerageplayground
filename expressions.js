@@ -99,15 +99,15 @@
 
     "range-accrual": {
       label: "Range accrual note",
-      what: "A packaged senior bank note that pays an enhanced coupon for each day a reference rate (SOFR / the policy rate) fixes INSIDE a defined band — income for a range-bound-rates view.",
-      mechanics: "An unsecured senior note (an ISIN you book like a bond) whose coupon accrues only on days the reference rate fixes within a set band: coupon ≈ (max rate) × (days in range ÷ total days). You are effectively short rate-volatility — paid an above-cash coupon to hold the view that the front end stays range-bound, forgoing the coupon on out-of-range days. Capital is typically returned at par at maturity (issuer credit risk aside). Because it's a packaged SECURITY, a MiFID Retail client can hold it (unlike an OTC rates option) — it's complex, so the appropriateness test still applies.",
-      underlying: "An interest-rate reference — overnight SOFR or the policy-rate band — with an upper/lower accrual barrier.",
+      what: "A packaged senior bank note that pays an enhanced coupon for each day a reference rate (the 10-year Treasury yield, SOFR, or a defined rate band) fixes INSIDE a set band — income for a range-bound-rates view.",
+      mechanics: "An unsecured senior note (an ISIN you book like a bond) whose coupon accrues only on days the reference rate fixes within a set band: coupon ≈ (max rate) × (days in range ÷ total days). You are effectively short rate-volatility — paid an above-cash coupon to hold the view that the rate stays range-bound, forgoing the coupon on out-of-range days. Capital is typically returned at par at maturity (issuer credit risk aside). Because it's a packaged SECURITY, a MiFID Retail client can hold it (unlike an OTC rates option) — it's complex, so the appropriateness test still applies.",
+      underlying: "An interest-rate reference — the 10-year Treasury (CMS) yield, overnight SOFR, or a policy-rate band — with an upper/lower accrual barrier.",
       tenor: "6–18 months. Short enough to re-strike the band as the rate path evolves, long enough to bank a meaningful enhanced-coupon pickup over cash.",
-      example: "12-month SOFR range accrual: ~7.5% p.a. coupon accrued daily for each day SOFR fixes in 3.50–4.25%, ~4.0% on cash, A-rated issuer, capital returned at par — paid to hold the range-bound-front-end view.",
-      pros: ["Enhanced coupon well above cash while rates stay range-bound", "Packaged security — Retail eligible (it is not an OTC derivative)", "Defined, rules-based payoff you can show the client"],
-      cons: ["Coupon forgone on any day the rate fixes OUTSIDE the band", "Issuer credit risk (unsecured bank note); illiquid to maturity", "A breakout (Fed hike/cut surprise) can zero the coupon while you stay locked in"],
-      whenToUse: "An income book that wants an above-cash coupon and shares the view that a hawkish-hold Fed keeps the front end range-bound at elevated levels.",
-      context: (u) => `On SOFR / the policy band: e.g. a 12-month note paying an enhanced coupon for each day the rate fixes inside the band — monetising a range-bound front end.`
+      example: "12-month 10Y Treasury range accrual: ~7.5% p.a. coupon accrued daily for each day the 10Y yield fixes in 4.00–4.90%, ~4.0% on cash, A-rated issuer, capital returned at par — paid to hold the 10Y boxed below the 5% ceiling.",
+      pros: ["Enhanced coupon well above cash while the rate stays range-bound", "Packaged security — Retail eligible (it is not an OTC derivative)", "Defined, rules-based payoff you can show the client"],
+      cons: ["Coupon forgone on any day the rate fixes OUTSIDE the band", "Issuer credit risk (unsecured bank note); illiquid to maturity", "A breakout (a fiscal/supply or Fed surprise) can zero the coupon while you stay locked in"],
+      whenToUse: "An income book that wants an above-cash coupon and shares the view that a hawkish-hold Fed keeps the 10Y range-bound below its proven 5% ceiling.",
+      context: (u) => `On the 10-year Treasury (or SOFR) yield: e.g. a 12-month note paying an enhanced coupon for each day the rate fixes inside the band — monetising a range-bound 10Y.`
     },
 
     "buffered-note": {
@@ -967,7 +967,7 @@
     "thematic-basket": (u) => `A curated 8–15 name basket across the ${u.name} value chain, equal-weighted into a single ~5–7% sleeve.`,
     "halo-basket": () => `Equal-weight ACM+ on CEG / MP Materials / CAT: 24% p.a. USD coupon while the basket ≥80%, autocall at ≥100%, 1-year — a ~$2–3m clip.`,
     "reverse-convertible": (u) => `6-month RevCon on ${u.ticker}: 75% knock-in, ~10–12% p.a. coupon — keep coupon + capital unless it ends >25% down, in which case you own ${u.ticker} at the strike.`,
-    "range-accrual": () => `12-month SOFR range accrual: ~7.5% p.a. coupon accrued daily for each day SOFR fixes inside 3.50–4.25% (vs ~4.0% on cash), A-rated issuer, capital at par — paid to hold the range-bound-front-end view; coupon forgone on out-of-range days.`
+    "range-accrual": () => `12-month 10Y Treasury range accrual: ~7.5% p.a. coupon accrued daily for each day the 10Y yield fixes inside 4.00–4.90% (vs ~4.0% on cash), A-rated issuer, capital at par — paid to hold the 10Y boxed below the 5% ceiling; coupon forgone on a break above 4.90% or below 4.00%.`
   };
   function exampleFor(id, u, ctx) {
     const b = EXAMPLE_BUILDERS[id];
