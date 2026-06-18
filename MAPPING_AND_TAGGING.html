@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Client-Fit &amp; Idea-Tagging Logic — Reference</title>
+<style>
+  @page { size: A4; margin: 20mm 16mm 18mm 16mm; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: "Georgia", "Times New Roman", serif;
+    color: #29211A;
+    background: #FBF8F2;
+    line-height: 1.5;
+    font-size: 11pt;
+    margin: 0;
+    padding: 0;
+  }
+  .page { max-width: 860px; margin: 0 auto; padding: 28px 34px 60px 34px; }
+
+  /* ---- headings ---- */
+  h1, h2, h3, h4 { font-family: "Georgia", "Times New Roman", serif; color: #29211A; font-weight: 700; }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 4px 0; letter-spacing: -0.2px; }
+  h2 {
+    font-size: 16pt; margin: 30px 0 8px 0; padding-bottom: 6px;
+    border-bottom: 2px solid #9A7B4F; color: #29211A;
+  }
+  h3 { font-size: 12.5pt; margin: 20px 0 6px 0; color: #5A3E2B; }
+  h4 { font-size: 11pt; margin: 14px 0 4px 0; color: #5A3E2B; }
+  p { margin: 7px 0; }
+  a { color: #9A7B4F; }
+  strong { color: #29211A; }
+  em { color: #5A3E2B; }
+
+  .kicker { font-family: "Helvetica", "Arial", sans-serif; font-size: 8.5pt; letter-spacing: 2px;
+            text-transform: uppercase; color: #9A7B4F; font-weight: 700; margin: 0 0 10px 0; }
+  .subtitle { font-size: 12.5pt; color: #5A3E2B; font-style: italic; margin: 6px 0 0 0; }
+
+  /* ---- cover meta ---- */
+  .cover { border-bottom: 3px double #9A7B4F; padding-bottom: 18px; margin-bottom: 8px; }
+  .meta { font-family: "Helvetica","Arial",sans-serif; font-size: 8.5pt; color: #6E5A47; margin-top: 14px; }
+  .meta td { padding: 2px 18px 2px 0; vertical-align: top; }
+  .meta b { color: #29211A; }
+
+  /* ---- callouts ---- */
+  .note, .proposed, .key {
+    border-left: 4px solid #9A7B4F; background: #F4ECE0; padding: 10px 14px;
+    margin: 12px 0; font-size: 10pt;
+  }
+  .key { border-left-color: #3F6B4E; background: #EDF2ED; }
+  .proposed { border-left-color: #6E7E8C; background: #ECEFF2; }
+  .tag { font-family: "Helvetica","Arial",sans-serif; font-size: 7.5pt; letter-spacing: 1.5px;
+         text-transform: uppercase; font-weight: 700; padding: 2px 7px; color: #FBF8F2; }
+  .tag-current { background: #3F6B4E; }
+  .tag-proposed { background: #6E7E8C; }
+  .tag-removed { background: #8C3F3F; }
+
+  /* ---- tables ---- */
+  table.data { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 9.5pt; }
+  table.data th {
+    background: #29211A; color: #FBF8F2; text-align: left; padding: 7px 9px;
+    font-family: "Helvetica","Arial",sans-serif; font-size: 8.5pt; letter-spacing: 0.5px; font-weight: 700;
+    border: 1px solid #29211A;
+  }
+  table.data td { padding: 6px 9px; border: 1px solid #D8C9B2; vertical-align: top; }
+  table.data tr.alt td { background: #F4ECE0; }
+  table.data td.num { text-align: right; font-family: "Helvetica","Arial",sans-serif; }
+  table.data tr.total td { background: #E7D9C0; font-weight: 700; border-top: 2px solid #9A7B4F; }
+  .mono { font-family: "Consolas","Courier New",monospace; font-size: 9pt; }
+  .formula { font-family: "Consolas","Courier New",monospace; font-size: 9pt; background: #F1E8DA;
+             padding: 8px 11px; border: 1px solid #D8C9B2; margin: 8px 0; display: block; white-space: pre-wrap; }
+  code { font-family: "Consolas","Courier New",monospace; font-size: 9pt; background: #F1E8DA; padding: 1px 4px; }
+
+  ul { margin: 6px 0 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .small { font-size: 9pt; color: #6E5A47; }
+  .pagebreak { page-break-before: always; }
+  hr { border: none; border-top: 1px solid #D8C9B2; margin: 22px 0; }
+  .footer { margin-top: 30px; padding-top: 12px; border-top: 2px solid #9A7B4F;
+            font-family: "Helvetica","Arial",sans-serif; font-size: 8pt; color: #6E5A47; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============================ COVER ============================ -->
+  <div class="cover">
+    <p class="kicker">Brokerage Playground &middot; Methodology Reference</p>
+    <h1>Client-Fit &amp; Idea-Tagging Logic</h1>
+    <p class="subtitle">How an idea is scored against a client &mdash; today's live engine, and a proposed redesign</p>
+    <table class="meta">
+      <tr>
+        <td><b>Prepared</b><br/>18 June 2026</td>
+        <td><b>Scope</b><br/>Today's Focus &amp; Solutions Views tagging</td>
+        <td><b>Source of truth</b><br/>mapping.js &middot; scanner.js &middot; data.js</td>
+        <td><b>Status</b><br/>&sect;1&ndash;&sect;2 live &middot; &sect;3 proposed</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="key">
+    <b>The one-line truth.</b> There is <b>one</b> scoring engine &mdash;
+    <code>mapping.js &rarr; scoreIdeaForClient(idea, client)</code>. <b>Both</b> Today's Focus
+    and the Views tab score through it. In <code>scanner.js</code>, <code>ideaFit()</code> simply
+    delegates to <code>MAPPING.scoreIdeaForClient</code>, and <code>clientsForIdea()</code> ranks the
+    clients it returns. The old standalone scanner formula was deleted when the two engines were
+    unified (commit <span class="mono">007131c</span>); only a now-unused <code>CONV_W</code> export
+    lingers. So &mdash; <b>one engine today, not two.</b>
+  </div>
+
+  <p class="small">All per-axis numbers in the worked examples below were produced by running the
+  actual engine logic (<code>mapping.js</code> + the synthetic 24-month sector history generated in
+  <code>data.js</code>) against the real seed book for <b>Aurora</b>. They are exact, not illustrative.</p>
+
+  <!-- ============================ SECTION 1 ============================ -->
+  <h2>1 &nbsp;&middot;&nbsp; Current process &mdash; Today's Focus mapping <span class="tag tag-current">Live</span></h2>
+
+  <p>Today's Focus surfaces market ideas (earnings prints, structural calls) and, per idea, flags the
+  clients it fits via <code>MAPPING.flagClients(idea)</code>. That function scores every client with
+  <code>scoreIdeaForClient</code>, keeps those at or above the flag threshold, and returns the top few
+  by fit. The score is a <b>client-fit</b> number: how <em>right</em> the idea is for <em>this</em>
+  book &mdash; deliberately separate from the idea's own conviction.</p>
+
+  <h3>1.1 &nbsp; The four live axes</h3>
+  <p>Each axis returns 0&ndash;100 and is combined with <b>flat (fixed) weights</b>. After House-view fit
+  was removed from client-fit (moved to the conviction score) in <span class="mono">007131c</span>, the
+  original five weights were rescaled by <span class="mono">1/0.85</span> so the surviving four keep their
+  relative balance and sum to <b>exactly 1.00</b>. The math uses the exact fractions; the UI shows the
+  rounded values.</p>
+
+  <table class="data">
+    <tr>
+      <th>Axis (key)</th><th>What it measures</th><th>Formula (0&ndash;100)</th>
+      <th>Weight&nbsp;(exact)</th><th>Shown</th>
+    </tr>
+    <tr>
+      <td><b>Gap fit</b><br/><span class="mono">gap</span></td>
+      <td>Headroom from the book's current sector allocation up to the strategic peg.</td>
+      <td class="mono">max(0, (peg &minus; cur) / peg &times; 100)</td>
+      <td class="num">0.20/0.85<br/>= 0.2353</td><td class="num">0.24</td>
+    </tr>
+    <tr class="alt">
+      <td><b>Affinity fit</b><br/><span class="mono">holdings</span></td>
+      <td>Recency-weighted (&lambda;=0.94, 24&nbsp;mo) sector affinity, minus an over-the-peg concentration penalty.</td>
+      <td class="mono">max(0, ThematicAffinity &minus; Penalty)</td>
+      <td class="num">0.25/0.85<br/>= 0.2941</td><td class="num">0.29</td>
+    </tr>
+    <tr>
+      <td><b>Mandate &amp; risk</b><br/><span class="mono">mandate</span></td>
+      <td>Does the idea's vol/beta/structure and goal type suit the mandate?</td>
+      <td class="mono">0.6&middot;RiskSuitability + 0.4&middot;IntentFit</td>
+      <td class="num">0.25/0.85<br/>= 0.2941</td><td class="num">0.29</td>
+    </tr>
+    <tr class="alt">
+      <td><b>Conc. within sector</b><br/><span class="mono">concSector</span></td>
+      <td>Herfindahl diversification of the book's in-sector names; <em>inverted</em> by default (a concentrated sector wants a new name).</td>
+      <td class="mono">100 &minus; (1 &minus; HHI)&times;100</td>
+      <td class="num">0.15/0.85<br/>= 0.1765</td><td class="num">0.18</td>
+    </tr>
+    <tr class="total"><td colspan="3">Sum of weights</td><td class="num">1.0000</td><td class="num">1.00</td></tr>
+  </table>
+
+  <h4>Axis detail (exact, from <code>mapping.js</code>)</h4>
+  <ul>
+    <li><b>Gap fit.</b> <code>cur</code> = current % of the book in the idea's sector; <code>peg</code> is the
+      strategic comfort limit by mandate class &mdash; <b>growth 25 / income 15 / preservation 10</b> (one
+      source of truth: <code>PARAMS.affinity.comfort</code> via <code>sectorPeg</code>, shared with the
+      Affinity penalty). At or over the peg &rarr; 0.</li>
+    <li><b>Affinity fit.</b> <em>Thematic affinity</em> = recency-weighted share (month <code>t</code> weight =
+      0.94<sup>t</sup>) of the trailing-24-month months whose allocation sits at or below today's &mdash;
+      &ldquo;has this book been building / sitting at the top of its range&rdquo;. If the book holds the sector
+      but no history is on file &rarr; treated as steady &rarr; ~100; no exposure &rarr; 0.
+      <em>Penalty</em> = overshoot above the comfort peg, in pp &times; 10 (cap 100). Net = max(0, affinity &minus; penalty).</li>
+    <li><b>Mandate &amp; risk.</b> <em>RiskSuitability</em> grades the idea's vol/beta/structure against the mandate
+      (e.g. income mandate: low-vol &rarr; 90, high-beta &rarr; 45). <em>IntentFit</em> grades the idea's goal type
+      (appreciation / yield / protection) against the mandate's goal. Tradability is <b>not</b> on this axis any more.</li>
+    <li><b>Concentration within sector.</b> <code>HHI = &Sigma;(in-sector weighti)²</code> over weights normalised to
+      sum to 1. Raw diversification = (1&minus;HHI)&times;100. For the fit blend it is <b>inverted</b>
+      (<code>invertForFit:true</code>): a concentrated sector scores higher, since a new name diversifies it.
+      No in-sector holding &rarr; neutral 50.</li>
+  </ul>
+
+  <h3>1.2 &nbsp; The global tradability gate</h3>
+  <p>Tradability is a <b>binary {0,1}</b> multiplier over the <em>whole</em> weighted sum &mdash; not an axis:</p>
+  <span class="formula">Final Client-Fit = Tradability &times; &Sigma;(axisi &middot; weighti)</span>
+  <p>The model (from <code>data.js complexityOf</code>): a <b>Retail</b> client cannot trade an <b>OTC</b> natural
+  expression (collars, forwards, OTC options). Structured <em>notes</em> are packaged securities a Retail client
+  <em>can</em> trade; a Professional can trade any expression. The idea's &ldquo;natural expression&rdquo; is its first
+  listed structure. If blocked, fit = 0 and the idea is surfaced with the MiFID reason rather than silently dropped.</p>
+
+  <h3>1.3 &nbsp; The flag threshold</h3>
+  <p><code>flagClients</code> uses <code>PARAMS.flagMin = 50</code> and <code>PARAMS.flagMax = 6</code>: keep clients with
+  <b>fit &ge; 50</b>, sort by fit descending, take the <b>top 6</b>. (Tiers for display: Strong &ge; 66, Good &ge; 48,
+  else Marginal.)</p>
+
+  <h3>1.4 &nbsp; Worked example &mdash; Micron FQ3 &times; Aurora</h3>
+  <p>Today's Focus headline idea <b>&ldquo;Micron FQ3 &mdash; the AI-memory print of the quarter&rdquo;</b>
+  (<span class="mono">mu-fq3</span>; sector Technology, bucket Growth, structures
+  <span class="mono">[Phoenix autocall, Zero-cost collar, Buffered note, Direct equity]</span>) scored for
+  <b>Aurora</b> &mdash; a <b>MiFID Retail</b>, <b>&ldquo;Growth, with income needs&rdquo;</b> book (parsed to
+  <b>income mandate</b> &rarr; peg 15%).</p>
+
+  <p class="small">Aurora's Technology exposure = Micron 25.8 + NVIDIA 7.2 + SAP 8.4 = <b>41.4%</b>. Synthetic
+  24-mo Tech history runs 6.6&ndash;43.5% with today (41.4%) just under last month's 43.5% peak.</p>
+
+  <table class="data">
+    <tr><th>Axis</th><th>Computation</th><th>Score</th><th>&times; Weight</th><th>= Contribution</th></tr>
+    <tr>
+      <td><b>Gap fit</b></td>
+      <td>41.4% Tech vs the income peg 15% &mdash; far over target, no headroom &rarr; <span class="mono">max(0,(15&minus;41.4)/15&times;100)</span>.</td>
+      <td class="num">0</td><td class="num">0.2353</td><td class="num">0.0</td>
+    </tr>
+    <tr class="alt">
+      <td><b>Affinity fit</b></td>
+      <td>Thematic affinity <b>93</b> (only last month's 43.5% exceeds today's 41.4%) &minus; concentration penalty <b>100</b>
+          (26.4pp over the 15% comfort &times;10, capped) = max(0, 93&minus;100).</td>
+      <td class="num">0</td><td class="num">0.2941</td><td class="num">0.0</td>
+    </tr>
+    <tr>
+      <td><b>Mandate &amp; risk</b></td>
+      <td>0.6&times;RiskSuit <b>45</b> (&ldquo;high-beta &mdash; too racy for an income book&rdquo;) +
+          0.4&times;IntentFit <b>60</b> (capital-appreciation goal vs an income mandate) = 51.</td>
+      <td class="num">51</td><td class="num">0.2941</td><td class="num">15.0</td>
+    </tr>
+    <tr class="alt">
+      <td><b>Conc. within sector</b></td>
+      <td>3 Tech names (MU/NVDA/SAP), <span class="mono">HHI 0.46</span> &rarr; diversification 54 &rarr; inverted <b>46</b>.</td>
+      <td class="num">46</td><td class="num">0.1765</td><td class="num">8.1</td>
+    </tr>
+    <tr class="total"><td colspan="2">Bracketed weighted sum &nbsp;(round 15.0 + 8.1)</td><td colspan="3" class="num">bracketFit = 23</td></tr>
+    <tr class="total"><td colspan="2">Tradability gate &mdash; Retail <em>can</em> trade a Phoenix autocall (structured note) &rarr; &times;1</td><td colspan="3" class="num">Final Fit = 23</td></tr>
+  </table>
+
+  <div class="note">
+    <b>Why Aurora is <em>not</em> flagged (23 &lt; 50) &mdash; and why that's correct.</b> Aurora's signature
+    holding <em>is</em> Micron (25.8%), yet the idea does not flag her. The engine scores <b>idea-fit</b>, not
+    ownership: adding more Technology to a book that is <b>2.8&times; over its income-mandate sector peg</b> wipes out
+    both Gap (0) and Affinity (penalised to 0), and a high-beta growth print only half-suits an income mandate
+    (51). The whole point of Today's Focus is &ldquo;who should I call about this&rdquo; &mdash; and the honest answer for
+    Aurora is &ldquo;she already owns too much; this isn't an <em>add</em> for her.&rdquo; The protective angle for her MU
+    concentration is a different conversation (a collar/structure on what she holds), not a fit to buy more.
+  </div>
+
+  <p><b>Contrast &mdash; a Today's Focus idea that <em>does</em> flag Aurora.</b> The
+  <b>&ldquo;Gold &mdash; accumulate the pullback&rdquo;</b> idea (<span class="mono">gold-pullback</span>; sector Gold, bucket
+  Protection, natural expression <em>Physical / ETC</em>) scores her <b>82</b> on the same engine &mdash; far above the 50
+  flag &mdash; because she is well <em>under</em> peg in Gold with headroom and a clean record there. The arithmetic is
+  identical to the Views worked example in &sect;2.4 (same sector/bucket/structure profile).</p>
+
+  <!-- ============================ SECTION 2 ============================ -->
+  <h2 class="pagebreak">2 &nbsp;&middot;&nbsp; Current process &mdash; how the Views tab tags ideas to a client <span class="tag tag-current">Live</span></h2>
+
+  <p>The Solutions Views tab uses the <b>same</b> <code>mapping.js</code> engine. <code>scanner.js</code> is a thin facade
+  that preserves the old output keys (<code>applies / score / reason / gap / secExp / acExp</code>) while sharing one
+  algorithm with Today's Focus:</p>
+
+  <pre class="formula">// scanner.js &mdash; the facade<br/>function ideaFit(idea, client) {<br/>  return window.MAPPING.scoreIdeaForClient(idea, client);   // delegates, no second formula<br/>}<br/><br/>// which clients does a View idea tag?<br/>function clientsForIdea(idea) {<br/>  return S().clients<br/>    .map(c =&gt; ({ client: c, ...ideaFit(idea, c) }))<br/>    .filter(x =&gt; x.applies)                                 // gate<br/>    .sort((a, b) =&gt; b.score - a.score);                    // rank by fit<br/>}</pre>
+
+  <div class="key">
+    <b>The Views gate is <code>applies</code>, not the flag.</b> In the engine,
+    <code>applies = tradable &amp;&amp; bracketFit &ge; applyMin</code>, with <b><code>applyMin = 45</code></b>. So the Views tab
+    tags a client when the idea is tradable for them <em>and</em> their pre-gate fit reaches 45 &mdash; a slightly looser bar
+    than Today's Focus's <b>fit &ge; 50, top 6</b>. Same engine and same per-axis math; only the cut-off and the
+    &ldquo;top N&rdquo; cap differ between the two surfaces.
+  </div>
+
+  <h3>2.1 &nbsp; The honest history</h3>
+  <p>Before unification, <code>scanner.js</code> had its <b>own</b> standalone formula:</p>
+  <pre class="formula">// REMOVED in 007131c &mdash; the old standalone scanner scorer<br/>score   = secExp&times;1.4 + acExp&times;0.4 + gap&times;1.2 + conv<br/>applies = secExp&ge;6 || acExp&ge;25 || gap&ge;6 || (protectionIncome &amp;&amp; gap&ge;4)</pre>
+  <p>That math used sector/asset-class exposure, a goal gap, and a conviction weight (<code>conv</code> from
+  <code>CONV_W</code>), with an <code>applies</code> gate that disagreed with the 5-axis engine. Commit
+  <span class="mono">007131c</span> deleted it and pointed <code>ideaFit</code> at <code>MAPPING.scoreIdeaForClient</code>.
+  <span class="tag tag-removed">Removed</span> the formula &middot; <span class="tag tag-removed">Dead</span>
+  <code>CONV_W = {High:3, "Medium-High":2, Medium:1}</code> is still exported from <code>scanner.js</code> but nothing
+  reads it for scoring any more &mdash; it is a vestige, not a live input.</p>
+
+  <h3>2.2 &nbsp; Worked example &mdash; &ldquo;Gold as a debasement hedge&rdquo; &times; Aurora (Views)</h3>
+  <p>The Solutions View idea <b>&ldquo;Gold as a debasement hedge&rdquo;</b> (<span class="mono">gold-hedge</span>; sector Gold,
+  bucket Protection, structures <span class="mono">[Physical / ETC, Gold accumulator]</span> &rarr; natural expression
+  <em>Physical / ETC</em>, non-complex) scored for <b>Aurora</b> (income mandate, Gold peg 15%). Aurora holds one Gold
+  name, <b>Xetra-Gold ETC at 5.2%</b>.</p>
+
+  <table class="data">
+    <tr><th>Axis</th><th>Computation</th><th>Score</th><th>&times; Weight</th><th>= Contribution</th></tr>
+    <tr>
+      <td><b>Gap fit</b></td>
+      <td>5.2% Gold vs the income peg 15% &rarr; <span class="mono">(15&minus;5.2)/15&times;100</span> = 65% headroom to the peg.</td>
+      <td class="num">65</td><td class="num">0.2353</td><td class="num">15.3</td>
+    </tr>
+    <tr class="alt">
+      <td><b>Affinity fit</b></td>
+      <td>Thematic affinity <b>93</b> (Gold built steadily; today's 5.2% sits near the top of its 24-mo range);
+          5.2% is <em>within</em> the 15% comfort &rarr; no penalty.</td>
+      <td class="num">93</td><td class="num">0.2941</td><td class="num">27.4</td>
+    </tr>
+    <tr>
+      <td><b>Mandate &amp; risk</b></td>
+      <td>0.6&times;RiskSuit <b>82</b> (&ldquo;moderate-vol yield fits an income mandate&rdquo;) +
+          0.4&times;IntentFit <b>65</b> (capital-protection goal vs an income mandate) = 75.</td>
+      <td class="num">75</td><td class="num">0.2941</td><td class="num">22.1</td>
+    </tr>
+    <tr class="alt">
+      <td><b>Conc. within sector</b></td>
+      <td>One Gold name &rarr; <span class="mono">HHI 1.00</span> &rarr; diversification 0 &rarr; inverted <b>100</b>
+          (a single concentrated holding &mdash; a new gold name diversifies it most).</td>
+      <td class="num">100</td><td class="num">0.1765</td><td class="num">17.6</td>
+    </tr>
+    <tr class="total"><td colspan="2">Bracketed weighted sum</td><td colspan="3" class="num">bracketFit = 82</td></tr>
+    <tr class="total"><td colspan="2">Tradability &mdash; Retail can hold Physical / ETC (non-complex) &rarr; &times;1</td><td colspan="3" class="num">Final Fit = 82</td></tr>
+  </table>
+
+  <div class="key">
+    <b>Does the Views tab tag her? Yes.</b> bracketFit 82 &ge; applyMin 45 and the idea is tradable &rarr;
+    <code>applies = true</code>, so <code>clientsForIdea(gold-hedge)</code> returns Aurora, ranked by her score of 82.
+    (She also clears the stricter Today's Focus flag of 50, which is why the &sect;1 Gold contrast also flags her.)
+  </div>
+
+  <!-- ============================ SECTION 3 ============================ -->
+  <h2 class="pagebreak">3 &nbsp;&middot;&nbsp; Proposed redesign <span class="tag tag-proposed">Proposed &mdash; not built</span></h2>
+
+  <div class="proposed">
+    <b>This section is a design proposal, not the live system.</b> Nothing here is implemented. It reframes the
+    &ldquo;why does this fit&rdquo; signal around a <b>Preference</b> score (trajectory + house view), demotes the client's
+    <b>goal</b> from a weighted axis to a <b>dial (multiplier)</b>, and is explicit that <b>ownership and P&amp;L never add
+    points</b>.
+  </div>
+
+  <h3>3.1 &nbsp; The proposed components</h3>
+
+  <h4>Preference (0&ndash;100)</h4>
+  <span class="formula">PREFERENCE = 0.6&middot;Trajectory + 0.4&middot;View</span>
+  <p><b>Trajectory</b> from a 24-month series <code>s</code> (index 0 = most recent):</p>
+  <pre class="formula">recent = mean(s[0..5]);  older = mean(s[18..23]);  &Delta; = recent &minus; older<br/>max(s) = 0            &rarr; 0<br/>&Delta; &ge; +5            &rarr; 100<br/>+1 &le; &Delta; &lt; +5       &rarr; 70 + (&Delta;&minus;1)/4 &times; 30<br/>&minus;1 &le; &Delta; &lt; +1       &rarr; 55<br/>&minus;5 &le; &Delta; &lt; &minus;1       &rarr; 20 + (&Delta;+5)/4 &times; 35<br/>&Delta; &lt; &minus;5            &rarr; max(0, 20 + (&Delta;+5) &times; 4)</pre>
+  <p><b>View</b> (the house view on the name/theme):</p>
+  <pre class="formula">LIKE     &rarr; 60 + conviction &times; 4<br/>NEUTRAL  &rarr; 50<br/>none     &rarr; 40<br/>AVOID    &rarr; 10</pre>
+
+  <h4>Gap (0&ndash;100)</h4>
+  <span class="formula">GAP = max(0, (peg &minus; current) / peg &times; 100)      peg { growth 25, income 15, preservation 10 }</span>
+
+  <h4>Concentration within sector</h4>
+  <pre class="formula">HHI = &Sigma;(name weight-within-sector)²<br/>raw = (1 &minus; HHI) &times; 100<br/>contribution = 100 &minus; raw           // invert by default</pre>
+
+  <h4>Risk suitability</h4>
+  <table class="data">
+    <tr><th>Mandate</th><th>high</th><th>moderate</th><th>low</th></tr>
+    <tr><td><b>growth</b></td><td class="num">90</td><td class="num">70</td><td class="num">45</td></tr>
+    <tr class="alt"><td><b>income</b></td><td class="num">35</td><td class="num">75</td><td class="num">80</td></tr>
+    <tr><td><b>preservation</b></td><td class="num">15</td><td class="num">50</td><td class="num">90</td></tr>
+  </table>
+
+  <h4>Goal dial (0.5&ndash;1.0) &mdash; a multiplier, not an axis</h4>
+  <table class="data">
+    <tr><th>IntentMatch</th><th>appreciation</th><th>yield</th><th>protection</th></tr>
+    <tr><td><b>growth</b></td><td class="num">100</td><td class="num">45</td><td class="num">35</td></tr>
+    <tr class="alt"><td><b>income</b></td><td class="num">45</td><td class="num">100</td><td class="num">70</td></tr>
+    <tr><td><b>preservation</b></td><td class="num">25</td><td class="num">70</td><td class="num">100</td></tr>
+  </table>
+  <span class="formula">dial = 0.5 + 0.5 &times; (IntentMatch / 100)        // ranges 0.5 .. 1.0</span>
+
+  <h4>Tradability gate &amp; composition</h4>
+  <pre class="formula">Tradability = 1 / 0          // Retail + OTC/complex natural expression &rarr; 0<br/><br/>Base     = 0.40&middot;Preference + 0.20&middot;Gap + 0.15&middot;ConcContribution + 0.25&middot;RiskSuitability<br/>FinalFit = round( Tradability &times; GoalDial &times; Base )        flag &ge; 50</pre>
+  <p class="small"><b>Goal lives only in the dial.</b> Ownership and P&amp;L never add points &mdash; preference is built from
+  the allocation <em>trajectory</em> and the <em>house view</em>, not from whether the client holds the name or is up/down on it.</p>
+
+  <h3>3.2 &nbsp; Worked examples (proposed)</h3>
+  <p class="small">Inputs below are illustrative (the redesign is not built, so there is no live data to read); the
+  arithmetic shows the proposed mechanics and lands in the target bands.</p>
+
+  <h4>Example A &mdash; Gold &rarr; Amar (growth) &rarr; ~43 &nbsp;<span class="small">(drops off via the goal dial)</span></h4>
+  <p>Amar is a <b>growth</b> family office (peg 25) holding Gold at 12% &mdash; one Gold name. Gold's goal type is
+  <em>protection</em>.</p>
+  <table class="data">
+    <tr><th>Component</th><th>Value</th><th>Reasoning</th></tr>
+    <tr><td>Trajectory</td><td class="num">55</td><td>Long-held strategic core, roughly steady &rarr; &Delta; in [&minus;1,+1).</td></tr>
+    <tr class="alt"><td>View</td><td class="num">76</td><td>House LIKEs gold, conviction 4 &rarr; 60 + 4&times;4.</td></tr>
+    <tr><td><b>Preference</b></td><td class="num">63.4</td><td>0.6&times;55 + 0.4&times;76 = 33 + 30.4.</td></tr>
+    <tr class="alt"><td>Gap</td><td class="num">52</td><td>(25 &minus; 12)/25 &times; 100.</td></tr>
+    <tr><td>Conc. contribution</td><td class="num">100</td><td>Single gold name &rarr; HHI 1 &rarr; 100 &minus; 0.</td></tr>
+    <tr class="alt"><td>Risk suitability</td><td class="num">45</td><td>Gold is low-beta; growth&times;low = 45.</td></tr>
+    <tr><td><b>Base</b></td><td class="num">62.0</td><td>0.40&times;63.4 + 0.20&times;52 + 0.15&times;100 + 0.25&times;45 = 25.4 + 10.4 + 15 + 11.25.</td></tr>
+    <tr class="alt"><td>Goal dial</td><td class="num">0.675</td><td>growth&times;protection IntentMatch 35 &rarr; 0.5 + 0.5&times;0.35.</td></tr>
+    <tr class="total"><td><b>FinalFit</b></td><td class="num">&asymp; 42&ndash;43</td><td>round(1 &times; 0.675 &times; 62.0). The <b>goal dial</b> is what knocks a 62-point Base into the low-40s &mdash; gold doesn't serve a growth goal.</td></tr>
+  </table>
+
+  <h4>Example B &mdash; CEG &rarr; growth client, built AI-power, down on the year &rarr; ~77 &nbsp;<span class="small">(stays; P&amp;L ignored)</span></h4>
+  <p>A <b>growth</b> client (peg 25) who has been <em>building</em> a power/utilities position (CEG &mdash; datacenter power)
+  and is <em>down on the year</em>. CEG's goal type is <em>appreciation</em>; treat the name as a moderate-beta power play.</p>
+  <table class="data">
+    <tr><th>Component</th><th>Value</th><th>Reasoning</th></tr>
+    <tr><td>Trajectory</td><td class="num">100</td><td>Allocation built up strongly over 24 mo &rarr; &Delta; &ge; +5. <b>Note: the trajectory is the <em>weight</em> rising, not the price &mdash; being down on the year never enters.</b></td></tr>
+    <tr class="alt"><td>View</td><td class="num">76</td><td>House LIKEs AI-power, conviction 4 &rarr; 60 + 16.</td></tr>
+    <tr><td><b>Preference</b></td><td class="num">90.4</td><td>0.6&times;100 + 0.4&times;76 = 60 + 30.4.</td></tr>
+    <tr class="alt"><td>Gap</td><td class="num">42</td><td>Utilities ~14.5% vs peg 25 &rarr; (25&minus;14.5)/25&times;100.</td></tr>
+    <tr><td>Conc. contribution</td><td class="num">100</td><td>Concentrated single power name &rarr; new name diversifies.</td></tr>
+    <tr class="alt"><td>Risk suitability</td><td class="num">70</td><td>Moderate-beta power name; growth&times;moderate = 70.</td></tr>
+    <tr><td><b>Base</b></td><td class="num">77.1</td><td>0.40&times;90.4 + 0.20&times;42 + 0.15&times;100 + 0.25&times;70 = 36.16 + 8.4 + 15 + 17.5.</td></tr>
+    <tr class="alt"><td>Goal dial</td><td class="num">1.00</td><td>growth&times;appreciation IntentMatch 100 &rarr; full dial, no penalty.</td></tr>
+    <tr class="total"><td><b>FinalFit</b></td><td class="num">77</td><td>round(1 &times; 1.00 &times; 77.1). <b>Stays well above the flag</b> &mdash; high preference (trajectory + view) and an on-goal idea; the loss is irrelevant.</td></tr>
+  </table>
+
+  <h4>Example C &mdash; BABA &rarr; holder down hard, no bullish view &rarr; ~49/45 &nbsp;<span class="small">(drops; weak preference)</span></h4>
+  <p>A <b>growth</b> client holds BABA, <em>down hard</em>, with <em>no bullish house view</em>. BABA's goal type is
+  <em>appreciation</em> (dial 1.0), so the drop is driven purely by a weak <b>Preference</b> &mdash; not the loss.</p>
+  <table class="data">
+    <tr><th>Component</th><th>Value</th><th>Reasoning</th></tr>
+    <tr><td>Trajectory</td><td class="num">37.5</td><td>Position faded as it fell &rarr; &Delta; &asymp; &minus;3 &rarr; 20 + (&minus;3+5)/4&times;35.</td></tr>
+    <tr class="alt"><td>View</td><td class="num">40</td><td>No bullish house view &rarr; &ldquo;none&rdquo; = 40.</td></tr>
+    <tr><td><b>Preference</b></td><td class="num">38.5</td><td>0.6&times;37.5 + 0.4&times;40 = 22.5 + 16. <b>Weak &mdash; this is what sinks the score.</b></td></tr>
+    <tr class="alt"><td>Gap</td><td class="num">20</td><td>Already heavy in the sector &rarr; little headroom.</td></tr>
+    <tr><td>Conc. contribution</td><td class="num">40</td><td>Several names in the sector &rarr; fairly diversified.</td></tr>
+    <tr class="alt"><td>Risk suitability</td><td class="num">90</td><td>High-beta name; growth&times;high = 90.</td></tr>
+    <tr><td><b>Base</b></td><td class="num">45.7</td><td>0.40&times;38.5 + 0.20&times;20 + 0.15&times;40 + 0.25&times;90 = 15.4 + 4 + 6 + 22.5.</td></tr>
+    <tr class="alt"><td>Goal dial</td><td class="num">1.00</td><td>growth&times;appreciation = full dial.</td></tr>
+    <tr class="total"><td><b>FinalFit</b></td><td class="num">&asymp; 46</td><td>round(1 &times; 45.7). <b>Below the 50 flag &rarr; drops off.</b> If the desk actively flags AVOID (View = 10), preference falls further &rarr; ~45. Being down hard is <em>not</em> a factor.</td></tr>
+  </table>
+  <p class="small">The &ldquo;~49/45&rdquo; band reflects the two view states: a neutral/absent view lands ~48&ndash;49, an active AVOID
+  pulls it to ~45 &mdash; either way under the flag, on weak preference rather than P&amp;L.</p>
+
+  <!-- ============================ SECTION 4 ============================ -->
+  <h2 class="pagebreak">4 &nbsp;&middot;&nbsp; Current vs proposed &mdash; summary</h2>
+
+  <div class="key">
+    <b>The engines are already unified.</b> Today's Focus and the Views tab have scored through one engine since
+    <span class="mono">007131c</span>. Unification is <em>not</em> a proposed change &mdash; it is already shipped. The
+    genuine proposals in &sect;3 are only the two reframings below.
+  </div>
+
+  <table class="data">
+    <tr><th>Dimension</th><th>Current (live)</th><th>Proposed (&sect;3)</th></tr>
+    <tr>
+      <td><b>Engine</b></td>
+      <td>One engine, <code>scoreIdeaForClient</code>, shared by Today's Focus &amp; Views <span class="tag tag-current">Already unified</span></td>
+      <td>Same single-engine principle &mdash; <b>no change</b></td>
+    </tr>
+    <tr class="alt">
+      <td><b>&ldquo;Why it fits&rdquo; signal</b></td>
+      <td><b>Affinity fit</b> axis: recency-weighted sector affinity &minus; over-peg penalty (rewards having built up / sitting at top of range)</td>
+      <td><b>Preference</b> = 0.6&middot;Trajectory + 0.4&middot;View &mdash; <b>no ownership reward; P&amp;L removed</b> (trajectory is the weight's slope; view is the house call)</td>
+    </tr>
+    <tr>
+      <td><b>Client goal</b></td>
+      <td>Folded into the <b>Mandate &amp; risk</b> axis (IntentFit, 0.4 of a 0.29-weighted axis)</td>
+      <td>A <b>dial/multiplier</b> (0.5&ndash;1.0) over the whole Base &mdash; an off-goal idea is scaled down, not just lightly penalised</td>
+    </tr>
+    <tr class="alt">
+      <td><b>Axes &amp; weights</b></td>
+      <td>4 axes: Gap 0.24, Affinity 0.29, Mandate&amp;Risk 0.29, ConcSector 0.18</td>
+      <td>Base from Preference 0.40, Gap 0.20, ConcContribution 0.15, RiskSuitability 0.25</td>
+    </tr>
+    <tr>
+      <td><b>Tradability</b></td>
+      <td>Binary global gate &times; weighted sum</td>
+      <td>Binary global gate &times; dial &times; Base &mdash; <b>same role</b></td>
+    </tr>
+    <tr class="alt">
+      <td><b>Flag threshold</b></td>
+      <td>Today's Focus fit &ge; 50 (top 6); Views <code>applies</code> &ge; 45</td>
+      <td>FinalFit &ge; 50</td>
+    </tr>
+  </table>
+
+  <p><b>In one sentence:</b> the unification work is done; the open proposals are (1) replace the affinity/ownership
+  signal with a <b>trajectory + house-view Preference</b> that ignores P&amp;L, and (2) make the client's <b>goal a
+  multiplier</b> rather than a weighted term so off-goal ideas are dialled down decisively.</p>
+
+  <div class="footer">
+    Brokerage Playground &mdash; Client-Fit &amp; Idea-Tagging Logic &middot; Prepared 18 June 2026 &middot;
+    Today's Focus data as-of 16 June 2026 &middot; Sources of truth: <span class="mono">mapping.js, scanner.js, data.js</span> &middot;
+    Engine unification: commit <span class="mono">007131c</span>. &sect;1&ndash;&sect;2 describe the live system; &sect;3 is a proposal, not built.
+  </div>
+
+</div>
+</body>
+</html>
