@@ -1335,16 +1335,20 @@
     const d = window.GOALS.deriveGoals(c);
     const i = d.inputs, w = d.willingness, comp = d.components, v = d.vector, raw = d.raw, Wc = d.willingCoef;
 
-    /* TAB 1 — the general formula (same for every client) */
+    /* TAB 1 — the general formula (same for every client), each with a WHY note */
     const fSteps = [
-      { k: "Willingness (0–1)", f: "0.5 × risk-asset share  +  0.3 × low-defensiveness  +  0.2 × concentration appetite", sub: "if a risk profile is stated, blend:  0.5 × stated  +  0.5 × revealed" },
-      { k: "Growth", f: "8  +  5 × required-return%  +  3 × (horizon − 6)  +  W × willingness", sub: "W = 30 when a funding goal exists, else 45" },
-      { k: "Income", f: "8  +  8 × income-draw%  +  8 × debt-service%  +  0.6 × debt-load%  +  15 (if drawdown)  +  18 × (1 − willingness)" },
-      { k: "Protection", f: "8  +  1 × near-bill%  +  0.3 × debt-load%  +  (top-name% − 15, if > 15)  +  15 (if drawdown)  +  3 × (5 − horizon, if < 5)  +  28 × (1 − willingness)" },
+      { k: "Willingness (0–1)", f: "0.5 × risk-asset share  +  0.3 × low-defensiveness  +  0.2 × concentration appetite", sub: "if a risk profile is stated, blend:  0.5 × stated  +  0.5 × revealed",
+        why: "Willingness is the client's <b>risk appetite</b> — how much volatility they'll live with. It's the <b>dial</b> that decides how much of the surplus chases <b>Growth</b> versus sits as ballast: a high appetite lifts Growth, a low one feeds Protection &amp; Income (that's the <b>1 − willingness</b> “caution” term below). We read it straight off the book — <b>risk-asset share</b> (how much is already in equities/alternatives = leaning in), <b>low-defensiveness</b> (how little is parked in cash/bonds/gold), and <b>concentration appetite</b> (comfort holding a big single name = tolerance for idiosyncratic risk) — and, when the client has stated a risk profile, blend that with what the book reveals." },
+      { k: "Growth", f: "8  +  5 × required-return%  +  3 × (horizon − 6)  +  W × willingness", sub: "W = 30 when a funding goal exists, else 45",
+        why: "Growth is the surplus that can take risk. It rises with the <b>return the client needs</b> to hit their goal, a <b>longer horizon</b> (more time to ride out drawdowns), and their <b>willingness</b>. With no funding goal we lean harder on willingness (W = 45)." },
+      { k: "Income", f: "8  +  8 × income-draw%  +  8 × debt-service%  +  0.6 × debt-load%  +  15 (if drawdown)  +  18 × (1 − willingness)",
+        why: "Income is the recurring cash the book must produce — a <b>spending draw</b>, <b>debt servicing</b>, or matching a <b>debt load</b> — plus a ballast tilt when appetite is low." },
+      { k: "Protection", f: "8  +  1 × near-bill%  +  0.3 × debt-load%  +  (top-name% − 15, if > 15)  +  15 (if drawdown)  +  3 × (5 − horizon, if < 5)  +  28 × (1 − willingness)",
+        why: "Protection is capital that can't be lost — a <b>near-term bill</b>, leverage to cushion, a <b>concentrated single name</b>, or a <b>spend-down phase</b> — plus a ballast tilt when appetite is low." },
       { k: "Final", f: "normalise(Growth, Income, Protection)  →  scales the three to sum to 100" }
     ];
     const formulaHTML = fSteps.map(s => `<div class="gd-step"><div class="gd-step-k">${s.k}</div>
-      <div class="gd-formula">${s.f}</div>${s.sub ? `<div class="gd-formula" style="margin-top:4px">${s.sub}</div>` : ""}</div>`).join("");
+      <div class="gd-formula">${s.f}</div>${s.sub ? `<div class="gd-formula" style="margin-top:4px">${s.sub}</div>` : ""}${s.why ? `<div class="gd-why">${s.why}</div>` : ""}</div>`).join("");
 
     /* TAB 2 — this client's actual calculation */
     const buckets = [

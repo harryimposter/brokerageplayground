@@ -1161,6 +1161,8 @@ button.struct-chip.struct-toggle:focus-visible { outline: 2px solid var(--gold);
 .gd-step-k { font-size: 12.5px; font-weight: 700; color: var(--ink, #29211A); margin-bottom: 5px; }
 .gd-formula { font-size: 12.5px; color: var(--ink-faint, #6E5A47); margin-bottom: 4px; }
 .gd-formula .lbl { font-style: italic; }
+.gd-why { margin-top: 7px; padding: 7px 10px; background: #FFFDF8; border-left: 3px solid var(--bronze, #9A7B4F);
+  border-radius: 3px; font-size: 12px; line-height: 1.55; color: var(--ink-soft, #5A3E2B); }
 .gd-calc { font-size: 13.5px; color: var(--ink, #29211A); font-variant-numeric: tabular-nums; }
 .gd-calc b { font-weight: 700; }
 .gd-step.gd-final { background: #EDE3D2; border-color: var(--bronze, #9A7B4F); }
