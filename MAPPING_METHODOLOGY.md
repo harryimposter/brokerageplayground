@@ -93,7 +93,7 @@ against the mandate's sector-comfort ceiling. Worked (Preservation goal 35): cur
 calc against the mandate peg (`sectorPeg`).
 Worked example: **gold × Amar** — his Preservation bucket is 35% against a 35% goal → Gap fit **0** (no
 headroom), dropping his overall fit from a misleading Strong 70 to Good 58. Clients *under* their
-Preservation target (Scott, Tejpaul, Aurora) score high instead.
+Preservation target (Scott, Fotis, Aurora) score high instead.
 
 ### 5.2 Affinity fit (`holdings`, weight 0.29)
 `max(0, ThematicAffinity − ConcentrationPenalty)`.

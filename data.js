@@ -385,7 +385,7 @@ const SEED_CLIENTS = [
 
   /* =========================== MORGAN (Pro, max-aggressive) ============== */
   {
-    id: "morgan", name: "Morgan", ccy: "USD", aum: 38.0,
+    id: "morgan", name: "Mitch", ccy: "USD", aum: 38.0,
     classification: "Professional", mifid: "MiFID Professional",
     relationship: "3-yr relationship · Tech founder · Maximum growth",
     risk: "Aggressive — maximum long-term capital growth, very high risk tolerance",
@@ -414,7 +414,7 @@ const SEED_CLIENTS = [
 
   /* =========================== TEJPAUL (unprofiled, balanced book) ======= */
   {
-    id: "tejpaul", name: "Tejpaul", ccy: "USD", aum: 60.0,
+    id: "tejpaul", name: "Fotis", ccy: "USD", aum: 60.0,
     classification: "Retail", mifid: "MiFID Retail",
     relationship: "6-yr relationship · Inherited account · Not formally profiled",
     risk: "Not formally risk-profiled",
@@ -439,7 +439,7 @@ const SEED_CLIENTS = [
       { name: "Gold ETF",            ticker: "GLD US",  assetClass: "Commodity",    sector: "Gold",       ccy: "USD", weightPct: 3.0,  pnlPct: 25, entryDate: "2021-06-01", entrySpot: 168.00, mat: null, note: "Small hedge sleeve." },
       { name: "USD cash",            ticker: "—",       assetClass: "Cash",         sector: "Cash",       ccy: "USD", weightPct: 12.0, pnlPct: 0,  entryDate: null, entrySpot: null, mat: null, note: "Idle buffer." }
     ],
-    summary: "A textbook 'no stated goal' case: never risk-profiled, no targets, no funding goal, no liabilities. The book itself is the only signal — broadly balanced (~57% equity, ~35% defensive, no concentrated name), which reads as a moderate appetite. The whole point of Tejpaul is to watch the system infer a moderate goal from the portfolio alone, with no form to read off."
+    summary: "A textbook 'no stated goal' case: never risk-profiled, no targets, no funding goal, no liabilities. The book itself is the only signal — broadly balanced (~57% equity, ~35% defensive, no concentrated name), which reads as a moderate appetite. The whole point of Fotis is to watch the system infer a moderate goal from the portfolio alone, with no form to read off."
   }
 ];
 
