@@ -61,13 +61,13 @@
       mandate:    0.25 / 0.85,   // 0.294117…  (shown 0.29)
       concSector: 0.15 / 0.85    // 0.176470…  (shown 0.18)
     },
-    /* Affinity-fit axis: max(0, thematicAffinity − concentrationPenalty). The
-       `comfort` pegs are the SINGLE source of truth, shared with Gap fit (sectorPeg). */
+    /* Affinity-fit axis: max(0, thematicAffinity − concentrationPenalty). The comfort
+       limit is keyed off the ASSET'S goal bucket (not the client's mandate) — see sectorPeg. */
     affinity: {
-      lambda: 0.94,                                          // month t weight = 0.94^t
-      comfort: { growth: 25, income: 15, preservation: 10 }, // per-mandate sector comfort limit (% of book)
-      sectorComfort: {},                                     // optional per-sector overrides, e.g. { Gold: 12 } — tunable
-      penaltyPerPp: 10, penaltyCap: 100                      // overshoot (pp over comfort) × 10, capped at 100
+      lambda: 0.94,                                                  // month t weight = 0.94^t
+      comfortByBucket: { Growth: 25, Income: 15, Preservation: 12 }, // comfort limit by the ASSET'S goal bucket (% of book)
+      sectorComfort: {},                                             // optional per-sector overrides, e.g. { Gold: 12 } — wins if set
+      penaltyPerPp: 10, penaltyCap: 100                              // overshoot (pp over comfort) × 10, capped at 100
     },
     /* Concentration-within-sector axis: (1 − HHI) × 100 over in-sector holdings.
        invertForFit=true ⇒ a more CONCENTRATED sector position scores HIGHER fit
@@ -137,14 +137,38 @@
     return "income"; // moderate / balanced → middle peg
   }
 
-  /* THE STRATEGIC SECTOR PEG — SINGLE SOURCE OF TRUTH.
-     One constant (PARAMS.affinity.comfort by mandate, + optional per-sector
-     overrides in PARAMS.affinity.sectorComfort) read by BOTH the Gap-fit axis
-     (rewards headroom toward it) and the Affinity penalty (punishes overshoot
-     beyond it). There is no second copy. */
+  /* the GOAL BUCKET an asset/sector belongs to (Growth | Income | Preservation),
+     client-independent. SECTOR_BUCKET wins (Gold→Preservation, Crypto→Growth, energy
+     majors→Income, …); otherwise the sector's natural asset class is folded via
+     GOALS.classBucket3 (Technology→Equity→Growth, Rates→Fixed Income→Income, …). */
+  let _sectorAC = null;
+  function sectorAssetClass(sector) {
+    if (!_sectorAC) {
+      _sectorAC = {};
+      (S().clients || []).forEach(c => (c.positions || []).forEach(p => {
+        if (p.sector && _sectorAC[p.sector] == null) _sectorAC[p.sector] = p.assetClass;
+      }));
+      (S().ideas || []).forEach(i => { if (i.sector && _sectorAC[i.sector] == null) _sectorAC[i.sector] = i.assetClass; });
+    }
+    return _sectorAC[sector];
+  }
+  function sectorBucket(sector) {
+    const SB = (S().SECTOR_BUCKET) || {};
+    if (SB[sector] != null) return SB[sector];
+    const ac = sectorAssetClass(sector);
+    return (window.GOALS && window.GOALS.classBucket3) ? window.GOALS.classBucket3(ac) : "Growth";
+  }
+
+  /* THE COMFORT LIMIT — keyed off the ASSET'S goal bucket, NOT the client's mandate.
+     PARAMS.affinity.sectorComfort[sector] is an explicit per-sector override that wins;
+     otherwise the limit is comfortByBucket[ the sector's bucket ]. Read by the Affinity
+     penalty (punishes overshoot beyond it) and the Gap-fit fallback. Client-independent —
+     gold scores against the Preservation limit (12%) for every client alike. */
   function sectorPeg(client, sector) {
     const A = PARAMS.affinity;
-    return (A.sectorComfort[sector] != null) ? A.sectorComfort[sector] : A.comfort[mandateClass(client)];
+    if (A.sectorComfort[sector] != null) return A.sectorComfort[sector];
+    const byBucket = A.comfortByBucket[sectorBucket(sector)];
+    return byBucket != null ? byBucket : A.comfortByBucket.Growth;
   }
 
   /* ---- idea risk descriptors (explicit field on the idea, else derived) ----
@@ -329,16 +353,16 @@
     }
 
     // ---- Part B: Concentration Penalty (0–100, subtracted) ----
-    const mc = mandateClass(client);
-    const peg = sectorPeg(client, sector);   // SAME shared peg constant as Gap fit
+    const assetBucket = sectorBucket(sector);  // the ASSET'S bucket drives the comfort limit (not the client mandate)
+    const peg = sectorPeg(client, sector);     // comfort limit by the asset's bucket; shared with the Gap-fit fallback
     const overshoot = cur - peg;
     const penalty = overshoot <= 0 ? 0 : Math.min(A.penaltyCap, overshoot * A.penaltyPerPp);
 
     // ---- Part C ----
     const score = Math.max(0, affinity - penalty);
     const note = penalty > 0
-      ? `Thematic affinity ${Math.round(affinity)} (${hnote}) − ${Math.round(penalty)} over-limit penalty (${cur}% vs ${mc}-mandate comfort ${peg}%) = ${Math.round(score)}.`
-      : `Thematic affinity ${Math.round(affinity)} (${hnote}); within the ${mc}-mandate comfort limit (${peg}%) → no penalty = ${Math.round(score)}.`;
+      ? `Thematic affinity ${Math.round(affinity)} (${hnote}) − ${Math.round(penalty)} over-limit penalty (${cur}% vs the ${assetBucket} comfort limit ${peg}%) = ${Math.round(score)}.`
+      : `Thematic affinity ${Math.round(affinity)} (${hnote}); within the ${assetBucket} comfort limit (${peg}%) → no penalty = ${Math.round(score)}.`;
     return { score, note };
   }
 

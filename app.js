@@ -1256,14 +1256,14 @@
           <h3 class="rub-h">Global tradability gate — binary, applied last</h3>
           <p class="rub-p"><b>Final Client-Fit = Tradability × (weighted sum of the four axes).</b> Tradability is binary (MiFID): if the client can't trade the idea's natural expression — e.g. a Retail client and an OTC derivative — Tradability is 0, so the fit is 0 and the idea is <b>suppressed</b> for that client (shown with the reason, not silently dropped). Otherwise it's 1 and passes the weighted sum straight through — the four weights already sum to 1.00, so nothing is re-normalised.</p>
         </div>
-        ${(() => { const P = window.MAPPING.PARAMS.affinity.comfort; return `
+        ${(() => { const P = window.MAPPING.PARAMS.affinity.comfortByBucket; return `
         <div class="rub-pegs">
-          <h3 class="rub-h">Strategic target pegs — one shared constant</h3>
-          <p class="rub-p"><b>Gap fit</b> rewards headroom <i>toward</i> the strategic sector target; the <b>Affinity fit</b> penalty punishes overshoot <i>beyond</i> it. Both axes read this one peg (by mandate) — there is no second copy.</p>
+          <h3 class="rub-h">Comfort limits — by the asset's goal bucket</h3>
+          <p class="rub-p">The <b>Affinity fit</b> penalty punishes overshoot <i>beyond</i> a sector's comfort limit. The limit is set by the <b>asset's goal bucket</b> (e.g. gold → Preservation), <i>not</i> the client's mandate — so gold is held to the Preservation limit for every client alike.</p>
           <div class="peg-row">
-            <span class="peg"><b>Growth</b> ${P.growth}%</span>
-            <span class="peg"><b>Income</b> ${P.income}%</span>
-            <span class="peg"><b>Preservation</b> ${P.preservation}%</span>
+            <span class="peg"><b>Growth</b> ${P.Growth}%</span>
+            <span class="peg"><b>Income</b> ${P.Income}%</span>
+            <span class="peg"><b>Preservation</b> ${P.Preservation}%</span>
           </div>
         </div>`; })()}
       </div>
