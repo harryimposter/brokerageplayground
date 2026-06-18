@@ -297,25 +297,25 @@
     let exp = 0; try { exp = window.Scanner.exposure(client).bySector[sector] || 0; } catch (e) {}
     const sx = Math.round(exp * 10) / 10;
     const cap = window.MAPPING.sectorPeg(client, sector);
-    const overComfort = sx > cap;
+    // the TWO conditions that drive the warning colour
+    const overTarget = tgt > 0 && have > tgt;     // over the client's GOAL TARGET for the idea's bucket
+    const overComfort = sx > cap;                 // over YOUR COMFORT LIMIT for the idea's sector
+    // BOTH → red · EXACTLY ONE → amber · NEITHER → no warning colour (normal)
+    const warn = (overTarget && overComfort) ? "red" : (overTarget !== overComfort) ? "amber" : "none";
     const C = esc(client.name), B = esc(bucket), S = esc(sector);
     const capTxt = `${sx}% vs your ${cap}% cap`;
-    let state, msg;
+    let msg;
     if (fitsGap && overComfort) {
-      state = "flag";
       msg = `Fits ${C}'s ${B} gap (${gap}pts under target) — but ${C} is <b>over your comfort limit on ${S}</b> (${capTxt}). Recommend, but flagged for your call.`;
     } else if (fitsGap) {
-      state = "clean";
       msg = `Fits ${C}'s ${B} gap (${gap}pts under target) and sits within your ${S} comfort limit (${capTxt}). Clean to recommend.`;
     } else if (overComfort) {
-      state = "trim";
-      msg = `${C} is at/over their ${B} goal <b>and over your comfort limit on ${S}</b> (${capTxt}) — trim rather than add.`;
+      msg = `${C} is at/over their ${B} goal <b>and over your comfort limit on ${S}</b> (${capTxt})${overTarget ? " — trim rather than add" : ""}.`;
     } else {
-      state = "neutral";
       const goalState = gap < 0 ? `already at/over their ${B} goal` : `near their ${B} goal`;
       msg = `${C} is ${goalState}, and within your ${S} comfort limit (${capTxt}).`;
     }
-    return `<p class="gap-comfort gc-${state}">${msg}</p>`;
+    return `<p class="gap-comfort gc-${warn}">${msg}</p>`;
   }
 
   const sourceTag = (src) => src === "Portfolio"

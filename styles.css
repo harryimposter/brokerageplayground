@@ -288,10 +288,11 @@ button { font-family: inherit; cursor: pointer; }
 .gap-comfort { font-size: 12px; line-height: 1.45; margin: 7px 0 0; padding: 7px 10px;
   border-radius: var(--radius); border: 1px solid var(--line); }
 .gap-comfort b { font-weight: 700; }
-.gap-comfort.gc-flag { background: #FBF3E5; border-color: #E6C98C; color: #6B4E1F; }
-.gap-comfort.gc-clean { background: #EEF3EE; border-color: #CFE0CF; color: var(--pos); }
-.gap-comfort.gc-trim { background: #F7ECEA; border-color: #E3C3BC; color: var(--neg); }
-.gap-comfort.gc-neutral { background: var(--cream); color: var(--ink-soft); }
+/* warning colour driven by two conditions: over goal target AND over comfort limit.
+   BOTH → red · EXACTLY ONE → amber · NEITHER → no warning (normal). */
+.gap-comfort.gc-red { background: #F7ECEA; border-color: #E3C3BC; color: var(--neg); }
+.gap-comfort.gc-amber { background: #FBF1DD; border-color: #E6C173; color: #7A571A; }
+.gap-comfort.gc-none { background: var(--cream); border-color: var(--line); color: var(--ink-soft); }
 
 /* ===== editable comfort / concentration limits (How-scoring popup) ===== */
 .cap-editable { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700;
