@@ -1,10 +1,10 @@
 {
-  "asOf": "2026-06-16",
-  "generated": "2026-06-16",
+  "asOf": "2026-06-18",
+  "generated": "2026-06-18",
   "sweep": {
     "sources": ["Reuters", "WSJ", "Bloomberg", "Yahoo Finance", "Seeking Alpha", "Barron's"],
     "rule": "A fact is stated only if >=2 independent sources agree. Pending/forward events are kept in the future tense. Every datapoint is tagged sourced or estimated.",
-    "note": "Earnings dates and the macro backdrop are sourced from the 16-Jun-2026 sweep. Implied moves are options-desk estimates (labelled estimated); consensus figures are flagged where not dual-confirmed."
+    "note": "Refreshed on the 18-Jun-2026 sweep. The week's two big events have landed: the FOMC held at 3.50-3.75% on 17 Jun but turned hawkish (dots now signal a possible hike and no 2026 cuts in Warsh's first meeting), and Accenture reported FQ3 before the open today (dropped from the board as a forward catalyst). Backdrop: May CPI re-accelerated to 4.2% on an energy shock, Brent has collapsed to ~$79 from a ~$126 April war-peak after the US-Iran ceasefire, and gold sits ~$4,300. Implied moves are options-desk estimates (labelled estimated); consensus figures are flagged where not dual-confirmed."
   },
   "earnings": [
     {
@@ -26,7 +26,7 @@
           { "key": "asymmetry", "score": 0, "dq": "estimated", "note": "Implied straddle ~8.5% vs ~6.5% average realised over recent prints — the market is paying up for the move, so little edge buying the event." },
           { "key": "consensus", "score": 2, "dq": "estimated", "note": "Street broadly constructive on AI-memory; HBM demand underpins above-spot price targets." },
           { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Hard dated binary — FQ3 after the close on 24 Jun." },
-          { "key": "positioning", "score": 1, "dq": "estimated", "note": "+70% YTD and near a 52-week high — a notable crowded-long lean into the print, not a short-squeeze setup." }
+          { "key": "positioning", "score": 1, "dq": "estimated", "note": "At/near an all-time high into the print — a notable crowded-long lean, not a short-squeeze setup." }
         ]
       },
       "earnings": {
@@ -41,54 +41,13 @@
       },
       "facts": [
         { "text": "HBM sold out for several quarters; full-year 2026 HBM capacity booked under binding contracts", "tag": "sourced" },
-        { "text": "Stock ~$546, +70% YTD, trading near a 52-week high into the print", "tag": "sourced" },
-        { "text": "Consensus near $33.5B revenue and ~81% gross margin", "tag": "estimated" }
+        { "text": "Stock ~$1,043, at/near an all-time high (ATH ~$1,110 on 16 Jun) into the print", "tag": "sourced" },
+        { "text": "Q3 guide ~$33.5B revenue (set at the FQ2 print on 18 Mar)", "tag": "estimated" }
       ],
       "sources": [
         { "name": "Barchart", "kind": "calendar" },
         { "name": "GlobeNewswire / Nasdaq", "kind": "company" },
         { "name": "Investing.com", "kind": "analysis" }
-      ]
-    },
-    {
-      "id": "acn-fq3",
-      "intent": "add",
-      "name": "Accenture",
-      "ticker": "ACN",
-      "sector": "Technology",
-      "assetClass": "Equity",
-      "bucket": "Growth",
-      "headline": "Accenture FQ3 — the read on enterprise AI spend",
-      "thesis": "Accenture reports fiscal Q3 before the open on 18 June. It is the cleanest single read-through on whether enterprises are actually converting AI interest into bookings and consulting spend — a tell for the whole 'AI adopters' leg of the house view, beyond the chip names.",
-      "themeId": "ai",
-      "offThemeWhy": null,
-      "structures": ["Direct equity", "Call overwrite", "Structured note"],
-      "changeMyMind": "New-bookings / GenAI bookings growth stalling, or management flagging AI cannibalising legacy services — that breaks the 'enterprises are converting AI spend' read.",
-      "conviction": {
-        "pillars": [
-          { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Implied ~6% vs ~5% realised — only modestly rich, so some edge but not a clean misprice." },
-          { "key": "consensus", "score": 1, "dq": "estimated", "note": "Services multiple de-rated on AI-disruption fears; the sell-side is split rather than aligned." },
-          { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Dated FQ3 before the open on 18 Jun — the bellwether read on enterprise AI spend." },
-          { "key": "positioning", "score": 1, "dq": "estimated", "note": "Expectations reset after the de-rate; positioning closer to washed-out than crowded." }
-        ]
-      },
-      "earnings": {
-        "reportDate": "2026-06-18",
-        "reportWhen": "before open",
-        "impliedMovePct": 6.0,
-        "impliedSource": "estimated",
-        "historicalAvgMovePct": 5.0,
-        "historicalSource": "estimated",
-        "impliedVsHist": "slightly rich",
-        "watch": "GenAI bookings, new-bookings growth and any commentary on AI cannibalising legacy services."
-      },
-      "facts": [
-        { "text": "Accenture hosts its FQ3 fiscal-2026 call at 8:00am EDT on 18 June (before open)", "tag": "sourced" },
-        { "text": "Watched as the bellwether for enterprise AI / consulting demand", "tag": "estimated" }
-      ],
-      "sources": [
-        { "name": "Accenture newsroom", "kind": "company" },
-        { "name": "TipRanks", "kind": "calendar" }
       ]
     },
     {
@@ -183,8 +142,8 @@
       "sector": "Gold",
       "assetClass": "Commodity",
       "bucket": "Preservation",
-      "headline": "Gold ~25% off the highs while central banks keep buying",
-      "thesis": "Gold is trading around $4,165, roughly a quarter below its January record, even as central banks stay net buyers and every major bank's year-end target sits well above spot. For under-protected books this pullback is an accumulation window in the cleanest debasement hedge — sized to the protection gap, not chased.",
+      "headline": "Gold ~$4,300, off the highs while central banks keep buying",
+      "thesis": "Gold has steadied around $4,300 — about 23% below its January record — after dipping near $4,000 earlier in June and recovering on the US-Iran ceasefire. Central banks stay net buyers and every major bank's year-end target sits well above spot. For under-protected books this is an accumulation window in the cleanest debasement hedge — sized to the protection gap, not chased.",
       "themeId": "gold",
       "offThemeWhy": null,
       "structures": ["Physical / ETC", "Gold accumulator", "Capital-protected note"],
@@ -202,13 +161,13 @@
         ]
       },
       "macro": {
-        "metric": "Spot ~$4,165 (10 Jun)",
-        "detail": "~25% below the 28-Jan record of $5,589; central banks net +244t in Q1 and +17t in April; China adding for 18 straight months.",
+        "metric": "Spot ~$4,300 (18 Jun)",
+        "detail": "~23% below the 28-Jan record of $5,589; dipped near $4,000 earlier in June, then recovered on the US-Iran ceasefire; central banks net +244t in Q1 and +17t in April; China adding for 18 straight months.",
         "source": "sourced",
-        "watch": "CPI and the Fed path; central-bank demand as the marginal buyer."
+        "watch": "The 4.2% CPI print and the hawkish Fed path; central-bank demand as the marginal buyer."
       },
       "facts": [
-        { "text": "Gold ~$4,165, about 25% below the 28-Jan all-time high of $5,589", "tag": "sourced" },
+        { "text": "Gold ~$4,300, about 23% below the 28-Jan all-time high of $5,589", "tag": "sourced" },
         { "text": "Central banks net buyers: +244t in Q1 2026, +17t in April; China 18 consecutive months", "tag": "sourced" },
         { "text": "Bank year-end targets: Goldman $5,400, JPMorgan ~$6,000, Morgan Stanley $5,200, UBS $5,500", "tag": "sourced" }
       ],
@@ -262,42 +221,43 @@
     {
       "id": "lock-yields",
       "intent": "income",
-      "name": "Lock yields before the cuts",
+      "name": "Quality carry — get paid to wait",
       "ticker": "",
       "sector": "Rates",
       "assetClass": "Fixed Income",
       "bucket": "Income",
-      "headline": "The Fed holds — extend duration while you still can",
-      "thesis": "The FOMC meets 16-17 June and is expected to hold at 3.50-3.75% under new chair Kevin Warsh, with cuts pushed later into 2026. That is the window to extend out of cash and bills into intermediate high-quality bonds — lock today's yields and add the ballast that cash can't give a book.",
+      "headline": "The Fed held but turned hawkish — own the carry, not the convexity",
+      "thesis": "The FOMC held at 3.50-3.75% on 17 June, but the dots turned hawkish in Warsh's first meeting — the median now points to a possible hike and no cuts in 2026, with the easing cycle pushed into 2027 on a 4.2% energy-driven CPI. The 'extend before the cuts' convexity trade is gone for now; the case left is simpler and still good — you are paid ~4.5% in high-quality intermediate bonds to wait, ballast that cash can't give a book with equities at all-time highs. Add duration for income and diversification, not for a near-term rally.",
       "themeId": "duration",
       "offThemeWhy": null,
-      "structures": ["Extend duration", "Bond ladder", "Govt / IG bonds"],
-      "variant": { "street": "Consensus hold; extend-duration is both the Street and the house call", "us": "Same — lock today's yields before the cuts land", "gap": null },
-      "changeMyMind": "The Fed signalling earlier or deeper cuts, or the curve re-steepening sharply.",
+      "structures": ["Bond ladder", "Govt / IG bonds", "Extend duration"],
+      "variant": { "street": "The hawkish hold backs up yields; the Street is split between higher-for-longer and a 2027 pivot", "us": "Own quality carry now — 4.5% is paid ballast; don't bank on near-term cuts", "gap": "The market may still be too optimistic on the timing of the first cut" },
+      "changeMyMind": "Inflation rolling back toward target (pulling the first cut forward), or the Fed actually hiking — either end of the barbell breaks the carry case.",
       "conviction": {
         "pillars": [
-          { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Locking ~4.3-4.5% plus convexity if cuts land is a modest expected move versus normal bond ranges." },
-          { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Dated FOMC decision 16-17 Jun; a hold is consensus — a hard, dated reason." },
-          { "key": "consensus", "score": 2, "dq": "sourced", "note": "Reuters poll consensus is a hold and the rate path backs extending duration — aligned with an independent macro read." },
-          { "key": "thesis", "score": 1, "dq": "sourced", "note": "Quantified, sourced drivers (FOMC 16-17 Jun hold at 3.50-3.75%, cuts pushed later), but it's the consensus path — no variant edge." },
-          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core Fixed Income house view — extend duration before the cutting cycle." },
+          { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "Earning ~4.5% with cuts now a 2027 story — a carry trade with limited near-term convexity, a modest expected move versus normal bond ranges." },
+          { "key": "catalyst", "score": 1, "dq": "sourced", "note": "The 17 Jun FOMC has passed; the next dated catalyst (29-30 Jul FOMC, 14 Jul CPI) is weeks out — structural, not imminent." },
+          { "key": "consensus", "score": 1, "dq": "sourced", "note": "The hold is sourced fact, but the Street is now split on the path — alignment is weaker than before the meeting." },
+          { "key": "thesis", "score": 1, "dq": "sourced", "note": "Quantified, sourced drivers (held 3.50-3.75%, hawkish dots, 4.2% CPI), but mostly the consensus read — a modest variant on cut timing." },
+          { "key": "houseview", "score": 2, "dq": "sourced", "note": "Core Fixed Income house view — quality income and ballast, even with the cut delayed." },
           { "key": "positioning", "score": 1, "dq": "sourced", "note": "The crowd is still parked in cash and bills; extending is the contrarian-leaning move." },
-          { "key": "technical", "score": 1, "dq": "estimated", "note": "A duration trade; the curve picture is constructive but the price trend is mixed — neutral-to-confirming." }
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "10Y backed up to ~4.5% on the hawkish hold; the price trend is mixed — neutral-to-confirming for a carry buyer." }
         ]
       },
       "macro": {
-        "metric": "FOMC hold expected, 3.50-3.75%",
-        "detail": "Reuters poll consensus is a hold at the 16-17 June meeting — the first under chair Kevin Warsh — with sticky inflation pushing cuts later into 2026.",
+        "metric": "FOMC held 3.50-3.75%; hawkish dots, no 2026 cuts",
+        "detail": "The 16-17 June meeting (Warsh's first as Chair) held the target range, but the dot plot shifted up: the median now implies a possible hike and zero cuts this year, pushing easing into 2027. 10Y backed up to ~4.5%.",
         "source": "sourced",
-        "watch": "The dot plot / Warsh's tone, and any shift in the cut timeline."
+        "watch": "The 14 Jul CPI and the 29-30 Jul FOMC — whether the energy-led inflation spike fades or hardens the hawkish path."
       },
       "facts": [
-        { "text": "FOMC meets 16-17 June; consensus expects a hold at 3.50-3.75% (first meeting under chair Kevin Warsh)", "tag": "sourced" },
-        { "text": "Sticky inflation has pushed expected cuts later into 2026 (Reuters poll)", "tag": "sourced" }
+        { "text": "FOMC held at 3.50-3.75% on 17 June (Warsh's first meeting as Chair) — fourth consecutive hold", "tag": "sourced" },
+        { "text": "The June dot plot turned hawkish: median end-2026 ~3.8%, implying a possible hike and no cuts in 2026; easing pushed to 2027", "tag": "sourced" },
+        { "text": "May CPI re-accelerated to 4.2% y/y on an energy shock (core 2.9%); 10Y near 4.5%", "tag": "sourced" }
       ],
       "sources": [
-        { "name": "Reuters poll", "kind": "data" },
-        { "name": "Kiplinger / Yahoo Finance", "kind": "news" }
+        { "name": "Federal Reserve / FOMC", "kind": "data" },
+        { "name": "CNBC / Reuters", "kind": "news" }
       ]
     },
     {
@@ -308,33 +268,33 @@
       "sector": "Energy",
       "assetClass": "Equity",
       "bucket": "Income",
-      "headline": "Brent back to ~$87 as Hormuz de-escalates — a tactical, off-theme call",
-      "thesis": "Brent has fallen back to about $87 from an April peak near $118 as US-Iran de-escalation reopened the Strait of Hormuz. With the geopolitical premium half-deflated, energy majors offer a tactical, income-paying hedge against a re-escalation — explicitly off the standing house view, a trade rather than a strategic tilt.",
+      "headline": "Brent down to ~$79 as the Iran ceasefire reopens Hormuz — a tactical, off-theme call",
+      "thesis": "Brent has collapsed to about $79 from a ~$126 April war-peak after an interim US-Iran peace deal began reopening the Strait of Hormuz and restoring Iranian exports. The geopolitical premium has now largely deflated; energy majors offer a tactical, income-paying hedge against the ceasefire breaking down — explicitly off the standing house view, a trade rather than a strategic tilt.",
       "themeId": null,
       "offThemeWhy": "There is no standing desk theme on oil — this is a tactical, event-driven idea off Middle-East supply risk, sized as a hedge, not a strategic house view.",
       "structures": ["Direct equity", "Call overwrite", "Thematic basket"],
-      "variant": { "street": "Prices the US-Iran de-escalation as durable; the geopolitical premium is half-deflated", "us": "Buy the cheap re-escalation hedge — the market is too relaxed on the Hormuz tail", "gap": "Geopolitical tail risk underpriced after the de-escalation rally" },
-      "changeMyMind": "A durable US-Iran deal that keeps the Strait of Hormuz open, removing the re-escalation tail.",
+      "variant": { "street": "Prices the interim US-Iran deal as durable; the geopolitical premium has largely deflated", "us": "Hold a cheap re-escalation hedge — the market may be too relaxed on the Hormuz tail with the deal only interim", "gap": "Geopolitical tail risk underpriced now that the premium has bled out" },
+      "changeMyMind": "The interim US-Iran deal hardening into a durable settlement that keeps the Strait of Hormuz open, removing the re-escalation tail.",
       "conviction": {
         "pillars": [
-          { "key": "asymmetry", "score": 2, "dq": "sourced", "note": "A Hormuz re-escalation could retrace much of the move from ~$118 — a large potential move versus oil's normal range." },
+          { "key": "asymmetry", "score": 2, "dq": "sourced", "note": "A ceasefire breakdown could retrace much of the move from ~$126 — a large potential move versus oil's normal range." },
           { "key": "catalyst", "score": 1, "dq": "sourced", "note": "Headline-driven — hinges on the Hormuz / Iran path rather than a dated event." },
           { "key": "consensus", "score": 1, "dq": "estimated", "note": "Off-theme tactical; no standing sell-side alignment behind it." },
-          { "key": "thesis", "score": 2, "dq": "estimated", "note": "Sourced price drivers (Brent ~$87 off the ~$118 April peak) and a genuine variant — bet against the de-escalation consensus the market has priced as durable. Driver and variant yes." },
+          { "key": "thesis", "score": 2, "dq": "estimated", "note": "Sourced price drivers (Brent ~$79 off the ~$126 April peak) and a genuine variant — bet the market has over-priced the interim deal as durable. Driver and variant yes." },
           { "key": "houseview", "score": 0, "dq": "sourced", "note": "Off-theme — explicitly a tactical hedge, not a strategic house view." },
-          { "key": "positioning", "score": 1, "dq": "sourced", "note": "The geopolitical premium is half-deflated — positioning two-sided, no clear edge." },
-          { "key": "technical", "score": 1, "dq": "estimated", "note": "Brent has rolled off the April spike and is sitting mid-range between its moving averages — chart neutral." }
+          { "key": "positioning", "score": 1, "dq": "sourced", "note": "The geopolitical premium has largely deflated — positioning two-sided, no clear edge." },
+          { "key": "technical", "score": 1, "dq": "estimated", "note": "Brent has rolled hard off the April spike toward three-month lows — chart bearish near-term, which is the point of a contrarian hedge." }
         ]
       },
       "macro": {
-        "metric": "Brent ~$87 (14 Jun)",
-        "detail": "Down from an April peak of ~$118 as US-Iran de-escalation hopes reopened the Strait of Hormuz; still headline-sensitive.",
+        "metric": "Brent ~$79 (17 Jun)",
+        "detail": "Down from a ~$126 April war-peak (a 4-year high) as an interim US-Iran peace deal reopened the Strait of Hormuz and restored Iranian exports; still headline-sensitive while the deal is only interim.",
         "source": "sourced",
-        "watch": "The Hormuz / Iran negotiation path and OPEC+ supply signals."
+        "watch": "Whether the interim US-Iran deal holds, OPEC+ supply signals, and any Hormuz flare-up."
       },
       "facts": [
-        { "text": "Brent ~$87 on 14 June, down from an April peak near $118", "tag": "sourced" },
-        { "text": "Move driven by US-Iran de-escalation hopes and a reopening of the Strait of Hormuz", "tag": "sourced" }
+        { "text": "Brent ~$79 on 17 June, down from a ~$126 peak on 30 April (a 4-year high during the Iran war)", "tag": "sourced" },
+        { "text": "Move driven by an interim US-Iran peace deal reopening the Strait of Hormuz and restoring exports", "tag": "sourced" }
       ],
       "sources": [
         { "name": "Reuters / CNBC", "kind": "news" },

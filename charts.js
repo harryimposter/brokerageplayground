@@ -31,12 +31,6 @@
       `<span><i class="don-dot" style="background:${s.color}"></i>${s.label} <b>${Math.round(s.value)}%</b></span>`).join("") + `</div>`;
   }
 
-  /* normalize a split key for bucket lookup (Real_Assets -> Real Assets) */
-  function bucketForClass(cls) {
-    const map = window.SEED.BUCKET_OF;
-    return map[cls] || map[String(cls).replace(/_/g, " ")] || "Growth";
-  }
-
   /* split object -> array of {label,value,color} by asset class */
   function splitSegments(split) {
     return Object.entries(split).map(([k, v], i) => ({
@@ -44,16 +38,16 @@
     }));
   }
 
-  /* split object -> goal-bucket allocation {Growth,Income,Preservation,Structured,Liquidity} */
+  /* split object -> 3-bucket goal allocation {Growth,Income,Preservation}.
+     Thin wrapper over goals.js so charts and the pre-trade view share one classifier. */
   function bucketAlloc(split) {
-    const out = { Growth: 0, Income: 0, Preservation: 0, Structured: 0, Liquidity: 0 };
-    Object.entries(split).forEach(([k, v]) => { out[bucketForClass(k)] += v; });
-    return out;
+    return (window.GOALS && window.GOALS.bucketsFromSplit3(split)) || { Growth: 0, Income: 0, Preservation: 0 };
   }
 
-  /* goal-bucket object -> segments in canonical order/colour */
+  /* 3-bucket object -> segments in canonical order/colour (GOALS3) */
   function bucketSegments(buckets) {
-    return window.SEED.GOAL_BUCKETS.map(b => ({ key: b.key, label: b.key, value: buckets[b.key] || 0, color: b.color }));
+    const B = (window.GOALS && window.GOALS.GOALS3) || [];
+    return B.map(b => ({ key: b.key, label: b.key, value: buckets[b.key] || 0, color: b.color }));
   }
 
   /* apply a trade: move `notional`% into `assetClass`, funded from cash then the
@@ -110,47 +104,11 @@
     </div>`;
   }
 
-  /* Strategic-allocation bar: for each goal bucket, the bar fills to the book's
-     CURRENT weight, with a notch marking the strategic TARGET, and a plain label
-     reading "Now X% · target Y% · ±Δ". This makes "80% / now 94%" legible —
-     the bar is what you HAVE, the notch is what you're AIMING for. */
-  function goalTargetBar(target, current) {
-    const rows = window.SEED.GOAL_BUCKETS.map(b => {
-      const t = Math.round(target[b.key] || 0);
-      const n = Math.round(current[b.key] || 0);
-      const d = n - t;
-      const onPlan = Math.abs(d) < 4;
-      const deltaCls = onPlan ? "on" : (d > 0 ? "over" : "under");
-      const deltaTxt = onPlan ? "on plan"
-        : (d > 0 ? `+${d} over` : `${d} under`);
-      return `<div class="gt-row">
-        <div class="gt-head">
-          <span class="gt-dot" style="background:${b.color}"></span>
-          <span class="gt-name">${b.name || b.key}</span>
-          <span class="gt-delta ${deltaCls}">Now <b>${n}%</b> · target ${t}% · ${deltaTxt}</span>
-        </div>
-        <div class="gt-track" title="Now ${n}% of book · strategic target ${t}%">
-          <span class="gt-fill" style="width:${Math.min(100, n)}%;background:${b.color}"></span>
-          <span class="gt-target" style="left:${Math.min(100, t)}%"></span>
-        </div>
-      </div>`;
-    }).join("");
-    return `<div class="gt-wrap">${rows}
-      <p class="gt-note">The <b>bar</b> is the book's current weight in each goal; the <b>notch</b> ▏ marks its strategic target. “Now 94% · target 80% · +14 over” means the book holds 94% in growth assets against an 80% plan — 14 points overweight, so that's the sleeve to trim, not build.</p>
-    </div>`;
-  }
-
-  /* Objectives glossary — plain-English definition of each goal bucket. */
-  function goalGlossary() {
-    return `<div class="goal-gloss">` + window.SEED.GOAL_BUCKETS.map(b =>
-      `<div class="gg-item"><span class="gg-dot" style="background:${b.color}"></span>
-        <div><div class="gg-k">${b.name || b.key}</div><div class="gg-d">${b.desc || ""}</div></div></div>`
-    ).join("") + `</div>`;
-  }
-
-  /* ---- 3-bucket (Preservation / Income / Growth) variants — driven by the inferred
-     goal vector (goals.js). Liquidity & Structured are folded by role, so they are
-     no longer their own rows. Same visual language as the 5-bucket versions. ---- */
+  /* ---- Strategic-allocation bar (Growth / Income / Preservation), driven by the
+     inferred goal vector (goals.js). For each goal bucket the bar fills to the book's
+     CURRENT weight, with a notch marking the inferred TARGET, and a plain label
+     reading "Now X% · target Y% · ±Δ" — the bar is what you HAVE, the notch is what
+     you're AIMING for. Cash/gold fold into Preservation; structured notes by purpose. ---- */
   function goalTargetBar3(target, current) {
     const B = (window.GOALS && window.GOALS.GOALS3) || [];
     const rows = B.map(b => {
@@ -186,7 +144,7 @@
 
   window.BPCharts = {
     PALETTE, donut, legend, splitSegments, bucketAlloc, bucketSegments,
-    bucketForClass, applyTrade, targetDistance, fundingBar, goalTargetBar, goalGlossary,
+    applyTrade, targetDistance, fundingBar,
     goalTargetBar3, goalGlossary3
   };
 })();

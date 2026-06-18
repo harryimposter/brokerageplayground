@@ -81,7 +81,8 @@
   /* ---- small lookups ---- */
   function tickerRoot(p) { return String(p.ticker || "").split(" ")[0]; }
   function bucketName(key) {
-    const b = (S().GOAL_BUCKETS || []).find(x => x.key === key);
+    const B = (window.GOALS && window.GOALS.GOALS3) || [];
+    const b = B.find(x => x.key === key);
     return b ? (b.name || b.key) : key;
   }
   /* (themeName / themeSectors removed with the House-view client-fit axis — house-view
@@ -104,9 +105,8 @@
      Parsed to {level, tilt}; falls back to target-derived tilt only when the
      string is unparseable. The OLD engine ignored `risk` entirely. */
   function tiltFromTargets(client) {
-    const t = client.goals.target || {};
-    const growth = (t.Growth || 0) + (t.Structured || 0);
-    if (growth >= 58) return { level: "growth", tilt: "growth" };
+    const t = (window.GOALS && window.GOALS.goalsFor(client)) || {};
+    if ((t.Growth || 0) >= 58) return { level: "growth", tilt: "growth" };
     if ((t.Income || 0) >= 35) return { level: "moderate", tilt: "income" };
     if ((t.Preservation || 0) >= 25) return { level: "conservative", tilt: "preservation" };
     return { level: "moderate", tilt: "balanced" };
@@ -241,7 +241,8 @@
   /* ---- per idea×client context ---- */
   function buildCtx(idea, client) {
     const exp = window.Scanner.exposure(client);
-    const buckets = window.Scanner.bucketAlloc(client.split);
+    const buckets = window.GOALS.currentBuckets(client);   // 3-bucket current (position-aware)
+    const goal = window.GOALS.goalsFor(client);            // 3-bucket derived goal
     const rh = relevantHolding(idea, client);
     // the book's largest single-name position — what a generic protect/trim idea
     // (Broad / Multi-Asset, no sector match) should act on, regardless of sector
@@ -256,7 +257,7 @@
       ownName: rh ? rh.name : null,
       sectorExp: round(exp.bySector[idea.sector] || 0),
       acExp: round(exp.byClass[idea.assetClass] || 0),
-      gap: Math.max(0, round((client.goals.target[idea.bucket] || 0) - (buckets[idea.bucket] || 0))),
+      gap: Math.max(0, round((goal[idea.bucket] || 0) - (buckets[idea.bucket] || 0))),
       intent: ideaIntent(idea),
       risk: riskProfile(client)
     };
@@ -266,15 +267,16 @@
 
   /* GAP FIT — bucket-aware: does this idea fill a GOAL BUCKET the client is UNDER on?
        Gap Fit = max(0, (bucketTarget − bucketCurrent) / bucketTarget × 100), 0–100.
-     Pegs the idea's bucket (Growth / Income / Preservation / Structured) to the client's
-     own goal-allocation target (client.goals.target), NOT the mandate sector-comfort
+     Pegs the idea's bucket (Growth / Income / Preservation) to the client's own DERIVED
+     goal vector (goals.js::goalsFor), NOT the mandate sector-comfort
      ceiling — so a Preservation idea is judged against the Preservation goal and scores 0
      once that bucket is already at/over target (e.g. gold for a client whose Preservation
      bucket is full). Falls back to sector headroom vs the mandate peg only when the
      client has no goal target for that bucket. */
   function axisGap(idea, client, ctx) {
     const bucket = idea.bucket;
-    const tgt = (client.goals && client.goals.target && client.goals.target[bucket]) || 0;
+    const goal = (window.GOALS && window.GOALS.goalsFor(client)) || {};
+    const tgt = goal[bucket] || 0;
     if (tgt > 0) {
       const cur = (ctx.buckets && ctx.buckets[bucket]) || 0;   // current % of book in this goal bucket
       const score = Math.max(0, (tgt - cur) / tgt * 100);

@@ -29,6 +29,7 @@
   <script src="charts.js"></script>
   <script src="goals.js"></script>
   <script src="scanner.js"></script>
+  <script src="mapping.js"></script>
   <script src="expressions.js"></script>
   <script src="morgan.js"></script>
   <script>
@@ -60,16 +61,16 @@
     // goal buckets: current vs target
     const curB = window.GOALS.currentBuckets(c);
     const target = window.GOALS.goalsFor(c);
-    const curBSeg = SEED.GOAL_BUCKETS.map(b => ({ label: b.key, value: curB[b.key] || 0, color: b.color }));
-    const tgtSeg = SEED.GOAL_BUCKETS.map(b => ({ label: b.key, value: target[b.key] || 0, color: b.color }));
+    const curBSeg = window.GOALS.GOALS3.map(b => ({ label: b.key, value: curB[b.key] || 0, color: b.color }));
+    const tgtSeg = window.GOALS.GOALS3.map(b => ({ label: b.key, value: target[b.key] || 0, color: b.color }));
     const dist = BPCharts.targetDistance(curB, target);
-    const onTarget = dist <= 16; // sum of abs diffs across 4 buckets
-    const gaps = SEED.GOAL_BUCKETS.map(b => ({ key: b.key, color: b.color, d: (curB[b.key] || 0) - (target[b.key] || 0) }))
+    const onTarget = dist <= 16; // sum of abs diffs across the three buckets
+    const gaps = window.GOALS.GOALS3.map(b => ({ key: b.key, color: b.color, d: (curB[b.key] || 0) - (target[b.key] || 0) }))
       .filter(g => Math.abs(g.d) >= 4)
       .sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
     const gapText = gaps.length
-      ? "Currently " + gaps.map(g => `${g.d > 0 ? "over" : "under"}weight <b>${g.key}</b> (${g.d > 0 ? "+" : ""}${g.d.toFixed(0)}pts)`).join(", ") + " vs target."
-      : "Broadly aligned with the strategic target.";
+      ? "Currently " + gaps.map(g => `${g.d > 0 ? "over" : "under"}weight <b>${g.key}</b> (${g.d > 0 ? "+" : ""}${g.d.toFixed(0)}pts)`).join(", ") + " vs the inferred goal."
+      : "Broadly aligned with the inferred goal.";
 
     // holdings (with P&L)
     const holdings = (c.positions || []).slice().sort((a, b) => b.weightPct - a.weightPct).map(p => `
@@ -114,7 +115,7 @@
         <h2>Allocation</h2>
         <div class="pie-row">
           <div class="pie-card"><div class="pc-t">By asset class</div>${BPCharts.donut(allocSeg)}${BPCharts.legend(allocSeg)}</div>
-          <div class="pie-card"><div class="pc-t">Strategic target · by goal</div>${BPCharts.donut(tgtSeg)}${BPCharts.legend(tgtSeg)}</div>
+          <div class="pie-card"><div class="pc-t">Inferred goal · by goal</div>${BPCharts.donut(tgtSeg)}${BPCharts.legend(tgtSeg)}</div>
           <div class="pie-card"><div class="pc-t">Current · by goal</div>${BPCharts.donut(curBSeg)}${BPCharts.legend(curBSeg)}</div>
         </div>
         <div class="pt-verdict ${onTarget ? "toward" : "away"}" style="margin-top:14px">

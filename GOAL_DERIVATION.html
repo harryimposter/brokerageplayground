@@ -315,10 +315,11 @@ GROWTH     = 8 + 7.5 (3·[8.5−6] horizon) + 20.97 (45·0.466)                 
      stated, the shape of the book itself.</p>
 
   <div class="proposed">
-    <b>Status &amp; next steps.</b> <code>deriveGoals</code> is live and exposed as <code>window.GOALS</code>, but <b>additive</b> — the
-    fit engine and UI still read the legacy five-bucket <code>goals.target</code>. Open items: (1) fold 5 buckets → 3 across the app;
-    (2) surface the inferred vector + drivers + an override editor in the Advisor Book; (3) capture a numeric spending field so
-    qualitative &ldquo;income needs&rdquo; (e.g. Aurora) are no longer lost. All coefficients above live in <code>PARAMS</code> and are tunable.
+    <b>Status &amp; next steps.</b> <code>deriveGoals</code> is live and exposed as <code>window.GOALS</code>, and is now the
+    <b>single source of truth</b>: the legacy five-bucket <code>goals.target</code> has been removed and the fit engine, scanner and
+    every UI surface read the derived three-bucket vector (Growth / Income / Preservation). Open items: (1) surface the inferred
+    vector + drivers + an override editor in the Advisor Book; (2) capture a numeric spending field so qualitative
+    &ldquo;income needs&rdquo; (e.g. Aurora) are no longer lost. All coefficients above live in <code>PARAMS</code> and are tunable.
   </div>
 
   <div class="footer">

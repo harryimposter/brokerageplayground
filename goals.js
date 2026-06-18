@@ -339,6 +339,15 @@
     return { Growth: Math.round(out.Growth), Income: Math.round(out.Income), Preservation: Math.round(out.Preservation) };
   }
 
+  /* fold an asset-class split {Equity: 26, ...} into the three buckets. Used by the
+     pre-trade impact view, where we only have a split (no position objects), so
+     Structured can't be refined by purpose — it falls to classBucket3's default. */
+  function bucketsFromSplit3(split) {
+    const out = { Growth: 0, Income: 0, Preservation: 0 };
+    Object.keys(split || {}).forEach((k) => { out[classBucket3(k)] += (+split[k] || 0); });
+    return out;
+  }
+
   /* which of the three goals does an idea SERVE? (from its goal type) */
   function ideaGoalType(idea) {
     if (window.MAPPING && window.MAPPING.goalTypeOf) return window.MAPPING.goalTypeOf(idea);
@@ -367,6 +376,6 @@
 
   return {
     deriveGoals, parseHorizon, parseFunding, parseLiabilities, revealedWillingness, statedWillingness, PARAMS,
-    GOALS3, goalsFor, currentBuckets, goalBucketOfIdea, goalAlignment
+    GOALS3, goalsFor, currentBuckets, bucketsFromSplit3, classBucket3, goalBucketOfIdea, goalAlignment
   };
 });

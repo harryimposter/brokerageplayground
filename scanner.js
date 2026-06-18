@@ -26,14 +26,6 @@
     });
     return { byClass, bySector, byCcy };
   }
-  function bucketAlloc(split) {
-    const out = { Growth: 0, Income: 0, Preservation: 0, Structured: 0, Liquidity: 0 };
-    Object.entries(split).forEach(([k, v]) => {
-      const b = S().BUCKET_OF[k] || S().BUCKET_OF[k.replace(/_/g, " ")] || "Growth";
-      out[b] += v;
-    });
-    return out;
-  }
 
   /* ---- portfolio -> ideas : the book scan ---- */
   function scanBook(client) {
@@ -41,8 +33,8 @@
     const retail = client.classification === "Retail";
     const positions = client.positions || [];
     const split = client.split;
-    const buckets = bucketAlloc(split);
-    const target = client.goals.target;
+    const buckets = window.GOALS.currentBuckets(client);   // 3-bucket current (position-aware)
+    const target = window.GOALS.goalsFor(client);          // 3-bucket derived goal
     const exp = exposure(client);
     const flag = (complex) => retail && complex;
 
@@ -153,7 +145,7 @@
         title: `Liability & cashflow planning`,
         rationale: `${client.name} carries ${client.liabilities.map(l => `${l.name} (${l.unit === "$m" ? "$" + l.amount + "m" : l.amount + l.unit})`).join(" and ")} against thin cash. Build a liquidity/cashflow-matching sleeve and consider a securities-backed line rather than selling appreciated stock into the tax event.`,
         structures: ["T-bill / muni ladder", "Securities-backed line (SBL)"],
-        assetClass: "Cash", sector: "Cash", bucket: "Liquidity",
+        assetClass: "Cash", sector: "Cash", bucket: "Preservation",
         complex: false, retailBlocked: false,
         ref: { ticker: "LIAB", name: `${tot}m liabilities` }
       });
@@ -268,7 +260,7 @@
   function nextBestAction(client) { return recommendations(client).nba; }
 
   window.Scanner = {
-    exposure, bucketAlloc, scanBook, ideaFit, matchedIdeas, clientsForIdea,
+    exposure, scanBook, ideaFit, matchedIdeas, clientsForIdea,
     recommendations, nextBestAction, CONV_W
   };
 })();

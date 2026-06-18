@@ -445,7 +445,6 @@
     if (!c) return;
     const rec = window.Scanner.recommendations(c);
     const nba = rec.nba;
-    const curBuckets = window.Scanner.bucketAlloc(c.split);
     const nbaKey = nba ? (nba.source === "View" ? nba.ideaId : nba.title) : null;
 
     // client-specific actions derived from THIS book — the sharp, bespoke ideas
@@ -664,8 +663,9 @@
       <div class="cov-cell cov-th">Biggest gap</div></div>`;
     const rows = DATA.clients.map(c => {
       const ns = normSplit(c.split);
-      const buckets = window.Scanner.bucketAlloc(c.split);
-      const gap = SEED.GOAL_BUCKETS.map(b => ({ key: b.key, name: b.name || b.key, d: (c.goals.target[b.key] || 0) - (buckets[b.key] || 0) }))
+      const buckets = window.GOALS.currentBuckets(c);
+      const goal = window.GOALS.goalsFor(c);
+      const gap = window.GOALS.GOALS3.map(b => ({ key: b.key, name: b.name || b.key, d: (goal[b.key] || 0) - (buckets[b.key] || 0) }))
         .sort((a, b) => b.d - a.d)[0];
       const gapTxt = gap && gap.d >= 4 ? `${esc(gap.name)} <b>${gap.d.toFixed(0)}pts under</b>` : `<span class="cov-ontrack">on plan</span>`;
       const cells = cols.map(ac => {
@@ -679,7 +679,7 @@
     }).join("");
     $("#coverageWrap").innerHTML = `
       <div class="cov-grid" style="--cols:${cols.length + 1}">${head}${rows}</div>
-      <p class="cov-note"><b>Each number is the % of that client's book held in that asset class</b> (cells shaded darker = a bigger holding; “·” = none). It is a holding weight, <b>not</b> a gap. The <b>Biggest gap</b> column is the one place the book is furthest <b>under its strategic goal target</b>, in percentage points — e.g. “Structured 8pts under” means the book holds 8pts less in structured notes than its plan, so that's the sleeve to build. Click a row to open the client.</p>`;
+      <p class="cov-note"><b>Each number is the % of that client's book held in that asset class</b> (cells shaded darker = a bigger holding; “·” = none). It is a holding weight, <b>not</b> a gap. The <b>Biggest gap</b> column is the one place the book is furthest <b>under its inferred goal</b> (Growth / Income / Preservation), in percentage points — e.g. “Income 8pts under” means the book holds 8pts less in income-role assets than its inferred goal, so that's the sleeve to build. Click a row to open the client.</p>`;
     $$("#coverageWrap .cov-row[data-client]").forEach(el =>
       el.addEventListener("click", () => { setBookView("list"); selectClient(el.dataset.client); }));
   }
@@ -724,15 +724,16 @@
     $("#ptStructure").innerHTML = list.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
   }
 
+  /* simulate moving `amt`% into the idea's goal bucket, funded by trimming the other
+     buckets largest-first. Three buckets only (Growth / Income / Preservation). */
   function moveToBucket(buckets, target, amt) {
-    const b = Object.assign({}, buckets);
-    const fromLiq = Math.min(amt, b.Liquidity || 0);
-    let rem = amt - fromLiq;
-    b.Liquidity = (b.Liquidity || 0) - fromLiq;
-    if (rem > 0.0001) {
-      const cand = Object.keys(b).filter(k => k !== target && k !== "Liquidity").sort((x, y) => b[y] - b[x])[0];
-      if (cand) b[cand] = Math.max(0, b[cand] - rem);
-    }
+    const b = { Growth: buckets.Growth || 0, Income: buckets.Income || 0, Preservation: buckets.Preservation || 0 };
+    let rem = amt;
+    Object.keys(b).filter(k => k !== target).sort((x, y) => b[y] - b[x]).forEach(k => {
+      if (rem <= 0.0001) return;
+      const take = Math.min(rem, b[k]);
+      b[k] -= take; rem -= take;
+    });
     b[target] = (b[target] || 0) + amt;
     return b;
   }
@@ -748,7 +749,7 @@
     if (isCustom()) {
       label = $("#ptCustomName").value.trim() || "Ad-hoc trade";
       assetClass = $("#ptCustomClass").value;
-      bucket = SEED.ASSET_BUCKET[assetClass] || "Growth";
+      bucket = window.GOALS.classBucket3(assetClass);
       theme = "Custom"; fitText = null;
       deskView = `Ad-hoc trade — no house view on file. Expressed as ${structure}.`;
     } else if (isFinding()) {
@@ -774,16 +775,16 @@
     const segOf = (sp) => Object.entries(sp).map(([k, v]) => ({ label: k.replace(/_/g, " "), value: v, color: colorOf(k.replace(/_/g, " ")) }));
     const curSeg = segOf(curSplit), postSeg = segOf(postSplit);
 
-    /* goal impact */
+    /* goal impact — 3-bucket, measured against the client's DERIVED goal */
     const curB = BPCharts.bucketAlloc(curSplit);
     const postB = moveToBucket(curB, bucket, notional);
-    const target = c.goals.target;
+    const target = window.GOALS.goalsFor(c);
     const before = BPCharts.targetDistance(curB, target), after = BPCharts.targetDistance(postB, target);
     const closer = after < before - 0.05, neutral = Math.abs(after - before) <= 0.05;
     const moveMag = Math.abs(before - after).toFixed(1);
-    const targetSeg = SEED.GOAL_BUCKETS.map(b => ({ label: b.key, value: target[b.key] || 0, color: b.color }));
-    const postBSeg = SEED.GOAL_BUCKETS.map(b => ({ label: b.key, value: postB[b.key] || 0, color: b.color }));
-    const deltas = SEED.GOAL_BUCKETS.map(b => ({ key: b.key, d: (postB[b.key] || 0) - (curB[b.key] || 0) }));
+    const targetSeg = window.GOALS.GOALS3.map(b => ({ label: b.key, value: target[b.key] || 0, color: b.color }));
+    const postBSeg = window.GOALS.GOALS3.map(b => ({ label: b.key, value: postB[b.key] || 0, color: b.color }));
+    const deltas = window.GOALS.GOALS3.map(b => ({ key: b.key, d: (postB[b.key] || 0) - (curB[b.key] || 0) }));
 
     /* checks */
     const checks = [];
@@ -831,14 +832,14 @@
       <div class="pt-section">
         <span class="eyebrow">Impact on long-term goals</span>
         <div class="pie-row">
-          <div class="pie-card"><div class="pc-t">Strategic target</div>${BPCharts.donut(targetSeg)}${BPCharts.legend(targetSeg)}</div>
+          <div class="pie-card"><div class="pc-t">Inferred goal</div>${BPCharts.donut(targetSeg)}${BPCharts.legend(targetSeg)}</div>
           <div class="pie-card"><div class="pc-t">Book after trade</div>${BPCharts.donut(postBSeg)}${BPCharts.legend(postBSeg)}</div>
         </div>
         <div class="pt-verdict ${closer || neutral ? "toward" : "away"}">
           <span class="vch">${neutral ? "≈" : (closer ? "✓" : "▲")}</span>
-          <div>${neutral ? `Broadly neutral for ${esc(c.name)}'s strategic target.`
-            : (closer ? `Moves the book <b>~${moveMag}pts closer</b> to ${esc(c.name)}'s strategic target.`
-              : `Moves the book <b>~${moveMag}pts further</b> from ${esc(c.name)}'s strategic target — size with care.`)}</div>
+          <div>${neutral ? `Broadly neutral for ${esc(c.name)}'s inferred goal.`
+            : (closer ? `Moves the book <b>~${moveMag}pts closer</b> to ${esc(c.name)}'s inferred goal.`
+              : `Moves the book <b>~${moveMag}pts further</b> from ${esc(c.name)}'s inferred goal — size with care.`)}</div>
         </div>
         <div class="pt-delta-row">${deltas.map(d => `<span class="pt-delta">${d.key} <b class="${d.d > 0 ? "up" : d.d < 0 ? "dn" : ""}">${d.d > 0 ? "+" : ""}${d.d.toFixed(1)}</b></span>`).join("")}</div>
       </div>
@@ -900,7 +901,7 @@
       const title = $("#mIdeaTitle").value.trim();
       if (!title) { $("#mIdeaTitle").focus(); return; }
       const assetClass = $("#mIdeaAC").value, sector = $("#mIdeaSector").value;
-      const bucket = SEED.SECTOR_BUCKET[sector] || SEED.ASSET_BUCKET[assetClass] || "Growth";
+      const bucket = SEED.SECTOR_BUCKET[sector] || window.GOALS.classBucket3(assetClass);
       const structs = $("#mIdeaStructs").value.split(",").map(s => s.trim()).filter(Boolean);
       const themeId = $("#mIdeaTheme").value;
       userData.ideas.push({
@@ -1472,7 +1473,7 @@
       const title = ($("#dvTitle") || {}).value;
       if (!title || !title.trim()) return;
       const assetClass = $("#dvAC").value, sector = $("#dvSector").value;
-      const bucket = SEED.SECTOR_BUCKET[sector] || SEED.ASSET_BUCKET[assetClass] || "Growth";
+      const bucket = SEED.SECTOR_BUCKET[sector] || window.GOALS.classBucket3(assetClass);
       const structs = $("#dvStructs").value.split(",").map(s => s.trim()).filter(Boolean);
       const themeId = $("#dvTheme").value;
       userData.ideas.push({
