@@ -64,7 +64,7 @@
   <div class="cover">
     <p class="kicker">Brokerage Playground · Methodology Reference</p>
     <h1>Goal Derivation</h1>
-    <p class="subtitle">How a client's Protection / Income / Growth goal is inferred from the balance sheet — methodology, formula, and a worked example for every client</p>
+    <p class="subtitle">How a client's Preservation / Income / Growth goal is inferred from the balance sheet — methodology, formula, and a worked example for every client</p>
     <table class="meta">
       <tr>
         <td><b>Prepared</b><br/>18 June 2026</td>
@@ -77,7 +77,7 @@
 
   <div class="key">
     <b>The one-line idea.</b> The old model assumed the client <em>handed you</em> a target split. Real clients
-    don't. So <code>GOALS.deriveGoals(client)</code> <b>infers</b> a three-bucket goal — <span class="vec"><span class="p">Protection</span> ·
+    don't. So <code>GOALS.deriveGoals(client)</code> <b>infers</b> a three-bucket goal — <span class="vec"><span class="p">Preservation</span> ·
     <span class="i">Income</span> · <span class="g">Growth</span></span> — from <b>both sides of the balance sheet</b> plus the client's
     <b>revealed risk appetite</b>, never from what they own for its own sake. Every number below was produced by running the
     actual engine (<code>goals.js</code> + <code>PARAMS</code>) against the real seed book. They are exact, not illustrative.
@@ -92,7 +92,7 @@
         horizon and appetite. This is what <code>deriveGoals</code> computes — and what replaces the hand-typed target.</li>
   </ul>
   <p>The methodology is <b>liability-driven / goals-based</b> (after Chhabra's risk-allocation framework, where the
-    Safety / Market / Aspirational buckets map onto <span class="vec"><span class="p">Protection</span> / <span class="i">Income</span> /
+    Safety / Market / Aspirational buckets map onto <span class="vec"><span class="p">Preservation</span> / <span class="i">Income</span> /
     <span class="g">Growth</span></span>). The principle: <b>fund the obligations first, then deploy the surplus by how hard the money
     must work.</b></p>
 
@@ -140,24 +140,24 @@ INCOME     = 8  + 8·incomeNeed%  + 8·service%     + 0.6·debtLoad%
 GROWTH     = 8  + 5·requiredReturn%  + 3·max(0, H−6)  + Wᵥ·Willingness
                 Wᵥ = 30 if a funding goal exists, else 45  (lean harder on appetite when no goal)
 
-vector = normalise( Protection, Income, Growth )   → sums to 100</span>
+vector = normalise( Preservation, Income, Growth )   → sums to 100</span>
 
   <table class="data">
     <tr><th>Symbol</th><th>Meaning (all measured off the client)</th><th>Drives</th></tr>
-    <tr><td class="mono">nearBill%</td><td>One-off bills due soon (tax, bridge), % of AUM</td><td>Protection</td></tr>
-    <tr class="alt"><td class="mono">debtLoad%</td><td>Total liabilities, % of AUM</td><td>Income (match) + Protection (ballast)</td></tr>
+    <tr><td class="mono">nearBill%</td><td>One-off bills due soon (tax, bridge), % of AUM</td><td>Preservation</td></tr>
+    <tr class="alt"><td class="mono">debtLoad%</td><td>Total liabilities, % of AUM</td><td>Income (match) + Preservation (ballast)</td></tr>
     <tr><td class="mono">service%</td><td>Annual debt servicing (balance × ~6%), % of AUM</td><td>Income</td></tr>
     <tr class="alt"><td class="mono">incomeNeed%</td><td>Stated annual spending draw, % of AUM</td><td>Income</td></tr>
-    <tr><td class="mono">topName%</td><td>Largest single-name position (index cores excluded)</td><td>Protection (above 15%)</td></tr>
-    <tr class="alt"><td class="mono">H</td><td>Horizon midpoint, years; <code>[drawdown]</code> = spend-down phase</td><td>Growth (long) / Protection (short, drawdown)</td></tr>
+    <tr><td class="mono">topName%</td><td>Largest single-name position (index cores excluded)</td><td>Preservation (above 15%)</td></tr>
+    <tr class="alt"><td class="mono">H</td><td>Horizon midpoint, years; <code>[drawdown]</code> = spend-down phase</td><td>Growth (long) / Preservation (short, drawdown)</td></tr>
     <tr><td class="mono">requiredReturn%</td><td>CAGR needed to hit the funding goal: (target/base)^(1/yrs) − 1</td><td>Growth</td></tr>
   </table>
 
   <div class="key">
     <b>Why willingness is bidirectional.</b> Originally willingness only fed Growth, so a cautious client with no
-    liabilities or income needs still came out growth-heavy (Protection/Income only ever got weight from <em>needs</em>).
+    liabilities or income needs still came out growth-heavy (Preservation/Income only ever got weight from <em>needs</em>).
     The <code>caution = 1 − willingness</code> term routes a <em>low</em> appetite into ballast: full-aggressive pushes ~45 points into
-    Growth, full-cautious pushes ~46 (28+18) into Protection+Income — a balanced two-way dial.
+    Growth, full-cautious pushes ~46 (28+18) into Preservation+Income — a balanced two-way dial.
   </div>
 
   <h3>2.3 &nbsp; Anti-circularity</h3>
@@ -180,8 +180,8 @@ PROTECTION = 8 + 9.0 (24%−15 conc) + 2.1 (caution 28·0.075)                  
 INCOME     = 8 + 1.35 (caution 18·0.075)                                          =  9.4
 GROWTH     = 8 + 44.35 (5·8.87) + 12 (3·[10−6]) + 27.75 (30·0.925)                = 92.1
 → normalise(19.1, 9.4, 92.1)</span>
-    <p class="vec">→ <span class="p">Protection 16</span> · <span class="i">Income 8</span> · <span class="g">Growth 76</span></p>
-    <p class="small">High required return (8.9%) and high appetite drive Growth; the 24% single name is the only real pull toward Protection.</p>
+    <p class="vec">→ <span class="p">Preservation 16</span> · <span class="i">Income 8</span> · <span class="g">Growth 76</span></p>
+    <p class="small">High required return (8.9%) and high appetite drive Growth; the 24% single name is the only real pull toward Preservation.</p>
   </div>
 
   <!-- AURORA -->
@@ -194,8 +194,8 @@ PROTECTION = 8 + 10.8 (25.8%−15 conc) + 7.06 (caution 28·0.252)              
 INCOME     = 8 + 4.54 (caution 18·0.252)                                          = 12.5
 GROWTH     = 8 + 18.8 (5·3.76) + 7.5 (3·[8.5−6]) + 22.44 (30·0.748)               = 56.8
 → normalise(25.9, 12.5, 56.8)</span>
-    <p class="vec">→ <span class="p">Protection 27</span> · <span class="i">Income 13</span> · <span class="g">Growth 60</span></p>
-    <p class="small"><b>Known limitation:</b> her &ldquo;income needs&rdquo; is qualitative with no $ figure, so Income reads only 13. A spending field would lift it. The 25.8% Micron lump drives Protection to 27.</p>
+    <p class="vec">→ <span class="p">Preservation 27</span> · <span class="i">Income 13</span> · <span class="g">Growth 60</span></p>
+    <p class="small"><b>Known limitation:</b> her &ldquo;income needs&rdquo; is qualitative with no $ figure, so Income reads only 13. A spending field would lift it. The 25.8% Micron lump drives Preservation to 27.</p>
   </div>
 
   <!-- SCOTT -->
@@ -208,8 +208,8 @@ PROTECTION = 8 + 15 (drawdown) + 7.5 (3·[5−2.5] short H) + 20.69 (caution 28�
 INCOME     = 8 + 23.2 (8·2.9 draw) + 15 (drawdown) + 13.3 (caution 18·0.739)          = 59.5
 GROWTH     = 8 + 11.75 (45·0.261)                                                     = 19.7
 → normalise(51.2, 59.5, 19.7)</span>
-    <p class="vec">→ <span class="p">Protection 39</span> · <span class="i">Income 46</span> · <span class="g">Growth 15</span></p>
-    <p class="small">Textbook preservation book: a real income draw, drawdown phase and low appetite all pile into Income and Protection. Growth collapses to 15.</p>
+    <p class="vec">→ <span class="p">Preservation 39</span> · <span class="i">Income 46</span> · <span class="g">Growth 15</span></p>
+    <p class="small">Textbook preservation book: a real income draw, drawdown phase and low appetite all pile into Income and Preservation. Growth collapses to 15.</p>
   </div>
 
   <!-- AMAR -->
@@ -222,8 +222,8 @@ PROTECTION = 8 + 1.0 (16%−15 conc) + 9.83 (caution 28·0.351)                 
 INCOME     = 8 + 6.32 (caution 18·0.351)                                           = 14.3
 GROWTH     = 8 + 12.0 (5·2.4) + 12 (3·[10−6]) + 19.47 (30·0.649)                   = 51.5
 → normalise(18.8, 14.3, 51.5)</span>
-    <p class="vec">→ <span class="p">Protection 22</span> · <span class="i">Income 17</span> · <span class="g">Growth 61</span></p>
-    <p class="small">A modest required return (2.4%) is offset by a long horizon and a growth appetite; the diversified book keeps Protection/Income moderate.</p>
+    <p class="vec">→ <span class="p">Preservation 22</span> · <span class="i">Income 17</span> · <span class="g">Growth 61</span></p>
+    <p class="small">A modest required return (2.4%) is offset by a long horizon and a growth appetite; the diversified book keeps Preservation/Income moderate.</p>
   </div>
 
   <!-- JACOB -->
@@ -236,8 +236,8 @@ PROTECTION = 8 + 2.5 (nearBill tax) + 6.69 (0.3·22.3 debt ballast) + 13.69 (cau
 INCOME     = 8 + 9.52 (8·1.19 service) + 13.37 (0.6·22.3 debt match) + 8.8 (caution 18·0.489)    = 39.7
 GROWTH     = 8 + 34.7 (5·6.94) + 9 (3·[9−6]) + 15.33 (30·0.511)                                   = 67.1
 → normalise(30.9, 39.7, 67.1)</span>
-    <p class="vec">→ <span class="p">Protection 22</span> · <span class="i">Income 29</span> · <span class="g">Growth 49</span></p>
-    <p class="small">The $19m floating mortgage does real work — ~20 points into Income (service + matching) and Protection (ballast + the tax reserve) — pulling a high-required-return book back to balanced.</p>
+    <p class="vec">→ <span class="p">Preservation 22</span> · <span class="i">Income 29</span> · <span class="g">Growth 49</span></p>
+    <p class="small">The $19m floating mortgage does real work — ~20 points into Income (service + matching) and Preservation (ballast + the tax reserve) — pulling a high-required-return book back to balanced.</p>
   </div>
 
   <!-- PRAHNAV -->
@@ -250,8 +250,8 @@ PROTECTION = 8 + 7.0 (22%−15 conc) + 6.92 (caution 28·0.247)                 
 INCOME     = 8 + 4.45 (caution 18·0.247)                                           = 12.4
 GROWTH     = 8 + 29.9 (5·5.98) + 7.5 (3·[8.5−6]) + 22.59 (30·0.753)                = 68.0
 → normalise(21.9, 12.4, 68.0)</span>
-    <p class="vec">→ <span class="p">Protection 21</span> · <span class="i">Income 12</span> · <span class="g">Growth 67</span></p>
-    <p class="small">Solid growth profile; the 22% NVDA position is the main thing lifting Protection above its floor.</p>
+    <p class="vec">→ <span class="p">Preservation 21</span> · <span class="i">Income 12</span> · <span class="g">Growth 67</span></p>
+    <p class="small">Solid growth profile; the 22% NVDA position is the main thing lifting Preservation above its floor.</p>
   </div>
 
   <!-- BEN -->
@@ -264,7 +264,7 @@ PROTECTION = 8 + 3.0 (18%−15 conc) + 10.11 (caution 28·0.361)                
 INCOME     = 8 + 22.08 (8·2.76 draw) + 6.5 (caution 18·0.361)                      = 36.6
 GROWTH     = 8 + 32.4 (5·6.48) + 1.5 (3·[6.5−6]) + 19.17 (30·0.639)                = 61.1
 → normalise(21.1, 36.6, 61.1)</span>
-    <p class="vec">→ <span class="p">Protection 18</span> · <span class="i">Income 31</span> · <span class="g">Growth 51</span></p>
+    <p class="vec">→ <span class="p">Preservation 18</span> · <span class="i">Income 31</span> · <span class="g">Growth 51</span></p>
     <p class="small">His $0.8m income goal on a small $29m book (a demanding 2.8% draw) is what lifts Income to 31 — exactly why his book is &ldquo;behind&rdquo; on income at only 6% fixed income.</p>
   </div>
 
@@ -278,7 +278,7 @@ PROTECTION = 8 + 9.0 (24%−15 conc) + 1.99 (caution 28·0.071)                 
 INCOME     = 8 + 1.28 (caution 18·0.071)                                           =  9.3
 GROWTH     = 8 + 34.5 (3·[17.5−6] horizon) + 41.8 (45·0.929)                       = 84.3
 → normalise(19.0, 9.3, 84.3)</span>
-    <p class="vec">→ <span class="p">Protection 17</span> · <span class="i">Income 8</span> · <span class="g">Growth 75</span></p>
+    <p class="vec">→ <span class="p">Preservation 17</span> · <span class="i">Income 8</span> · <span class="g">Growth 75</span></p>
     <p class="small">No goal number exists, so Growth comes <em>entirely</em> from temperament (long horizon + a 0.93 willingness via the no-goal coefficient). The only counterweight is his 24% NVDA lump. Confidence 0.70 — no hard goal to anchor on.</p>
   </div>
 
@@ -292,14 +292,14 @@ PROTECTION = 8 + 14.95 (caution 28·0.534)                                      
 INCOME     = 8 + 9.61 (caution 18·0.534)                                           = 17.6
 GROWTH     = 8 + 7.5 (3·[8.5−6] horizon) + 20.97 (45·0.466)                        = 36.5
 → normalise(22.9, 17.6, 36.5)</span>
-    <p class="vec">→ <span class="p">Protection 30</span> · <span class="i">Income 23</span> · <span class="g">Growth 47</span></p>
+    <p class="vec">→ <span class="p">Preservation 30</span> · <span class="i">Income 23</span> · <span class="g">Growth 47</span></p>
     <p class="small">The purest case: with no form to read, the system reads his balanced book and <b>independently concludes &ldquo;moderate&rdquo;</b> — Growth 47, with a defensive tilt from the caution term. Confidence 0.55 (lowest tier — confirm with the client).</p>
   </div>
 
   <!-- ============ 4. SUMMARY ============ -->
   <h2 class="pagebreak">4 &nbsp;·&nbsp; The whole book at a glance</h2>
   <table class="data">
-    <tr><th>Client</th><th>Source</th><th class="num">Protection</th><th class="num">Income</th><th class="num">Growth</th><th class="num">Willingness</th><th class="num">Conf.</th></tr>
+    <tr><th>Client</th><th>Source</th><th class="num">Preservation</th><th class="num">Income</th><th class="num">Growth</th><th class="num">Willingness</th><th class="num">Conf.</th></tr>
     <tr><td>Morgan</td><td><span class="tag tag-risk">stated-risk</span></td><td class="num">17</td><td class="num">8</td><td class="num">75</td><td class="num">0.93</td><td class="num">0.70</td></tr>
     <tr class="alt"><td>Fable</td><td><span class="tag tag-goal">stated-goal</span></td><td class="num">16</td><td class="num">8</td><td class="num">76</td><td class="num">0.93</td><td class="num">0.90</td></tr>
     <tr><td>Prahnav</td><td><span class="tag tag-goal">stated-goal</span></td><td class="num">21</td><td class="num">12</td><td class="num">67</td><td class="num">0.75</td><td class="num">0.90</td></tr>

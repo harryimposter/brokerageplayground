@@ -27,7 +27,7 @@
     return { byClass, bySector, byCcy };
   }
   function bucketAlloc(split) {
-    const out = { Growth: 0, Income: 0, Protection: 0, Structured: 0, Liquidity: 0 };
+    const out = { Growth: 0, Income: 0, Preservation: 0, Structured: 0, Liquidity: 0 };
     Object.entries(split).forEach(([k, v]) => {
       const b = S().BUCKET_OF[k] || S().BUCKET_OF[k.replace(/_/g, " ")] || "Growth";
       out[b] += v;
@@ -54,7 +54,7 @@
         title: `Protect the concentrated ${p.name} position`,
         rationale: `${p.name} is ${p.weightPct}% of the book${winner ? ` on a +${p.pnlPct}% gain` : ""} — single-name risk well above policy. A zero-cost collar locks in the level (and the gain) without realising tax or giving up all upside.`,
         structures: ["Zero-cost collar", "Prepaid variable forward", "Protective put"],
-        assetClass: p.assetClass, sector: p.sector, bucket: "Protection",
+        assetClass: p.assetClass, sector: p.sector, bucket: "Preservation",
         complex: true, retailBlocked: flag(true),
         alt: "Scale out gradually into a diversified core / structured note with capital protection.",
         ref: { ticker: p.ticker, name: p.name }
@@ -95,7 +95,7 @@
         title: `Rehabilitate the ${p.name} position`,
         rationale: `${p.name} is ${p.weightPct}% of the book and ${p.pnlPct}%. Options: harvest the loss and re-enter with a downside-defined structure, collar the position to cap further drawdown, or partially monetize and redeploy into the real-asset core.`,
         structures: ["Loss harvest", "Collar", "Structured re-entry note"],
-        assetClass: "Alternatives", sector: "Crypto", bucket: "Protection",
+        assetClass: "Alternatives", sector: "Crypto", bucket: "Preservation",
         complex: true, retailBlocked: flag(true),
         alt: "Trim into the real-asset core; re-size the digital sleeve to policy.",
         ref: { ticker: p.ticker, name: p.name }
@@ -124,7 +124,7 @@
         title: `Hedge the ${nonBase}% non-${client.ccy} exposure`,
         rationale: `${nonBase}% of the book is in currencies other than the ${client.ccy} base. That is an unmanaged risk — hedge the mismatch with an FX overlay, especially if the rate-differential narrative turns.`,
         structures: ["FX forward / collar", "Currency-hedged sleeve"],
-        assetClass: "Multi-Asset", sector: "FX", bucket: "Protection",
+        assetClass: "Multi-Asset", sector: "FX", bucket: "Preservation",
         complex: true, retailBlocked: flag(true),
         alt: "Move the foreign sleeve into currency-hedged share classes (non-complex).",
         ref: { ticker: "FX", name: `${client.ccy} mismatch` }
@@ -160,16 +160,16 @@
     }
 
     // 9. protection gap
-    const protGap = round(target.Protection - buckets.Protection);
+    const protGap = round(target.Preservation - buckets.Preservation);
     if (protGap >= 6) {
       f.push({
         source: "Portfolio", kind: "protection-gap", severity: 2,
         title: `Close the ${protGap}pt protection gap`,
-        rationale: `The book holds ${round(buckets.Protection)}% in protective assets versus a ${target.Protection}% strategic target. Add gold and/or structured downside protection to bring the book back to plan.`,
+        rationale: `The book holds ${round(buckets.Preservation)}% in protective assets versus a ${target.Preservation}% strategic target. Add gold and/or structured downside protection to bring the book back to plan.`,
         structures: ["Gold (physical/ETC)", "Buffered notes", "Diversifiers"],
-        assetClass: "Commodity", sector: "Gold", bucket: "Protection",
+        assetClass: "Commodity", sector: "Gold", bucket: "Preservation",
         complex: false, retailBlocked: false,
-        ref: { ticker: "PROT", name: "Protection sleeve" }
+        ref: { ticker: "PROT", name: "Preservation sleeve" }
       });
     }
 

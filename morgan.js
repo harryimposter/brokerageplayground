@@ -39,7 +39,7 @@
     if (has(msg, ["how is suitab", "suitability calc", "how do you score", "how does scoring", "how is the score", "next best action", "how do you rank", "how are ideas ranked", "scoring work", "how do you decide"])) {
       return `Every idea is scored for a client as <b>goal-gap × conviction × suitability</b>:
 <ul>
-<li><b>Goal-gap</b> — how far <i>under</i> the client's strategic target the idea's role (Growth / Income / Protection / Liquidity) sits. A bigger gap means the book needs it more.</li>
+<li><b>Goal-gap</b> — how far <i>under</i> the client's strategic target the idea's role (Growth / Income / Preservation / Liquidity) sits. A bigger gap means the book needs it more.</li>
 <li><b>Conviction</b> — the desk view: High = 3, Medium-High = 2, Medium = 1.</li>
 <li><b>Suitability</b> — normally 1, but drops to 0.4 if the client is <b>MiFID Retail</b> and the idea can only be expressed through complex / OTC structures.</li>
 </ul>

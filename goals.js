@@ -2,7 +2,7 @@
    Brokerage Playground — GOAL INFERENCE engine  (deriveGoals)
    ----------------------------------------------------------------------------
    The old model assumed the client HANDED YOU a target split
-   (goals.target = {Growth, Income, Protection, Structured, Liquidity}). Real
+   (goals.target = {Growth, Income, Preservation, Structured, Liquidity}). Real
    clients never do that — they say "I want to grow capital," "I have a $19m
    mortgage," "I need $0.8m/yr." So we INFER the goal from BOTH sides of the
    balance sheet plus the client's revealed risk appetite, into THREE buckets:
@@ -34,7 +34,7 @@
    measured quantity off the balance sheet.
 
    Pure function over a single client object. A `client.goalOverride`
-   {Protection, Income, Growth} pins a manual vector and short-circuits the model.
+   {Preservation, Income, Growth} pins a manual vector and short-circuits the model.
    Exposed as window.GOALS (browser) and module.exports (Node tests).
    ========================================================================== */
 (function (root, factory) {
@@ -67,9 +67,9 @@
     willingWNoGoal: 45,            // × willingness, when there is NO goal signal (lean harder)
     /* CAUTION — willingness is BIDIRECTIONAL: a LOW appetite must add ballast, not
        merely shrink Growth. Without this, a client with no liabilities/income needs
-       comes out growth-heavy no matter how cautious they are (Income/Protection only
+       comes out growth-heavy no matter how cautious they are (Income/Preservation only
        ever got weight from NEEDS). These add (1 − willingness) × W to the defensives. */
-    cautionProtW: 28,              // × (1 − willingness) → Protection (temperament ballast)
+    cautionProtW: 28,              // × (1 − willingness) → Preservation (temperament ballast)
     cautionIncW: 18,               // × (1 − willingness) → Income (stable cash preference)
     /* WILLINGNESS — revealed blend */
     revealRiskW: 0.5,              // weight on risk-asset share
@@ -205,7 +205,7 @@
     // manual override short-circuits the model
     if (client.goalOverride) {
       const v = normalizeTo100({
-        Protection: +client.goalOverride.Protection || 0,
+        Preservation: +client.goalOverride.Preservation || 0,
         Income: +client.goalOverride.Income || 0,
         Growth: +client.goalOverride.Growth || 0
       });
@@ -235,7 +235,7 @@
     /* every raw score is the sum of named, inspectable terms (surfaced in the UI's
        "How were these goals derived" panel) */
     const components = {
-      Protection: {
+      Preservation: {
         base: PARAMS.base,
         nearBill: r2(PARAMS.nearBillW * liab.nearBillPct),
         debtBallast: r2(PARAMS.debtBallastW * liab.debtLoadPct),
@@ -261,7 +261,7 @@
     };
     const sumComp = (o) => Object.keys(o).reduce((s, k) => s + o[k], 0);
     const raw = {
-      Protection: r2(sumComp(components.Protection)),
+      Preservation: r2(sumComp(components.Preservation)),
       Income: r2(sumComp(components.Income)),
       Growth: r2(sumComp(components.Growth))
     };
@@ -275,10 +275,10 @@
     if (reqReturn > 0) drivers.push(`Needs ~${reqReturn.toFixed(1)}%/yr over ${fund.years}y to hit the funding goal → Growth`);
     if (incomeNeedPct > 0) drivers.push(`Income draw ${incomeNeedPct.toFixed(1)}% of book → Income`);
     if (liab.servicePct > 0) drivers.push(`Debt servicing ${liab.servicePct.toFixed(1)}% of book → Income`);
-    if (liab.debtLoadPct > 0) drivers.push(`Debt load ${liab.debtLoadPct.toFixed(0)}% of book → Income/Protection matching`);
-    if (liab.nearBillPct > 0) drivers.push(`Near-term bill ${liab.nearBillPct.toFixed(1)}% of book → Protection reserve`);
-    if (concExcess > 0) drivers.push(`${rev.topName.toFixed(0)}% single-name concentration → Protection`);
-    if (isDrawdown) drivers.push(`Drawdown phase → Income/Protection`);
+    if (liab.debtLoadPct > 0) drivers.push(`Debt load ${liab.debtLoadPct.toFixed(0)}% of book → Income/Preservation matching`);
+    if (liab.nearBillPct > 0) drivers.push(`Near-term bill ${liab.nearBillPct.toFixed(1)}% of book → Preservation reserve`);
+    if (concExcess > 0) drivers.push(`${rev.topName.toFixed(0)}% single-name concentration → Preservation`);
+    if (isDrawdown) drivers.push(`Drawdown phase → Income/Preservation`);
     drivers.push(`Willingness ${willingness.toFixed(2)} (${stated == null ? "revealed only" : "stated+revealed"}: ${Math.round(rev.riskShare * 100)}% risk assets, ${Math.round(rev.defenseShare * 100)}% defensive, ${rev.topName.toFixed(0)}% top name) → Growth`);
 
     return {
@@ -301,7 +301,7 @@
       desc: "Capital appreciation — the surplus that can take risk for long-term growth. Equities and growth alternatives (incl. crypto / venture) and participation notes." },
     { key: "Income",     name: "Income",     color: "#9A7B4F",
       desc: "Recurring cash the book must throw off — to fund spending or service debt. Bonds, dividend / real-asset income, and yield-style structured notes." },
-    { key: "Protection", name: "Protection", color: "#3F6B4E",
+    { key: "Preservation", name: "Preservation", color: "#3F6B4E",
       desc: "Downside defence and capital that can't be lost — ballast, near-term reserves and hedges. Cash, gold and capital-protected notes fold in here." }
   ];
 
@@ -310,22 +310,22 @@
 
   /* fold the CURRENT book into the same three buckets (the "now" side of the bar).
      Liquidity (cash) and Structured are NOT their own buckets any more — they fold by
-     ROLE: cash + gold → Protection, structured notes by their purpose, risk assets
+     ROLE: cash + gold → Preservation, structured notes by their purpose, risk assets
      (equity + alternatives incl. crypto/venture) → Growth, fixed income / real assets → Income. */
   function classBucket3(cls) {
     cls = String(cls || "").replace(/_/g, " ");
     if (cls === "Equity" || cls === "Alternatives") return "Growth";
     if (cls === "Fixed Income" || cls === "Credit" || cls === "Real Assets") return "Income";
-    return "Protection"; // Commodity (gold), Cash, Structured (refined below)
+    return "Preservation"; // Commodity (gold), Cash, Structured (refined below)
   }
   function structuredBucket3(pos) {
     const txt = ((pos.name || "") + " " + ((pos.structures || []).join(" ")) + " " + (pos.note || "")).toLowerCase();
-    if (/buffer|protect|capital|defensive|collar|principal/.test(txt)) return "Protection";
+    if (/buffer|protect|capital|defensive|collar|principal/.test(txt)) return "Preservation";
     if (/autocall|coupon|reverse conv|phoenix|memory|income|yield/.test(txt)) return "Income";
     return "Growth";
   }
   function currentBuckets(client) {
-    const out = { Growth: 0, Income: 0, Protection: 0 };
+    const out = { Growth: 0, Income: 0, Preservation: 0 };
     const pos = client.positions || [];
     if (pos.length) {
       pos.forEach((p) => {
@@ -336,20 +336,20 @@
     } else if (client.split) {
       Object.keys(client.split).forEach((k) => { out[classBucket3(k)] += client.split[k]; });
     }
-    return { Growth: Math.round(out.Growth), Income: Math.round(out.Income), Protection: Math.round(out.Protection) };
+    return { Growth: Math.round(out.Growth), Income: Math.round(out.Income), Preservation: Math.round(out.Preservation) };
   }
 
   /* which of the three goals does an idea SERVE? (from its goal type) */
   function ideaGoalType(idea) {
     if (window.MAPPING && window.MAPPING.goalTypeOf) return window.MAPPING.goalTypeOf(idea);
     const b = idea.bucket;
-    if (b === "Protection") return "protection";
+    if (b === "Preservation") return "protection";
     if (b === "Income" || b === "Liquidity") return "yield";
     return "appreciation";
   }
   function goalBucketOfIdea(idea) {
     const g = ideaGoalType(idea);
-    return g === "protection" ? "Protection" : g === "yield" ? "Income" : "Growth";
+    return g === "protection" ? "Preservation" : g === "yield" ? "Income" : "Growth";
   }
 
   /* GOAL ALIGNMENT — the new goals-aware tagging signal used across every tab.

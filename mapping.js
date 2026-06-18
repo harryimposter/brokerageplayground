@@ -91,7 +91,7 @@
   function ideaIntent(idea) { return idea.intent || defaultIntent(idea); }
   function defaultIntent(idea) {
     const b = idea.bucket;
-    if (b === "Protection") return "protect";
+    if (b === "Preservation") return "protect";
     if (b === "Income") return "income";
     if (b === "Structured") {
       const txt = ((idea.structures || []).join(" ") + " " + (idea.title || idea.name || "")).toLowerCase();
@@ -108,7 +108,7 @@
     const growth = (t.Growth || 0) + (t.Structured || 0);
     if (growth >= 58) return { level: "growth", tilt: "growth" };
     if ((t.Income || 0) >= 35) return { level: "moderate", tilt: "income" };
-    if ((t.Protection || 0) >= 25) return { level: "conservative", tilt: "preservation" };
+    if ((t.Preservation || 0) >= 25) return { level: "conservative", tilt: "preservation" };
     return { level: "moderate", tilt: "balanced" };
   }
   function riskProfile(client) {
@@ -157,7 +157,7 @@
     if (idea.goalType) return idea.goalType;
     const b = idea.bucket;
     const txt = ((idea.structures || []).join(" ") + " " + (idea.title || idea.name || "") + " " + (idea.headline || "")).toLowerCase();
-    if (b === "Protection") return "protection";
+    if (b === "Preservation") return "protection";
     if (b === "Income" || b === "Liquidity") return "yield";
     if (b === "Structured") {
       if (/buffer|protect|collar|capital.protected|principal/.test(txt)) return "protection";
@@ -175,7 +175,7 @@
     let beta = HIGH_BETA_SECTORS.includes(idea.sector) ? "high" : LOW_BETA_SECTORS.includes(idea.sector) ? "low" : "moderate";
     let vol;
     if (structured && goal === "protection") { vol = "low"; beta = "low"; }
-    else if (idea.bucket === "Protection") vol = "moderate";          // gold etc: low beta but can be volatile
+    else if (idea.bucket === "Preservation") vol = "moderate";          // gold etc: low beta but can be volatile
     else if (idea.bucket === "Income") vol = beta === "high" ? "moderate" : "low";
     else vol = beta === "high" ? "high" : beta === "low" ? "low" : "moderate";
     return { vol, beta, structured };
@@ -266,10 +266,10 @@
 
   /* GAP FIT — bucket-aware: does this idea fill a GOAL BUCKET the client is UNDER on?
        Gap Fit = max(0, (bucketTarget − bucketCurrent) / bucketTarget × 100), 0–100.
-     Pegs the idea's bucket (Growth / Income / Protection / Structured) to the client's
+     Pegs the idea's bucket (Growth / Income / Preservation / Structured) to the client's
      own goal-allocation target (client.goals.target), NOT the mandate sector-comfort
-     ceiling — so a Protection idea is judged against the Protection goal and scores 0
-     once that bucket is already at/over target (e.g. gold for a client whose Protection
+     ceiling — so a Preservation idea is judged against the Preservation goal and scores 0
+     once that bucket is already at/over target (e.g. gold for a client whose Preservation
      bucket is full). Falls back to sector headroom vs the mandate peg only when the
      client has no goal target for that bucket. */
   function axisGap(idea, client, ctx) {

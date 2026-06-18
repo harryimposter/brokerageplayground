@@ -44,9 +44,9 @@
     }));
   }
 
-  /* split object -> goal-bucket allocation {Growth,Income,Protection,Structured,Liquidity} */
+  /* split object -> goal-bucket allocation {Growth,Income,Preservation,Structured,Liquidity} */
   function bucketAlloc(split) {
-    const out = { Growth: 0, Income: 0, Protection: 0, Structured: 0, Liquidity: 0 };
+    const out = { Growth: 0, Income: 0, Preservation: 0, Structured: 0, Liquidity: 0 };
     Object.entries(split).forEach(([k, v]) => { out[bucketForClass(k)] += v; });
     return out;
   }
@@ -148,7 +148,7 @@
     ).join("") + `</div>`;
   }
 
-  /* ---- 3-bucket (Protection / Income / Growth) variants — driven by the inferred
+  /* ---- 3-bucket (Preservation / Income / Growth) variants — driven by the inferred
      goal vector (goals.js). Liquidity & Structured are folded by role, so they are
      no longer their own rows. Same visual language as the 5-bucket versions. ---- */
   function goalTargetBar3(target, current) {
@@ -173,7 +173,7 @@
       </div>`;
     }).join("");
     return `<div class="gt-wrap">${rows}
-      <p class="gt-note">The <b>bar</b> is the book's current weight in each goal; the <b>notch</b> ▏ marks its <b>inferred</b> goal (derived from the balance sheet &amp; risk appetite — see “How were these goals derived”). Cash folds into Protection; structured notes fold by purpose.</p>
+      <p class="gt-note">The <b>bar</b> is the book's current weight in each goal; the <b>notch</b> ▏ marks its <b>inferred</b> goal (derived from the balance sheet &amp; risk appetite — see “How were these goals derived”). Cash folds into Preservation; structured notes fold by purpose.</p>
     </div>`;
   }
   function goalGlossary3() {

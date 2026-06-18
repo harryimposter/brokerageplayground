@@ -410,7 +410,7 @@ window.TODAY_FOCUS = {
       "ticker": "XAU",
       "sector": "Gold",
       "assetClass": "Commodity",
-      "bucket": "Protection",
+      "bucket": "Preservation",
       "headline": "Gold ~25% off the highs while central banks keep buying",
       "thesis": "Gold is trading around $4,165, roughly a quarter below its January record, even as central banks stay net buyers and every major bank's year-end target sits well above spot. For under-protected books this pullback is an accumulation window in the cleanest debasement hedge — sized to the protection gap, not chased.",
       "themeId": "gold",

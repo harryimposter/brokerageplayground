@@ -97,7 +97,7 @@ ALLOWED_INTENTS = ("add", "protect", "trim", "income")
 
 def default_intent(idea):
     bucket = idea.get("bucket")
-    if bucket == "Protection":
+    if bucket == "Preservation":
         return "protect"
     if bucket == "Income":
         return "income"

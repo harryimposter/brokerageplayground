@@ -27,7 +27,7 @@ const SEED_THEMES = [
 ];
 
 /* ----------------------------------- IDEAS --------------------------------- */
-/* type: Thematic | Opportunistic | Strategic.  bucket: Growth|Income|Protection|Liquidity */
+/* type: Thematic | Opportunistic | Strategic.  bucket: Growth|Income|Preservation|Liquidity */
 const SEED_IDEAS = [
   /* ---- AI & Productivity ---- */
   {
@@ -112,14 +112,14 @@ const SEED_IDEAS = [
   /* ---- Resilience & Protection ---- */
   {
     id: "structured-protection", themeId: "resilience", intent: "protect", title: "Structured downside protection",
-    type: "Strategic", assetClass: "Multi-Asset", sector: "Broad", bucket: "Protection",
+    type: "Strategic", assetClass: "Multi-Asset", sector: "Broad", bucket: "Preservation",
     conviction: "High", horizon: "Strategic",
     thesis: "After a strong run in risk assets, buffered notes and collars let concentrated holders keep upside participation while defining the downside — protect the gains without realising the tax.",
     structures: ["Buffered note", "Zero-cost collar"]
   },
   {
     id: "diversifiers", themeId: "resilience", intent: "protect", title: "Diversifiers & hedges",
-    type: "Strategic", assetClass: "Alternatives", sector: "Broad", bucket: "Protection",
+    type: "Strategic", assetClass: "Alternatives", sector: "Broad", bucket: "Preservation",
     conviction: "Medium-High", horizon: "Strategic",
     thesis: "Macro, trend and relative-value strategies add a return stream that is genuinely uncorrelated to a 60/40 — ballast for the next drawdown.",
     structures: ["Liquid alternatives", "Macro sleeve"]
@@ -128,14 +128,14 @@ const SEED_IDEAS = [
   /* ---- Gold & Currency ---- */
   {
     id: "gold-hedge", themeId: "gold", intent: "protect", tickers: ["XAU", "GLD", "4GLD", "GDX", "IAU", "GLDM"], title: "Gold as a debasement hedge",
-    type: "Strategic", assetClass: "Commodity", sector: "Gold", bucket: "Protection",
+    type: "Strategic", assetClass: "Commodity", sector: "Gold", bucket: "Preservation",
     conviction: "High", horizon: "Strategic",
     thesis: "Persistent deficits, central-bank buying and geopolitical risk underpin gold as the cleanest tail hedge. We treat it as strategic ballast, sized to the book's protection gap.",
     structures: ["Physical / ETC", "Gold accumulator"]
   },
   {
     id: "fx-diversify", themeId: "gold", intent: "protect", title: "Currency diversification & FX overlays",
-    type: "Opportunistic", assetClass: "Multi-Asset", sector: "FX", bucket: "Protection",
+    type: "Opportunistic", assetClass: "Multi-Asset", sector: "FX", bucket: "Preservation",
     conviction: "Medium", horizon: "12m",
     thesis: "Books that have drifted heavily into one currency carry an unmanaged risk. A weaker-dollar regime argues for FX overlays and hedging the mismatch between base currency and asset currency.",
     structures: ["FX forward / collar", "Currency-hedged sleeve"]
@@ -191,7 +191,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "Aggressive capital growth concentrated in the AI complex",
       horizon: "Long-term · 10+ yrs",
-      target: { Growth: 70, Income: 5, Protection: 10, Structured: 10, Liquidity: 5 },
+      target: { Growth: 70, Income: 5, Preservation: 10, Structured: 10, Liquidity: 5 },
       funding: { headline: "Grow to $75m by 2034", metricLabel: "Projected value", current: 38, target: 75, unit: "$m", status: "On track" }
     },
     positions: [
@@ -218,7 +218,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "Grow the book while drawing income — and protect the concentrated MU gain",
       horizon: "Long-term · 7–10 yrs",
-      target: { Growth: 47, Income: 25, Protection: 12, Structured: 8, Liquidity: 8 },
+      target: { Growth: 47, Income: 25, Preservation: 12, Structured: 8, Liquidity: 8 },
       funding: { headline: "Grow to €70m by 2035 while drawing income", metricLabel: "Projected value", current: 50.2, target: 70, unit: "€m", status: "On track" }
     },
     positions: [
@@ -246,7 +246,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "Fund retirement income and preserve capital across the whole estate",
       horizon: "Drawdown · 0–5 yrs",
-      target: { Growth: 24, Income: 48, Protection: 14, Structured: 6, Liquidity: 8 },
+      target: { Growth: 24, Income: 48, Preservation: 14, Structured: 6, Liquidity: 8 },
       funding: { headline: "Fund $3.6m/yr retirement income", metricLabel: "Annual income run-rate", current: 3.0, target: 3.6, unit: "$m/yr", status: "Slightly behind" }
     },
     positions: [
@@ -277,7 +277,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "Compound a real-asset core across cycles; rehabilitate the digital-asset sleeve",
       horizon: "Multi-generational · 10+ yrs",
-      target: { Growth: 25, Income: 20, Protection: 35, Structured: 10, Liquidity: 10 },
+      target: { Growth: 25, Income: 20, Preservation: 35, Structured: 10, Liquidity: 10 },
       funding: { headline: "Preserve real value, grow to $90m by 2036", metricLabel: "Projected value", current: 71, target: 90, unit: "$m", status: "Slightly behind" }
     },
     positions: [
@@ -310,7 +310,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "Grow wealth while comfortably servicing mortgage and tax liabilities",
       horizon: "Long-term · 8–10 yrs",
-      target: { Growth: 40, Income: 30, Protection: 10, Structured: 10, Liquidity: 10 },
+      target: { Growth: 40, Income: 30, Preservation: 10, Structured: 10, Liquidity: 10 },
       funding: { headline: "Net worth to $120m by 2033 (after liabilities)", metricLabel: "Net projected value", current: 75, target: 120, unit: "$m", status: "On track" }
     },
     positions: [
@@ -339,7 +339,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "Steady goals-based growth toward a house purchase and long-term wealth",
       horizon: "Long-term · 7–10 yrs",
-      target: { Growth: 60, Income: 17, Protection: 8, Structured: 8, Liquidity: 7 },
+      target: { Growth: 60, Income: 17, Preservation: 8, Structured: 8, Liquidity: 7 },
       funding: { headline: "Grow to $70m by 2034; $4m house deposit by 2028", metricLabel: "Projected value", current: 44, target: 70, unit: "$m", status: "On track" }
     },
     positions: [
@@ -365,7 +365,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "Grow the equity book while building durable income and ballast",
       horizon: "Long-term · 5–8 yrs",
-      target: { Growth: 49, Income: 30, Protection: 8, Structured: 6, Liquidity: 7 },
+      target: { Growth: 49, Income: 30, Preservation: 8, Structured: 6, Liquidity: 7 },
       funding: { headline: "Fund $0.8m/yr income; grow to $45m by 2033", metricLabel: "Annual income run-rate", current: 0.5, target: 0.8, unit: "$m/yr", status: "Behind" }
     },
     positions: [
@@ -394,7 +394,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "Maximize long-term capital — high conviction, fully invested, drawdowns accepted",
       horizon: "Long-term · 15–20 yrs",
-      target: { Growth: 80, Income: 5, Protection: 8, Structured: 2, Liquidity: 5 }
+      target: { Growth: 80, Income: 5, Preservation: 8, Structured: 2, Liquidity: 5 }
       /* NO funding goal on file — the target above is legacy-only; nothing numeric is
          stated. deriveGoals infers the goal from the book + the stated aggressive risk
          appetite (no required-return signal → source "stated-risk"). */
@@ -423,7 +423,7 @@ const SEED_CLIENTS = [
     goals: {
       objective: "No formal mandate on file — invests broadly for long-term growth with some income",
       horizon: "Long-term · 7–10 yrs",
-      target: { Growth: 55, Income: 25, Protection: 10, Structured: 0, Liquidity: 10 }
+      target: { Growth: 55, Income: 25, Preservation: 10, Structured: 0, Liquidity: 10 }
       /* NO funding goal and NO stated risk profile — deriveGoals must infer everything
          from the current book (no required-return, no stated willingness → source
          "revealed"). The balanced book should reveal a moderate appetite on its own. */
@@ -524,7 +524,7 @@ const GOAL_BUCKETS = [
     desc: "Capital appreciation — equities and growth assets that drive the book's long-term value. Highest expected return, highest volatility." },
   { key: "Income",     name: "Income",            color: "#9A7B4F",
     desc: "Recurring yield — bonds, dividend equity, infrastructure and real estate that pay a contracted cash stream the client can spend or reinvest." },
-  { key: "Protection", name: "Protection",        color: "#3F6B4E",
+  { key: "Preservation", name: "Preservation",        color: "#3F6B4E",
     desc: "Downside defence — gold, hedges and diversifiers that hold their value (or gain) when risk assets fall. This is ballast, not return-seeking." },
   { key: "Structured", name: "Structured notes",  color: "#6E7E8C",
     desc: "Defined-outcome payoffs — autocalls, buffered and capital-protected notes that reshape risk/return (high income, protected participation or leverage) as packaged securities. MiFID-Retail eligible; OTC derivatives are not." },
@@ -535,18 +535,18 @@ const GOAL_BUCKETS = [
 /* asset class -> goal bucket (role in the plan). Structured products are their
    own goal bucket; Cash plays the Liquidity role. */
 const BUCKET_OF = {
-  "Equity": "Growth", "Structured": "Structured", "Alternatives": "Protection",
-  "Commodity": "Protection", "Real Assets": "Income", "Real_Assets": "Income",
+  "Equity": "Growth", "Structured": "Structured", "Alternatives": "Preservation",
+  "Commodity": "Preservation", "Real Assets": "Income", "Real_Assets": "Income",
   "Fixed Income": "Income", "Credit": "Income", "Cash": "Liquidity"
 };
 
 /* idea bucket override by sector role (energy majors read as income, etc.) */
-const SECTOR_BUCKET = { Energy: "Income", Utilities: "Income", "Real Estate": "Income", Infrastructure: "Income", Gold: "Protection", Crypto: "Protection" };
+const SECTOR_BUCKET = { Energy: "Income", Utilities: "Income", "Real Estate": "Income", Infrastructure: "Income", Gold: "Preservation", Crypto: "Preservation" };
 
 /* custom/ad-hoc instrument asset class -> bucket (pre-trade) */
 const ASSET_BUCKET = {
-  "Equity": "Growth", "Fixed Income": "Income", "Commodity": "Protection",
-  "Real Assets": "Income", "Alternatives": "Protection", "Structured": "Structured", "Cash": "Liquidity"
+  "Equity": "Growth", "Fixed Income": "Income", "Commodity": "Preservation",
+  "Real Assets": "Income", "Alternatives": "Preservation", "Structured": "Structured", "Cash": "Liquidity"
 };
 
 /* asset classes shown in the coverage matrix, in order */

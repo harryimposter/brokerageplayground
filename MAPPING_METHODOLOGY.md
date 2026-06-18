@@ -85,15 +85,15 @@ Weights are the exact fractions in §6 (shown rounded here for readability).
 ### 5.1 Gap fit (`gap`, weight 0.24) — bucket-aware
 `Gap = max(0, (bucketTarget − bucketCurrent) / bucketTarget × 100)`, where `bucketTarget`
 is the client's **goal-allocation target** for the idea's bucket (`client.goals.target[idea.bucket]`,
-e.g. Protection 35%) and `bucketCurrent` is the book's current allocation to that bucket
-(`bucketAlloc(split)[idea.bucket]`). **0 once that goal bucket is at/over target** — so a Protection
-idea (gold) scores 0 for a client whose Protection bucket is already full, rather than being scored
-against the mandate's sector-comfort ceiling. Worked (Protection goal 35): current 10 → 71, 25 → 29,
+e.g. Preservation 35%) and `bucketCurrent` is the book's current allocation to that bucket
+(`bucketAlloc(split)[idea.bucket]`). **0 once that goal bucket is at/over target** — so a Preservation
+idea (gold) scores 0 for a client whose Preservation bucket is already full, rather than being scored
+against the mandate's sector-comfort ceiling. Worked (Preservation goal 35): current 10 → 71, 25 → 29,
 35 → 0. If the client has **no goal target** for that bucket, it falls back to the old sector-headroom
 calc against the mandate peg (`sectorPeg`).
-Worked example: **gold × Amar** — his Protection bucket is 35% against a 35% goal → Gap fit **0** (no
+Worked example: **gold × Amar** — his Preservation bucket is 35% against a 35% goal → Gap fit **0** (no
 headroom), dropping his overall fit from a misleading Strong 70 to Good 58. Clients *under* their
-Protection target (Scott, Tejpaul, Aurora) score high instead.
+Preservation target (Scott, Tejpaul, Aurora) score high instead.
 
 ### 5.2 Affinity fit (`holdings`, weight 0.29)
 `max(0, ThematicAffinity − ConcentrationPenalty)`.
@@ -251,8 +251,8 @@ back to `sectorPeg` when the client has no goal target for that bucket.
 - **Concentration within sector** — one name → raw 0; five equal → raw 80. Fable's 6 spread
   Technology names → HHI 0.19, diversification 81, inverted fit contribution **19** (already
   diversified within tech, so a new tech name adds little).
-- **Gap fit (bucket-aware)** — gold × Amar: Protection bucket 35% vs 35% goal → **0** (bucket full);
-  a client under their Protection target scores high on the same idea.
+- **Gap fit (bucket-aware)** — gold × Amar: Preservation bucket 35% vs 35% goal → **0** (bucket full);
+  a client under their Preservation target scores high on the same idea.
 
 ---
 
@@ -264,7 +264,7 @@ back to `sectorPeg` when the client has no goal target for that bucket.
    sector** (Herfindahl, inverted-for-fit) axes.
 3. **Flat weights** replace the intent-conditional weight matrix.
 4. Gap fit is **bucket-aware** — headroom from the current goal-bucket allocation up to the client's
-   goal target for that bucket (a Protection idea scores 0 once the Protection bucket is full),
+   goal target for that bucket (a Preservation idea scores 0 once the Preservation bucket is full),
    falling back to sector headroom vs the mandate peg only when no goal target exists. Affinity fit
    still reads the sector-comfort peg; the two axes no longer share one peg.
 5. **Tradability moved off the Mandate & Risk axis to a global gate** (§5.5b): it now multiplies

@@ -1290,7 +1290,7 @@
     openModal(`
       <div class="modal-head"><span class="eyebrow">Strategic allocation</span><h2>What do these goals mean?</h2></div>
       <div class="modal-body">
-        <p class="rub-p">Every book is read in <b>three goal buckets</b> — the strategic plan reads in these terms, and the “now vs target” bars show how the current book sits against each. <b>Liquidity</b> (cash) and <b>Structured notes</b> are no longer separate buckets: cash and gold fold into <b>Protection</b>, structured notes fold by their purpose, and the target itself is <b>inferred</b> from the balance sheet (see “How were these goals derived” on each book).</p>
+        <p class="rub-p">Every book is read in <b>three goal buckets</b> — the strategic plan reads in these terms, and the “now vs target” bars show how the current book sits against each. <b>Liquidity</b> (cash) and <b>Structured notes</b> are no longer separate buckets: cash and gold fold into <b>Preservation</b>, structured notes fold by their purpose, and the target itself is <b>inferred</b> from the balance sheet (see “How were these goals derived” on each book).</p>
         ${BPCharts.goalGlossary3()}
       </div>
       <div class="modal-foot"><button class="btn btn-primary" id="goalsClose">Got it</button></div>`);
@@ -1310,11 +1310,11 @@
     openModal(`
       <div class="modal-head"><span class="eyebrow">Goal derivation · ${esc(c.name)}</span><h2>How were these goals derived</h2></div>
       <div class="modal-body goal-deriv">
-        <p>We don't ask ${esc(c.name)} to type target percentages — real clients don't think that way. Instead the goal is <b>inferred</b> from <b>both sides of the balance sheet</b> plus risk appetite, into three buckets: <b>Protection · Income · Growth</b>.</p>
+        <p>We don't ask ${esc(c.name)} to type target percentages — real clients don't think that way. Instead the goal is <b>inferred</b> from <b>both sides of the balance sheet</b> plus risk appetite, into three buckets: <b>Preservation · Income · Growth</b>.</p>
 
         <h3 class="gd-h">In plain English</h3>
         <p><b>Evidence used: <span class="gd-src">${srcTag}</span>.</b> ${srcText}</p>
-        <p>The logic: <b>fund the obligations first</b> (bills due and debt → Protection; a spending draw or debt servicing → Income), then <b>deploy the surplus by how hard the money must work</b> (required return + a long horizon + appetite → Growth). Appetite is a <b>two-way dial</b> — a low appetite doesn't just shrink Growth, it adds ballast to Protection and Income. Crucially, the book sets the <em>appetite knob</em>, not the target itself, so the gap between what ${esc(c.name)} holds and needs stays meaningful.</p>
+        <p>The logic: <b>fund the obligations first</b> (bills due and debt → Preservation; a spending draw or debt servicing → Income), then <b>deploy the surplus by how hard the money must work</b> (required return + a long horizon + appetite → Growth). Appetite is a <b>two-way dial</b> — a low appetite doesn't just shrink Growth, it adds ballast to Preservation and Income. Crucially, the book sets the <em>appetite knob</em>, not the target itself, so the gap between what ${esc(c.name)} holds and needs stays meaningful.</p>
         <p>For ${esc(c.name)} specifically:</p>
         <ul class="gd-drivers">${d.drivers.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
 
@@ -1323,7 +1323,7 @@
           <span class="gd-exact-hint">the formula, and ${esc(c.name)}'s numbers plugged in</span>
         </div>
 
-        <p class="gd-now">Result — inferred goal: <b>Growth ${v.Growth}% · Income ${v.Income}% · Protection ${v.Protection}%</b>. Current book today: Growth ${cur.Growth}% · Income ${cur.Income}% · Protection ${cur.Protection}% — that gap is what drives client tagging across the other tabs. Confidence ${Math.round(d.confidence * 100)}% (${srcTag}).</p>
+        <p class="gd-now">Result — inferred goal: <b>Growth ${v.Growth}% · Income ${v.Income}% · Preservation ${v.Preservation}%</b>. Current book today: Growth ${cur.Growth}% · Income ${cur.Income}% · Preservation ${cur.Preservation}% — that gap is what drives client tagging across the other tabs. Confidence ${Math.round(d.confidence * 100)}% (${srcTag}).</p>
       </div>
       <div class="modal-foot"><button class="btn btn-primary" id="gdClose">Got it</button></div>`);
     $("#gdClose").onclick = closeModal;
@@ -1338,14 +1338,14 @@
     /* TAB 1 — the general formula (same for every client), each with a WHY note */
     const fSteps = [
       { k: "Willingness (0–1)", f: "0.5 × risk-asset share  +  0.3 × low-defensiveness  +  0.2 × concentration appetite", sub: "if a risk profile is stated, blend:  0.5 × stated  +  0.5 × revealed",
-        why: "Willingness is the client's <b>risk appetite</b> — how much volatility they'll live with. It's the <b>dial</b> that decides how much of the surplus chases <b>Growth</b> versus sits as ballast: a high appetite lifts Growth, a low one feeds Protection &amp; Income (that's the <b>1 − willingness</b> “caution” term below). We read it straight off the book — <b>risk-asset share</b> (how much is already in equities/alternatives = leaning in), <b>low-defensiveness</b> (how little is parked in cash/bonds/gold), and <b>concentration appetite</b> (comfort holding a big single name = tolerance for idiosyncratic risk) — and, when the client has stated a risk profile, blend that with what the book reveals." },
+        why: "Willingness is the client's <b>risk appetite</b> — how much volatility they'll live with. It's the <b>dial</b> that decides how much of the surplus chases <b>Growth</b> versus sits as ballast: a high appetite lifts Growth, a low one feeds Preservation &amp; Income (that's the <b>1 − willingness</b> “caution” term below). We read it straight off the book — <b>risk-asset share</b> (how much is already in equities/alternatives = leaning in), <b>low-defensiveness</b> (how little is parked in cash/bonds/gold), and <b>concentration appetite</b> (comfort holding a big single name = tolerance for idiosyncratic risk) — and, when the client has stated a risk profile, blend that with what the book reveals." },
       { k: "Growth", f: "8  +  5 × required-return%  +  3 × (horizon − 6)  +  W × willingness", sub: "W = 30 when a funding goal exists, else 45",
         why: "Growth is the surplus that can take risk. It rises with the <b>return the client needs</b> to hit their goal, a <b>longer horizon</b> (more time to ride out drawdowns), and their <b>willingness</b>. With no funding goal we lean harder on willingness (W = 45)." },
       { k: "Income", f: "8  +  8 × income-draw%  +  8 × debt-service%  +  0.6 × debt-load%  +  15 (if drawdown)  +  18 × (1 − willingness)",
         why: "Income is the recurring cash the book must produce — a <b>spending draw</b>, <b>debt servicing</b>, or matching a <b>debt load</b> — plus a ballast tilt when appetite is low." },
-      { k: "Protection", f: "8  +  1 × near-bill%  +  0.3 × debt-load%  +  (top-name% − 15, if > 15)  +  15 (if drawdown)  +  3 × (5 − horizon, if < 5)  +  28 × (1 − willingness)",
-        why: "Protection is capital that can't be lost — a <b>near-term bill</b>, leverage to cushion, a <b>concentrated single name</b>, or a <b>spend-down phase</b> — plus a ballast tilt when appetite is low." },
-      { k: "Final", f: "normalise(Growth, Income, Protection)  →  scales the three to sum to 100" }
+      { k: "Preservation", f: "8  +  1 × near-bill%  +  0.3 × debt-load%  +  (top-name% − 15, if > 15)  +  15 (if drawdown)  +  3 × (5 − horizon, if < 5)  +  28 × (1 − willingness)",
+        why: "Preservation is capital that can't be lost — a <b>near-term bill</b>, leverage to cushion, a <b>concentrated single name</b>, or a <b>spend-down phase</b> — plus a ballast tilt when appetite is low." },
+      { k: "Final", f: "normalise(Growth, Income, Preservation)  →  scales the three to sum to 100" }
     ];
     const formulaHTML = fSteps.map(s => `<div class="gd-step"><div class="gd-step-k">${s.k}</div>
       <div class="gd-formula">${s.f}</div>${s.sub ? `<div class="gd-formula" style="margin-top:4px">${s.sub}</div>` : ""}${s.why ? `<div class="gd-why">${s.why}</div>` : ""}</div>`).join("");
@@ -1354,7 +1354,7 @@
     const buckets = [
       { key: "Growth", terms: [comp.Growth.base, comp.Growth.requiredReturn, comp.Growth.longHorizon, comp.Growth.willingness] },
       { key: "Income", terms: [comp.Income.base, comp.Income.incomeNeed, comp.Income.service, comp.Income.debtMatch, comp.Income.drawdown, comp.Income.caution] },
-      { key: "Protection", terms: [comp.Protection.base, comp.Protection.nearBill, comp.Protection.debtBallast, comp.Protection.concentration, comp.Protection.drawdown, comp.Protection.shortHorizon, comp.Protection.caution] }
+      { key: "Preservation", terms: [comp.Preservation.base, comp.Preservation.nearBill, comp.Preservation.debtBallast, comp.Preservation.concentration, comp.Preservation.drawdown, comp.Preservation.shortHorizon, comp.Preservation.caution] }
     ];
     const stepHTML = (b) => `<div class="gd-step"><div class="gd-step-k">${b.key}</div>
       <div class="gd-calc">= ${b.terms.join(" + ")} = <b>${raw[b.key]}</b></div></div>`;
@@ -1374,7 +1374,7 @@
       <div class="gd-step"><div class="gd-step-k">Willingness (0–1)</div><div class="gd-calc">= ${willCalc}</div></div>
       ${buckets.map(stepHTML).join("")}
       <div class="gd-step gd-final"><div class="gd-step-k">Normalise to 100</div>
-        <div class="gd-calc">G ${raw.Growth} · I ${raw.Income} · P ${raw.Protection} &nbsp;→&nbsp; <b>Growth ${v.Growth}% · Income ${v.Income}% · Protection ${v.Protection}%</b></div></div>`;
+        <div class="gd-calc">G ${raw.Growth} · I ${raw.Income} · P ${raw.Preservation} &nbsp;→&nbsp; <b>Growth ${v.Growth}% · Income ${v.Income}% · Preservation ${v.Preservation}%</b></div></div>`;
 
     const existing = document.getElementById("calcPop"); if (existing) existing.remove();
     const wrap = document.createElement("div");
@@ -1404,16 +1404,16 @@
     { kw: ["ai", "semiconductor", "semis", "chip", "gpu", "compute", "memory", "hbm", "nvidia", "datacenter", "data center", "software"], themeId: "ai", sector: "Technology", assetClass: "Equity", bucket: "Growth", structs: ["Direct equity", "Structured note", "Index core"] },
     { kw: ["power", "grid", "electric", "utility", "utilities", "nuclear", "smr"], themeId: "power", sector: "Utilities", assetClass: "Equity", bucket: "Income", structs: ["Utility basket", "Thematic basket"] },
     { kw: ["bond", "duration", "yield", "treasur", "rates", "fixed income"], themeId: "duration", sector: "Rates", assetClass: "Fixed Income", bucket: "Income", structs: ["Extend duration", "Bond ladder", "Govt / IG bonds"] },
-    { kw: ["gold", "bullion", "debasement"], themeId: "gold", sector: "Gold", assetClass: "Commodity", bucket: "Protection", structs: ["Physical / ETC", "Gold accumulator"] },
+    { kw: ["gold", "bullion", "debasement"], themeId: "gold", sector: "Gold", assetClass: "Commodity", bucket: "Preservation", structs: ["Physical / ETC", "Gold accumulator"] },
     { kw: ["infrastructure", "infra", "toll", "midstream", "real asset"], themeId: "realassets", sector: "Infrastructure", assetClass: "Real Assets", bucket: "Income", structs: ["Infrastructure fund", "Listed infrastructure"] },
     { kw: ["health", "glp", "pharma", "medtech", "biotech", "device"], themeId: "health", sector: "Healthcare", assetClass: "Equity", bucket: "Growth", structs: ["Healthcare basket", "Direct equity"] },
-    { kw: ["protect", "hedge", "downside", "collar", "buffer"], themeId: "resilience", sector: "Broad", assetClass: "Multi-Asset", bucket: "Protection", structs: ["Buffered note", "Zero-cost collar"] },
+    { kw: ["protect", "hedge", "downside", "collar", "buffer"], themeId: "resilience", sector: "Broad", assetClass: "Multi-Asset", bucket: "Preservation", structs: ["Buffered note", "Zero-cost collar"] },
     { kw: ["value", "international", "cyclical", "quality", "broaden", "small cap"], themeId: "broaden", sector: "Broad", assetClass: "Equity", bucket: "Growth", structs: ["Quality basket", "Equal-weight index"] },
     { kw: ["coupon", "autocall", "structured note", "income note"], themeId: "structured", sector: "Broad", assetClass: "Structured", bucket: "Structured", structs: ["Phoenix autocall", "Reverse convertible", "Buffered note"] },
     { kw: ["copper", "materials", "mining", "rare earth", "lithium"], themeId: null, sector: "Materials", assetClass: "Equity", bucket: "Growth", structs: ["Thematic basket", "Direct equity"] },
     { kw: ["energy", "oil", "gas", "crude", "brent"], themeId: null, sector: "Energy", assetClass: "Equity", bucket: "Income", structs: ["Direct equity", "Call overwrite", "Thematic basket"] },
     { kw: ["real estate", "reit", "property", "housing"], themeId: "realassets", sector: "Real Estate", assetClass: "Real Assets", bucket: "Income", structs: ["REIT basket", "Private real estate"] },
-    { kw: ["crypto", "bitcoin", "digital asset"], themeId: null, sector: "Crypto", assetClass: "Alternatives", bucket: "Protection", structs: ["Direct equity", "Structured note"] }
+    { kw: ["crypto", "bitcoin", "digital asset"], themeId: null, sector: "Crypto", assetClass: "Alternatives", bucket: "Preservation", structs: ["Direct equity", "Structured note"] }
   ];
   function draftFromThesis(thesis) {
     const s = String(thesis || "").toLowerCase();
