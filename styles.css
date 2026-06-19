@@ -808,8 +808,14 @@ button.struct-chip.struct-toggle:focus-visible { outline: 2px solid var(--gold);
 .morgan-msg.user { align-self: flex-end; background: var(--espresso); color: #F1E9DB; border-bottom-right-radius: 3px; }
 .morgan-msg.bot { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 3px; }
 .morgan-msg.bot ul { margin: 6px 0 0; padding-left: 18px; }
+.morgan-msg.bot ol { margin: 6px 0 0; padding-left: 18px; }
 .morgan-msg.bot li { margin-bottom: 5px; }
 .morgan-msg.bot b { color: var(--bronze-deep); }
+.morgan-msg.bot .m-list { margin: 6px 0 0; padding-left: 18px; }
+.morgan-msg.bot .m-note { font-size: 11.5px; color: #8C8474; }
+.morgan-msg.bot .m-w { font-size: 11.5px; color: var(--bronze); font-variant-numeric: tabular-nums; }
+.morgan-msg.bot .m-rub { margin: 4px 0 8px; }
+.morgan-msg.bot code { font-size: 11.5px; background: var(--cream-2); padding: 1px 4px; border-radius: 4px; }
 .morgan-sugs { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; }
 .morgan-sug { background: #fff; border: 1px solid var(--line-strong); color: var(--ink-soft); font-size: 11.5px; padding: 6px 10px; border-radius: 14px; }
 .morgan-sug:hover { background: var(--cream-2); border-color: var(--bronze); }

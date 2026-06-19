@@ -1,5 +1,13 @@
 # Idea → Client Mapping Methodology
 
+> **Canonical source:** `methodology.js` (`window.METHODOLOGY`) is now the single
+> authoritative, watertight description — it reads every constant LIVE from the engines
+> (`MAPPING.PARAMS`, `GOALS.PARAMS`, `TODAY_FOCUS.convictionRubric`) so it can't drift,
+> and it's what the Morgan AI assistant answers from. This Markdown is a human-readable
+> snapshot kept alongside it. **Note a since-corrected drift below:** Gap fit is pegged to
+> the client's *derived* 3-bucket goal vector (`GOALS.goalsFor(client)`), not a
+> `client.goals.target[...]` field — see `methodology.js` / `mapping.js::axisGap` for the live form.
+
 A precise, code-accurate breakdown of how the Brokerage Playground maps ideas to
 clients. There is **one** fit engine; it reads the real book; its five axes combine
 with **flat (fixed) weights**. Source of truth: `mapping.js`, `scanner.js`, `data.js`,

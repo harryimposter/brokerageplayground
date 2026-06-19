@@ -1,111 +1,277 @@
 /* ============================================================================
-   Morgan AI — grounded, rule-based assistant (no backend)
+   Morgan AI — grounded, rule-based assistant (no backend, no LLM call)
    ----------------------------------------------------------------------------
-   Answers questions about the book from the actual data + Scanner logic:
-     • why an idea applies to a client          • how suitability / NBA is scored
-     • MiFID Retail / OTC appropriateness        • a client's biggest risks / actions
-     • what an idea is                           • how the views/coverage work
-   Deterministic: it retrieves and explains; it does not invent market views.
+   Answers three question types for EVERY client and EVERY idea, GROUNDED in the
+   real data — it never free-associates a market view or invents a number:
+
+     1. METHODOLOGY  — "how is fit scored?", "how is the comfort limit set?",
+        "how do you derive goals?", "what's the conviction rubric?" …
+        → composed from window.METHODOLOGY, which reads the LIVE engine constants.
+
+     2. "WHY DID YOU RECOMMEND {idea}?"
+        → composed from the idea's own record: conviction pillars + thesis +
+          trade statement + trigger + variant + sources (Today's Focus), or the
+          thesis + house theme + conviction tag (Solutions Views).
+
+     3. "WHY {idea} FOR {client}?" / "WHY ISN'T {idea} FLAGGED TO {client}?"
+        → composed from the LIVE fit engine for that exact pair:
+          MAPPING.scoreIdeaForClient(idea, client) — the same per-axis breakdown,
+          goal-alignment, chosen implementation, tradability/MiFID outcome and
+          gap-vs-comfort the Today's-Focus drawers render, with the real numbers.
+
+   SAFEGUARD: it parses the question for intent + entities (client, idea), then
+   COMPOSES from the retrieved data. If it can't resolve the client/idea, or can't
+   ground the answer, it says so plainly and asks — it does not guess.
    ========================================================================== */
 (function () {
   "use strict";
   const S = () => window.SEED;
+  const TF = () => window.TODAY_FOCUS || {};
+  const MAP = () => window.MAPPING;
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const round = (n) => Math.round(n);
 
-  /* ---------------- matching helpers ---------------- */
+  /* ---------------- the idea universe: Solutions Views + Today's Focus ------- */
+  function allIdeas() {
+    const tf = TF();
+    const focus = [].concat(tf.earnings || [], tf.exEarnings || []);
+    return [].concat(S().ideas || [], focus);
+  }
+  const ideaTitle = (i) => i.title || i.name || i.id || "this idea";
+  /* stop-words: short/common tokens that must NOT match an idea, so ungroundable
+     questions ("what is the weather today?") fall through instead of false-matching. */
+  const STOP = new Set(["the", "and", "for", "you", "why", "did", "how", "are", "was", "that",
+    "this", "with", "idea", "ideas", "flag", "flags", "flagged", "client", "recommend", "isnt",
+    "not", "does", "your", "our", "what", "who", "whom", "when", "where", "which", "into", "from",
+    "get", "got", "has", "have", "had", "its", "his", "her", "their", "them", "they", "here",
+    "there", "about", "would", "should", "could", "today", "now", "set", "see", "ask", "any",
+    "tell", "show", "give", "explain", "reason", "rationale", "fits", "fit", "book", "books"]);
+  function ideaTokens(s) {
+    return String(s || "").toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length >= 3 && !STOP.has(t));
+  }
+
+  /* ---------------- entity matching (resolve, never guess) ------------------ */
   function findClient(msg) {
-    return S().clients.find(c => msg.includes(c.name.toLowerCase())) || null;
+    return (S().clients || []).find(c => msg.includes(" " + c.name.toLowerCase())) ||
+           (S().clients || []).find(c => msg.includes(c.name.toLowerCase())) || null;
   }
   function findIdea(msg) {
     let best = null, bestScore = 0;
-    S().ideas.forEach(idea => {
-      if (msg.includes(idea.title.toLowerCase())) { best = idea; bestScore = 99; return; }
-      const toks = idea.title.toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length > 3);
-      const hits = toks.filter(t => msg.includes(t)).length;
-      if (hits > bestScore) { best = idea; bestScore = hits; }
+    allIdeas().forEach(idea => {
+      const title = ideaTitle(idea).toLowerCase();
+      let score = 0;
+      // whole title / name appearing literally is the strongest signal
+      if (title.length > 4 && msg.includes(title)) score += 100;
+      // ticker hit
+      const tickers = (idea.tickers || []).concat(idea.ticker ? [idea.ticker] : []);
+      if (tickers.some(t => t && msg.includes(String(t).toLowerCase()))) score += 4;
+      // name / title token overlap (weighted highest)
+      ideaTokens(title).forEach(t => { if (msg.includes(t)) score += 2; });
+      // structure / natural-expression / headline tokens (lighter — catches "range accrual", "puts")
+      [].concat(idea.structures || [], idea.naturalExpression || [], idea.headline || "")
+        .forEach(s => ideaTokens(s).forEach(t => { if (msg.includes(t)) score += 1; }));
+      if (score > bestScore) { bestScore = score; best = idea; }
     });
-    return bestScore >= 1 ? best : null;
+    return bestScore >= 2 ? best : null;
   }
   const has = (msg, words) => words.some(w => msg.includes(w));
 
-  /* ---------------- answer composer ---------------- */
+  /* ---------------- grounded helpers: per-pair fit (the engine) ------------- */
+  const fitTier = (fit) => { const P = MAP().PARAMS; return fit >= P.tierStrong ? "Strong" : fit >= P.tierGood ? "Good" : "Marginal"; };
+
+  function axisLine(a) {
+    return `<li><b>${esc(a.label)}</b>: ${round(a.score)}/100 × ${(+a.weight).toFixed(2)} = ${(+a.contribution).toFixed(1)} — ${esc(a.note)}</li>`;
+  }
+
+  /* gap-vs-comfort, read from the same live values the engine scores (no new math) */
+  function gapComfortText(idea, client) {
+    try {
+      const bucket = idea.bucket;
+      const goal = window.GOALS.goalsFor(client) || {};
+      const cur = window.GOALS.currentBuckets(client) || {};
+      const tgt = round(goal[bucket] || 0), have = round(cur[bucket] || 0);
+      const gap = tgt - have;
+      const sector = idea.sector;
+      const exp = Math.round((window.Scanner.exposure(client).bySector[sector] || 0) * 10) / 10;
+      const cap = MAP().sectorPeg(client, sector);
+      const overTarget = tgt > 0 && have > tgt, overComfort = exp > cap, fitsGap = tgt > 0 && gap >= 2;
+      const capTxt = `${exp}% in ${esc(sector)} vs your ${cap}% comfort cap`;
+      if (fitsGap && overComfort) return `Fits ${esc(client.name)}'s ${esc(bucket)} gap (${gap}pts under target) but is over your comfort cap (${capTxt}) — amber: recommend, but your call.`;
+      if (fitsGap) return `Fits ${esc(client.name)}'s ${esc(bucket)} gap (${gap}pts under target) and within your comfort cap (${capTxt}) — clean to recommend.`;
+      if (overComfort) return `${esc(client.name)} is at/over their ${esc(bucket)} goal and over your comfort cap (${capTxt})${overTarget ? " — trim rather than add" : ""}.`;
+      return `${esc(client.name)} is ${gap < 0 ? "at/over" : "near"} their ${esc(bucket)} goal, and within your comfort cap (${capTxt}).`;
+    } catch (e) { return ""; }
+  }
+
+  function groundFit(idea, client, negative) {
+    const res = MAP().scoreIdeaForClient(idea, client);
+    const title = esc(ideaTitle(idea)), C = esc(client.name);
+    const flagMin = MAP().PARAMS.flagMin;
+
+    if (res.suppressed) {
+      const alt = (idea.structures || []).find(s => !S().isOtcOption(s));
+      return `<b>${title}</b> is <b>not flagged to ${C}</b> — it's <b>suppressed by the MiFID tradability gate</b>, so its fit is forced to 0.<br><br>${esc(res.tradabilityReason)}${alt ? `<br><br>A non-complex / structured-note route — <b>${esc(alt)}</b> — would be tradable for ${C}.` : ""}`;
+    }
+
+    const flagged = res.fit >= flagMin;
+    const al = res.goalAlignment || {};
+    const axes = `<ul class="m-list">${res.axes.map(axisLine).join("")}</ul>`;
+    const alignTxt = al.bucket
+      ? `<b>Goal alignment:</b> ${esc(al.bucket)} bucket — goal ${round(al.goal)}% vs current ${round(al.current)}% (gap ${al.gap > 0 ? "+" : ""}${al.gap}) → ×${al.mult} multiplier on the weighted sum.`
+      : "";
+    const implTxt = res.bestImpl
+      ? `<b>Best implementation for ${C}:</b> ${esc(res.bestImpl)} (suitability ${round(res.bestImplScore)}/100).`
+      : "";
+    const gc = gapComfortText(idea, client);
+
+    const head = flagged
+      ? `<b>${title}</b> ${negative ? "<i>is</i> in fact flagged to" : "fits"} <b>${C}</b> — fit <b>${res.fit}/100</b> (${fitTier(res.fit)}), at or above the flag threshold of ${flagMin}.`
+      : `<b>${title}</b> is <b>not flagged to ${C}</b> — fit <b>${res.fit}/100</b> (${fitTier(res.fit)}), below the flag threshold of ${flagMin}.`;
+
+    // for a "not flagged" answer, name the axes dragging it down
+    let drag = "";
+    if (!flagged) {
+      const low = res.axes.slice().sort((a, b) => a.contribution - b.contribution).slice(0, 2);
+      drag = `<br><br>What holds it back: ${low.map(a => `<b>${esc(a.label)}</b> (${round(a.score)}/100)`).join(" and ")}.`;
+    }
+
+    return `${head}<br><br><b>Pre-gate weighted sum ${res.bracketFit}/100</b> across the four axes:${axes}${alignTxt ? alignTxt + "<br><br>" : ""}${implTxt ? implTxt + "<br><br>" : ""}${gc ? "<b>Gap vs comfort:</b> " + gc : ""}${drag}`;
+  }
+
+  /* top-fit idea for a client (used when the question names a client but no idea) */
+  function topIdeaFor(client) {
+    let best = null, bestFit = -1;
+    allIdeas().forEach(idea => {
+      try {
+        const r = MAP().scoreIdeaForClient(idea, client);
+        if (!r.suppressed && r.fit > bestFit) { bestFit = r.fit; best = idea; }
+      } catch (e) {}
+    });
+    return best;
+  }
+
+  /* ---------------- grounded helpers: why-this-idea (conviction record) ----- */
+  function groundWhyIdea(idea) {
+    const title = esc(ideaTitle(idea));
+    const conv = idea.conviction;
+    const pieces = [];
+
+    // Today's Focus ideas carry a structured conviction object with pillars
+    if (conv && Array.isArray(conv.pillars)) {
+      pieces.push(`<b>${title}</b> — conviction <b>${conv.score}/100</b> (${esc(conv.label || conv.tier)}), raw ${conv.raw}/${conv.maxRaw} on the ${esc(conv.model)} rubric:`);
+      pieces.push(`<ul class="m-list">${conv.pillars.map(p =>
+        `<li><b>${esc(p.label)}</b> ${p.score}/${p.max} — ${esc(p.note)} <span class="m-note">[${esc(p.dq || "estimated")}]</span></li>`).join("")}</ul>`);
+      if (conv.capped) pieces.push(`<span class="m-note">Label capped at Medium because at least one pillar's input is estimated/unverified.</span><br><br>`);
+    } else if (conv) {
+      pieces.push(`<b>${title}</b> — <b>${esc(conv)}</b> conviction (desk view).`);
+    } else {
+      pieces.push(`<b>${title}</b>.`);
+    }
+
+    if (idea.tradeStatement) pieces.push(`<b>Trade statement:</b> ${esc(idea.tradeStatement)}`);
+    if (idea.thesis) pieces.push(`<b>Thesis:</b> ${esc(idea.thesis)}`);
+    if (idea.trigger) pieces.push(`<b>Why now:</b> ${esc(idea.trigger)}`);
+    if (idea.variant && (idea.variant.us || idea.variant.gap)) {
+      const v = idea.variant;
+      pieces.push(`<b>Our variant:</b> ${esc(v.us || "")}${v.street ? `<br><span class="m-note">Street: ${esc(v.street)}</span>` : ""}${v.gap ? `<br><span class="m-note">Gap: ${esc(v.gap)}</span>` : ""}`);
+    }
+    if (idea.changeMyMind) pieces.push(`<b>What would change our mind:</b> ${esc(idea.changeMyMind)}`);
+    if ((idea.sources || []).length) pieces.push(`<span class="m-note">Sources: ${idea.sources.map(s => esc(s.name)).join(" · ")}${(idea.facts || []).length ? ` · ${idea.facts.length} sourced/estimated facts on file` : ""}</span>`);
+
+    // Solutions Views idea (no conviction object): add theme + flagged-book context
+    if (!conv || !Array.isArray(conv.pillars)) {
+      const who = MAP().flagClients(idea).map(f => f.client.name);
+      if (idea.structures) pieces.push(`Expressed via ${esc(idea.structures.join(", "))}.`);
+      pieces.push(`This is a standing house view; it currently flags to <b>${who.length ? esc(who.join(", ")) : "no books strongly"}</b> — derived live from each book's exposure and goals.`);
+    }
+    return pieces.join("<br><br>");
+  }
+
+  /* ---------------- idea / client overviews (grounded fallbacks) ------------ */
+  function ideaOverview(idea) {
+    const title = esc(ideaTitle(idea));
+    const flags = MAP().flagClients(idea);
+    const who = flags.map(f => `${f.client.name} (${f.fit})`);
+    const conv = idea.conviction;
+    const convTxt = conv && conv.score != null ? `${conv.score}/100 (${esc(conv.label || conv.tier)})` : conv ? esc(conv) : "—";
+    return `<b>${title}</b> — ${esc(idea.sector || "")}${idea.assetClass ? " · " + esc(idea.assetClass) : ""}${idea.bucket ? " · " + esc(idea.bucket) : ""}. Conviction ${convTxt}.<br><br>${esc(idea.thesis || idea.headline || "")}<br><br>Flags to: <b>${who.length ? esc(who.join(", ")) : "no books at the threshold"}</b>. Ask “why ${esc(ideaTitle(idea))} for ${flags[0] ? esc(flags[0].client.name) : "a client"}?” for the per-axis breakdown, or “why did you recommend ${esc(ideaTitle(idea))}?” for the conviction.`;
+  }
+  function clientOverview(client) {
+    const ccy = client.ccy === "EUR" ? "€" : client.ccy === "GBP" ? "£" : "$";
+    let goalTxt = "";
+    try {
+      const g = window.GOALS.goalsFor(client);
+      goalTxt = `Derived goal — Growth ${g.Growth}% · Income ${g.Income}% · Preservation ${g.Preservation}%.`;
+    } catch (e) {}
+    const nba = (window.Scanner.nextBestAction(client) || {}).title || "—";
+    return `<b>${esc(client.name)}</b> — ${esc(client.mifid)}, ${esc(client.risk)}, ${ccy}${client.aum}m.<br><i>${esc((client.goals || {}).objective || "")}</i><br>${goalTxt}<br><br>Next best action: <b>${esc(nba)}</b>. Ask me “why {an idea} for ${esc(client.name)}?” or “what are ${esc(client.name)}'s risks?”.`;
+  }
+
+  /* ============================ the composer ============================== */
   function answer(raw) {
     const msg = " " + String(raw || "").toLowerCase().trim() + " ";
+    if (!window.SEED || !MAP()) return `I'm still loading the book — try again in a moment.`;
+
     const client = findClient(msg);
     const idea = findIdea(msg);
+    const whyIntent = has(msg, ["why", "explain", "reason", "rationale", "how come"]);
+    const recommendIntent = has(msg, ["recommend", "surface", "suggest", "pick this", "why this idea", "why the idea", "why did you", "why'd you", "flag this idea"]);
+    const notFlagged = has(msg, ["isn't flag", "isnt flag", "not flag", "won't flag", "wont flag", "not flagged", "no flag", "why not"]);
+    const forClient = has(msg, ["for ", "to ", "flag"]);
 
-    // 1. suitability / scoring / NBA
-    if (has(msg, ["how is suitab", "suitability calc", "how do you score", "how does scoring", "how is the score", "next best action", "how do you rank", "how are ideas ranked", "scoring work", "how do you decide"])) {
-      return `Every idea is scored for a client as <b>goal-gap × conviction × suitability</b>:
-<ul>
-<li><b>Goal-gap</b> — how far <i>under</i> the client's strategic target the idea's role (Growth / Income / Preservation / Liquidity) sits. A bigger gap means the book needs it more.</li>
-<li><b>Conviction</b> — the desk view: High = 3, Medium-High = 2, Medium = 1.</li>
-<li><b>Suitability</b> — normally 1, but drops to 0.4 if the client is <b>MiFID Retail</b> and the idea can only be expressed through complex / OTC structures.</li>
-</ul>
-The <b>Next Best Action</b> is the highest-severity finding from the portfolio scan (concentration, underwater positions, FX, cash drag, liabilities…), or the top-scored idea if the book is clean.${client ? `<br><br>For <b>${esc(client.name)}</b>, that currently points to: <b>${esc((window.Scanner.nextBestAction(client) || {}).title || "—")}</b>.` : ""}`;
+    // 1. WHY {idea} FOR {client}  /  WHY ISN'T {idea} FLAGGED TO {client}
+    if (idea && client && (whyIntent || forClient || notFlagged)) {
+      return groundFit(idea, client, notFlagged);
     }
 
-    // 2. MiFID / OTC / appropriateness
-    if (has(msg, ["otc", "mifid", "appropriate", "retail", "professional", "why can't", "why cant", "complex product"])) {
-      const retail = S().clients.filter(c => c.classification === "Retail").map(c => c.name).join(", ");
-      const pro = S().clients.filter(c => c.classification === "Professional").map(c => c.name).join(", ");
-      let extra = "";
-      if (client) extra = `<br><br><b>${esc(client.name)}</b> is <b>${esc(client.mifid)}</b>${client.classification === "Retail" ? " — so collars, autocalls, buffered notes, covered calls and FX forwards are off the table without re-classification; the desk flags the action and proposes a non-complex alternative (direct equity, ETF, fund, bond ladder)." : " — so complex / OTC structures are available."}`;
-      return `Under MiFID, <b>Retail</b> clients can't trade complex / OTC products — collars, risk-reversals, autocalls, buffered notes, covered calls, FX forwards and the like. The scanner still surfaces the right <i>action</i>, but flags appropriateness and offers a non-complex route.<br><br><b>Retail:</b> ${esc(retail)}<br><b>Professional:</b> ${esc(pro)}${extra}`;
+    // 2. WHY DID YOU RECOMMEND {idea}  (no specific client)
+    if (idea && !client && (whyIntent || recommendIntent)) {
+      return groundWhyIdea(idea);
     }
 
-    // 3. why does idea X apply to client Y  (or just one of them)
-    if (idea && client) {
-      const fit = window.Scanner.ideaFit(idea, client);
-      if (fit.applies) {
-        return `<b>${esc(idea.title)}</b> fits <b>${esc(client.name)}</b> because: ${esc(fit.reason)}<br><br><i>${esc(idea.thesis)}</i><br><br>Type: ${esc(idea.type)} · ${esc(idea.assetClass)} · ${esc(idea.sector)} · ${esc(idea.conviction)} conviction. Expressed via ${esc(idea.structures.join(", "))}.${client.classification === "Retail" && idea.structures.every(s => S().isOtcOption(s)) ? `<br><br>⚠️ ${esc(client.name)} is Retail — these structures are complex; we'd need a non-complex alternative.` : ""}`;
+    // 3. METHODOLOGY (fit / comfort / goals / conviction / tradability / tailoring / flag)
+    if (window.METHODOLOGY) {
+      const m = window.METHODOLOGY.answer(msg);
+      if (m) return m;
+    }
+
+    // 4. WHY THIS IDEA FOR {client}  — client named, no idea: assume their top-fit idea
+    if (client && (whyIntent || forClient) && !idea) {
+      const top = topIdeaFor(client);
+      if (top) {
+        return `You didn't name an idea, so I'll take the one that currently fits <b>${esc(client.name)}</b> best — <b>${esc(ideaTitle(top))}</b> (name any other idea to switch).<br><br>${groundFit(top, client, false)}`;
       }
-      return `<b>${esc(idea.title)}</b> isn't a strong fit for <b>${esc(client.name)}</b> right now — the book has limited ${esc(idea.sector)}/${esc(idea.assetClass)} exposure and isn't materially under its ${esc(idea.bucket)} target, so it scores low on goal-gap and exposure. It would be an overlay rather than a need.`;
     }
 
-    // 4. client risks / what to do
-    if (client && has(msg, ["risk", "what should", "what do", "biggest", "issue", "problem", "action", "recommend", "do for", "watch", "concern"])) {
+    // 5. client risks / actions
+    if (client && has(msg, ["risk", "what should", "what do", "biggest", "issue", "problem", "action", "concern", "watch"])) {
       const rec = window.Scanner.recommendations(client);
       const top = rec.findings.slice(0, 3);
       const items = top.length
-        ? "<ul>" + top.map(t => `<li><b>${esc(t.title)}</b> — ${esc(t.rationale)}</li>`).join("") + "</ul>"
+        ? "<ul class='m-list'>" + top.map(t => `<li><b>${esc(t.title)}</b> — ${esc(t.rationale)}</li>`).join("") + "</ul>"
         : "<br>The book is in good shape — no urgent flags from the scan.";
-      return `For <b>${esc(client.name)}</b> (${esc(client.mifid)}, ${esc(client.risk)}), the scan flags:${items}Next best action: <b>${esc((rec.nba || {}).title || "—")}</b>.`;
+      return `For <b>${esc(client.name)}</b> (${esc(client.mifid)}, ${esc(client.risk)}), the book scan flags:${items}Next best action: <b>${esc((rec.nba || {}).title || "—")}</b>.`;
     }
 
-    // 5. a client overview
-    if (client) {
-      const rec = window.Scanner.recommendations(client);
-      return `<b>${esc(client.name)}</b> — ${esc(client.mifid)}, ${esc(client.risk)}, ${client.ccy === "EUR" ? "€" : client.ccy === "GBP" ? "£" : "$"}${client.aum}m.<br><i>${esc(client.goals.objective)}</i> (${esc(client.goals.horizon)}).<br><br>${esc(client.summary)}<br><br>Next best action: <b>${esc((rec.nba || {}).title || "—")}</b>. Ask me "what are ${esc(client.name)}'s risks?" for the full list.`;
-    }
+    // 6. overviews
+    if (idea && client) return groundFit(idea, client, false);
+    if (idea) return ideaOverview(idea);
+    if (client) return clientOverview(client);
 
-    // 6. an idea overview
-    if (idea) {
-      const who = window.Scanner.clientsForIdea(idea).map(x => x.client.name);
-      return `<b>${esc(idea.title)}</b> — ${esc(idea.type)} · ${esc(idea.assetClass)} · ${esc(idea.sector)} · ${esc(idea.conviction)} conviction, ${esc(idea.horizon)}.<br><br>${esc(idea.thesis)}<br><br>Expressed via ${esc(idea.structures.join(", "))}.<br>Currently fits: <b>${who.length ? esc(who.join(", ")) : "no books strongly"}</b> (derived from each book's exposure + goals).`;
+    // 7. greeting / help / fallback (honest about scope — no guessing)
+    if (has(msg, ["hello", "hi ", "hey", "help", "what can you", "good morning", "good afternoon"])) {
+      return `I'm <b>Morgan AI</b>. I answer three things, grounded in your live book — I won't invent a market view or a number. Try:<br>• “Why did you recommend the range accrual?” <span class="m-note">(conviction)</span><br>• “Why is the USD/JPY puts idea flagged to Amar?” <span class="m-note">(per-client fit)</span><br>• “Why isn't Micron flagged to Aurora?” <span class="m-note">(per-client fit)</span><br>• “How is the comfort limit set?” / “How do you derive goals?” <span class="m-note">(methodology)</span>`;
     }
-
-    // 7. coverage / views / how it works
-    if (has(msg, ["coverage", "grid", "matrix", "asset class"])) {
-      return `The <b>Coverage grid</b> (Advisor Book → Coverage) shows every client's asset-class allocation against their strategic target — bronze cells are on/over plan, faded cells are <b>under target</b> (a gap to fill). It's the bird's-eye view of where each book is light.`;
-    }
-    if (has(msg, ["view", "idea", "theme", "outlook"])) {
-      return `The <b>Views</b> tab holds the desk's themes (from the mid-year outlook — AI, power & infrastructure, fixed income, real assets, resilience, gold, healthcare). Open any idea to see which client books it fits — and that list is <b>derived</b> from each book's exposure and goals, not hand-picked. Portfolio-specific actions (collar this, hedge that) come from the book scan on each client.`;
-    }
-
-    // 8. greeting / help / fallback
-    if (has(msg, ["hello", "hi ", "hey", "help", "what can you"])) {
-      return `I'm <b>Morgan AI</b>. I can explain the book. Try:<br>• "Why does gold apply to Scott?"<br>• "How is suitability calculated?"<br>• "What are Amar's biggest risks?"<br>• "Why can't Aurora trade OTC?"`;
-    }
-    return `I can answer questions grounded in the book — try naming a <b>client</b> (e.g. Scott, Amar) and/or an <b>idea</b> (e.g. gold, duration), or ask "how is suitability calculated?" or "why can't Prahnav trade OTC?"`;
+    // can't ground → say so plainly, don't guess
+    return `I can only answer from the book — I couldn't pin down a <b>client</b> and/or an <b>idea</b> in that. Name a client (e.g. Scott, Amar, Aurora) and/or an idea (e.g. the range accrual, Micron, USD/JPY puts), or ask a methodology question like “how is fit scored?”, “how is the comfort limit set?” or “what's the conviction rubric?”.`;
   }
 
-  /* ---------------- widget UI ---------------- */
+  /* ---------------- widget UI (unchanged JPM aesthetic) -------------------- */
   const SUGGESTIONS = [
-    "How is suitability calculated?",
-    "What are Amar's biggest risks?",
-    "Why can't Prahnav trade OTC?"
+    "Why did you recommend the range accrual?",
+    "Why is the USD/JPY puts idea flagged to Amar?",
+    "How is the comfort limit set?"
   ];
 
   function mount() {
