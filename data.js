@@ -544,7 +544,7 @@ const ASSET_CLASSES = ["Equity", "Fixed Income", "Real Assets", "Commodity", "Al
    Order matters: check structured BEFORE otc (a "HALO basket (ACM+)" contains
    "basket" but is a structured note, not a non-complex basket). */
 const STRUCTURED_KEYWORDS = ["structured note","structured re-entry","buffered","autocall","autocallable",
-  "acm+","phoenix","reverse convertible","revcon","fcn","range note","range accrual","bren","certificate",
+  "acm+","phoenix","reverse convertible","revcon","fcn","range note","bren","certificate",
   "capital-protected","capital protected","participation note","memory coupon","barrier note",
   "credit-linked","twin-win","shark-fin","booster","halo"];
 const OTC_KEYWORDS = ["collar","risk reversal","seagull","accumulator","decumulator","prepaid","variable forward",
