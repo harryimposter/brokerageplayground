@@ -269,7 +269,7 @@ const SEED_CLIENTS = [
       { name: "Realty Income (REIT)", ticker: "O US",   assetClass: "Real Assets",  sector: "Real Estate",ccy: "USD", weightPct: 5.0,  pnlPct: -11, entryDate: "2021-09-01", entrySpot: 68.00, mat: null, note: "Underwater on rates; high yield." },
       { name: "Listed infra fund",    ticker: "—",      assetClass: "Real Assets",  sector: "Infrastructure", ccy: "USD", weightPct: 4.0, pnlPct: 9, entryDate: "2023-03-01", entrySpot: null, mat: null, note: "Inflation-linked income." },
       { name: "Procter & Gamble",     ticker: "PG US",  assetClass: "Equity",       sector: "Consumer",   ccy: "USD", weightPct: 9.0,  pnlPct: 22,  entryDate: "2022-02-01", entrySpot: 138.00, mat: null, note: "Defensive dividend." },
-      { name: "Gold ETF",             ticker: "GLD US", assetClass: "Commodity",    sector: "Gold",       ccy: "USD", weightPct: 3.0,  pnlPct: 136, entryDate: "2021-06-01", entrySpot: 168.00, mat: null, note: "Small hedge sleeve; gold ~$4,300." },
+      { name: "Gold ETF",             ticker: "GLD US", assetClass: "Commodity",    sector: "Gold",       ccy: "USD", weightPct: 3.0,  pnlPct: 130, entryDate: "2021-06-01", entrySpot: 168.00, mat: null, note: "Small hedge sleeve; gold ~$4,180 after a third weekly dip on the strong dollar." },
       { name: "IG corporate bonds",   ticker: "—",      assetClass: "Fixed Income", sector: "Credit",     ccy: "USD", weightPct: 10.0, pnlPct: 0,   entryDate: "2025-08-01", entrySpot: null, mat: "2030-08-01", note: "Core fixed income." },
       { name: "USD cash",             ticker: "—",      assetClass: "Cash",         sector: "Cash",       ccy: "USD", weightPct: 10.0, pnlPct: 0,   entryDate: null, entrySpot: null, mat: null, note: "Drawdown buffer; some redeployable." }
     ],
@@ -291,7 +291,7 @@ const SEED_CLIENTS = [
     },
     positions: [
       { name: "Bitcoin",            ticker: "BTC",     assetClass: "Alternatives", altKind: "directional", sector: "Crypto",         ccy: "USD", weightPct: 16.0, pnlPct: -30, entryDate: "2024-11-01", entrySpot: 92000.00, mat: null, note: "Bought near the highs; ~$64k now — the book's problem child." },
-      { name: "Gold (allocated)",   ticker: "XAU",     assetClass: "Commodity",    sector: "Gold",           ccy: "USD", weightPct: 12.0, pnlPct: 132, entryDate: "2022-01-01", entrySpot: 1850.00, mat: null, note: "Strategic hard-asset core; gold ~$4,300." },
+      { name: "Gold (allocated)",   ticker: "XAU",     assetClass: "Commodity",    sector: "Gold",           ccy: "USD", weightPct: 12.0, pnlPct: 126, entryDate: "2022-01-01", entrySpot: 1850.00, mat: null, note: "Strategic hard-asset core; gold ~$4,180 on the strong-dollar pullback." },
       { name: "Global infra fund",  ticker: "—",       assetClass: "Real Assets",  sector: "Infrastructure", ccy: "USD", weightPct: 13.0, pnlPct: 12,  entryDate: "2023-05-01", entrySpot: null, mat: null, note: "Listed infrastructure." },
       { name: "Shell",              ticker: "SHEL LN", assetClass: "Equity",       sector: "Energy",         ccy: "GBP", weightPct: 8.0,  pnlPct: 42,  entryDate: "2022-06-01", entrySpot: 22.50, mat: null, note: "Majors / energy premium; ~£32." },
       { name: "EM equity sleeve",   ticker: "—",       assetClass: "Equity",       sector: "Broad",          ccy: "USD", weightPct: 12.0, pnlPct: 5,   entryDate: "2024-02-01", entrySpot: null, mat: null, note: "APAC / EM growth." },
@@ -440,7 +440,7 @@ const SEED_CLIENTS = [
       { name: "IG corporate bonds",  ticker: "—",       assetClass: "Fixed Income", sector: "Credit",     ccy: "USD", weightPct: 12.0, pnlPct: 0,  entryDate: "2025-06-01", entrySpot: null, mat: "2030-06-01", note: "Core income sleeve." },
       { name: "US Treasury ladder",  ticker: "—",       assetClass: "Fixed Income", sector: "Rates",      ccy: "USD", weightPct: 8.0,  pnlPct: 1,  entryDate: "2024-02-01", entrySpot: null, mat: "2031-02-01", note: "2–7yr ladder." },
       { name: "Listed infra fund",   ticker: "—",       assetClass: "Real Assets",  sector: "Infrastructure", ccy: "USD", weightPct: 8.0, pnlPct: 6, entryDate: "2023-04-01", entrySpot: null, mat: null, note: "Contracted income diversifier." },
-      { name: "Gold ETF",            ticker: "GLD US",  assetClass: "Commodity",    sector: "Gold",       ccy: "USD", weightPct: 3.0,  pnlPct: 136, entryDate: "2021-06-01", entrySpot: 168.00, mat: null, note: "Small hedge sleeve; gold ~$4,300." },
+      { name: "Gold ETF",            ticker: "GLD US",  assetClass: "Commodity",    sector: "Gold",       ccy: "USD", weightPct: 3.0,  pnlPct: 130, entryDate: "2021-06-01", entrySpot: 168.00, mat: null, note: "Small hedge sleeve; gold ~$4,180 after a third weekly dip on the strong dollar." },
       { name: "USD cash",            ticker: "—",       assetClass: "Cash",         sector: "Cash",       ccy: "USD", weightPct: 12.0, pnlPct: 0,  entryDate: null, entrySpot: null, mat: null, note: "Idle buffer." }
     ],
     summary: "A textbook 'no stated goal' case: never risk-profiled, no targets, no funding goal, no liabilities. The book itself is the only signal — broadly balanced (~57% equity, ~35% defensive, no concentrated name), which reads as a moderate appetite. The whole point of Fotis is to watch the system infer a moderate goal from the portfolio alone, with no form to read off."

@@ -1,10 +1,10 @@
 {
-  "asOf": "2026-06-21",
-  "generated": "2026-06-21",
+  "asOf": "2026-06-22",
+  "generated": "2026-06-22",
   "sweep": {
     "sources": ["Reuters", "WSJ", "Bloomberg", "Yahoo Finance", "Seeking Alpha", "Barron's"],
     "rule": "A fact is stated only if >=2 independent sources agree. Pending/forward events are kept in the future tense. Every datapoint is tagged sourced or estimated.",
-    "note": "Refreshed on the 21-Jun-2026 sweep (US cash markets shut Fri 19-Jun for Juneteenth; last close 18-Jun, reopen Mon 22-Jun). The regime is a dollar melt-up: the FOMC held 3.50-3.75% on 17 Jun but turned hawkish (dots signal a possible hike, no 2026 cuts) on a 4.2% CPI, and DXY broke above 100. The yen collapsed despite the BoJ — it hiked 25bp to 1% on 17 Jun on an energy-inflation shock, yet USD/JPY broke to ~160.80 on 19 Jun (weakest yen since Jul-2024) even after ~$70bn+ of MoF intervention, as the wide differential keeps the carry trade dominant; Tokyo says it 'stands ready to act at any time'. EUR/USD fell to ~1.143 (the 11-Jun ECB hike to 2.25% overwhelmed by Fed hawkishness) and cable to ~1.32. Brent steadied ~$80 (down ~8% on the week) after the 18-Jun interim US-Iran peace framework reopened Hormuz, though Geneva talks were abruptly postponed Friday; gold slipped to ~$4,150 on the strong dollar (third straight weekly fall). Implied moves are options-desk estimates (labelled estimated); consensus figures are flagged where not dual-confirmed."
+    "note": "Refreshed on the 22-Jun-2026 (Monday) sweep — US cash markets reopen today after the Fri 19-Jun Juneteenth close; the last full session was Thu 18-Jun (S&P 500 ~7,500, +0.9% on the holiday-shortened week, its 11th up-week in 12; VIX ~16). The regime is unchanged — a dollar melt-up on a hawkish-hold Fed: the FOMC held 3.50-3.75% on 17 Jun (Warsh's first meeting) but the dots turned hawkish — 9 of 18 officials now pencil a 2026 hike and the cutting cycle is pushed to 2027 — on a 4.2% May CPI, and DXY broke above 100. The yen is the pressure point: the BoJ hiked 25bp to 1% on 17 Jun, yet USD/JPY ran to a 160.89 high on 19 Jun (weakest yen since 11-Jul-2024) even after ~$70bn+ of MoF intervention, the wide differential keeping the carry trade dominant; spot sits ~160.8 in the MoF zone with Tokyo 'ready to act at any time'. EUR/USD is ~1.143 (the 11-Jun ECB hike to 2.25% overwhelmed by Fed hawkishness) and cable ~1.32. Brent is ~$78-80 (down ~8% on the week) after the 18-Jun interim US-Iran framework reopened Hormuz, though Geneva talks were postponed 20-Jun, keeping a re-escalation tail; gold is ~$4,180 (a third straight weekly fall on the strong dollar). The week's calendar: FedEx FQ4 (Tue 23-Jun) and Micron FQ3 (Wed 24-Jun) headline, with PCE on Thursday and NVIDIA's annual shareholder meeting. Implied moves are options-desk estimates (labelled estimated); consensus figures are flagged where not dual-confirmed."
   },
   "earnings": [
     {
@@ -18,7 +18,7 @@
       "assetClass": "Equity",
       "bucket": "Growth",
       "headline": "Micron FQ3 — the AI-memory print of the quarter",
-      "thesis": "Micron reports fiscal Q3 after the close on 24 June. With HBM sold out for several quarters and 2026 capacity already booked, the print is less about the quarter just gone and more about 2027 pricing and the guide. A hard, dated binary for anyone holding the name — the kind of event you express with a structure rather than naked stock.",
+      "thesis": "Micron reports fiscal Q3 after the close on Wednesday 24 June — the week's marquee print. The Street expects explosive growth (revenue seen surging to roughly $35B, ~+276% YoY) as the memory supply/demand imbalance lifts pricing. But with HBM sold out for several quarters and 2026 capacity already booked, the print is less about the quarter just gone and more about 2027 pricing and the guide. A hard, dated binary for anyone holding the name — the kind of event you express with a structure rather than naked stock.",
       "themeId": "ai",
       "offThemeWhy": null,
       "structures": ["Phoenix autocall", "Zero-cost collar", "Buffered note", "Direct equity"],
@@ -43,8 +43,8 @@
       },
       "facts": [
         { "text": "HBM sold out for several quarters; full-year 2026 HBM capacity booked under binding contracts", "tag": "sourced" },
-        { "text": "Stock ~$150, near a 52-week high into the print", "tag": "estimated" },
-        { "text": "Q3 guide ~$33.5B revenue (set at the FQ2 print on 18 Mar)", "tag": "estimated" }
+        { "text": "Reports FQ3 after the close on Wednesday 24 June; Street consensus revenue ~$35B (~+276% YoY) on the memory pricing surge", "tag": "estimated" },
+        { "text": "Stock ~$150, near a 52-week high into the print", "tag": "estimated" }
       ],
       "sources": [
         { "name": "Barchart", "kind": "calendar" },
@@ -63,7 +63,7 @@
       "assetClass": "Equity",
       "bucket": "Growth",
       "headline": "FedEx FQ4 — the global-trade bellwether",
-      "thesis": "FedEx reports fiscal Q4 on 23 June. As a freight and global-trade bellwether it is a live read on the industrial cycle and tariff drag — useful well beyond the stock itself for any book carrying cyclicals or wanting to size the 'broadening beyond mega-caps' rotation.",
+      "thesis": "FedEx reports fiscal Q4 after the close on Tuesday 23 June — consensus near $6.41 EPS on ~$24.0B revenue (+8% YoY). As a freight and global-trade bellwether it is a live read on the industrial cycle and tariff drag — useful well beyond the stock itself for any book carrying cyclicals or wanting to size the 'broadening beyond mega-caps' rotation.",
       "themeId": "broaden",
       "offThemeWhy": null,
       "structures": ["Direct equity", "Call overwrite", "Quality basket"],
@@ -87,7 +87,7 @@
         "watch": "FY27 guide, freight demand, DRIVE cost programme and any tariff/trade commentary."
       },
       "facts": [
-        { "text": "FedEx reports its next (FQ4) results on 23 June", "tag": "sourced" },
+        { "text": "FedEx reports FQ4 results after the close on Tuesday 23 June; consensus ~$6.41 EPS on ~$24.0B revenue (+8% YoY)", "tag": "sourced" },
         { "text": "Treated as a global-trade / industrial-cycle bellwether", "tag": "estimated" }
       ],
       "sources": [
@@ -249,8 +249,8 @@
       "sector": "Gold",
       "assetClass": "Commodity",
       "bucket": "Preservation",
-      "headline": "Gold ~$4,150 on a strong-dollar pullback while central banks keep buying",
-      "thesis": "Gold has pulled back to about $4,150 — roughly 26% below its January record — on a third straight weekly decline as the hawkish Fed and a DXY above 100 weigh on it near-term. The strategic case is unchanged: central banks stay net buyers and every major bank's year-end target sits well above spot. For under-protected books the dollar-driven dip is a better accumulation window in the cleanest debasement hedge — sized to the protection gap, not chased.",
+      "headline": "Gold ~$4,180 on a strong-dollar pullback while central banks keep buying",
+      "thesis": "Gold sits around $4,180 — roughly 25% below its January record — after a third straight weekly decline as the hawkish Fed and a DXY above 100 weigh on it near-term (it printed a $4,150 low on 19 Jun). The strategic case is unchanged: central banks stay net buyers and every major bank's year-end target sits well above spot. For under-protected books the dollar-driven dip is a better accumulation window in the cleanest debasement hedge — sized to the protection gap, not chased.",
       "themeId": "gold",
       "offThemeWhy": null,
       "structures": ["Physical / ETC", "Gold accumulator", "Capital-protected note"],
@@ -268,13 +268,13 @@
         ]
       },
       "macro": {
-        "metric": "Spot ~$4,150 (19 Jun)",
-        "detail": "~26% below the 28-Jan record of $5,589; a third straight weekly decline as DXY broke above 100 and the Fed turned hawkish; central banks net +244t in Q1 and +17t in April; China adding for 18 straight months.",
+        "metric": "Spot ~$4,180 (22 Jun)",
+        "detail": "~25% below the 28-Jan record of $5,589; a $4,150 low on 19 Jun on a third straight weekly decline as DXY broke above 100 and the Fed turned hawkish; central banks net +244t in Q1 and +17t in April; China adding for 18 straight months.",
         "source": "sourced",
         "watch": "The strong dollar / hawkish Fed path as the near-term headwind; central-bank demand as the marginal buyer underpinning the dip."
       },
       "facts": [
-        { "text": "Gold ~$4,150 on 19 Jun, about 26% below the 28-Jan all-time high of $5,589; third consecutive weekly decline on the strong dollar", "tag": "sourced" },
+        { "text": "Gold ~$4,180 on 22 Jun (a $4,150 low on 19 Jun), about 25% below the 28-Jan all-time high of $5,589; third consecutive weekly decline on the strong dollar", "tag": "sourced" },
         { "text": "Central banks net buyers: +244t in Q1 2026, +17t in April; China 18 consecutive months", "tag": "sourced" },
         { "text": "Bank year-end targets: Goldman $5,400, JPMorgan ~$6,000, Morgan Stanley $5,200, UBS $5,500", "tag": "sourced" }
       ],
@@ -427,8 +427,8 @@
       "sector": "Energy",
       "assetClass": "Equity",
       "bucket": "Income",
-      "headline": "Brent ~$80 as the Iran framework reopens Hormuz — but Geneva talks just stalled",
-      "thesis": "Brent has steadied around $80 (down ~8% on the week, ~36% off the ~$126 April war-peak) after an interim US-Iran peace framework signed 18 Jun began reopening the Strait of Hormuz and restoring Iranian exports. The geopolitical premium has largely deflated — but Geneva talks to harden the framework were abruptly postponed on 20 Jun, so the re-escalation tail is still live. Energy majors offer a tactical, income-paying hedge against the deal breaking down — explicitly off the standing house view, a trade rather than a strategic tilt.",
+      "headline": "Brent ~$79 as the Iran framework reopens Hormuz — but Geneva talks just stalled",
+      "thesis": "Brent has steadied around $79 (down ~8% on the week, ~37% off the ~$126 April war-peak) after an interim US-Iran peace framework signed 18 Jun began reopening the Strait of Hormuz and restoring Iranian exports. The geopolitical premium has largely deflated — but Geneva talks to harden the framework were abruptly postponed on 20 Jun, so the re-escalation tail is still live. Energy majors offer a tactical, income-paying hedge against the deal breaking down — explicitly off the standing house view, a trade rather than a strategic tilt.",
       "themeId": null,
       "offThemeWhy": "There is no standing desk theme on oil — this is a tactical, event-driven idea off Middle-East supply risk, sized as a hedge, not a strategic house view.",
       "structures": ["Direct equity", "Call overwrite", "Thematic basket"],
@@ -446,13 +446,13 @@
         ]
       },
       "macro": {
-        "metric": "Brent ~$80.6 (20 Jun)",
-        "detail": "Down ~8% on the week and ~36% off the ~$126 April war-peak (a 4-year high) as an interim US-Iran framework reopened the Strait of Hormuz and restored Iranian exports; near-term range ~$75-82, still headline-sensitive after Geneva talks were postponed on 20 Jun.",
+        "metric": "Brent ~$79 (22 Jun)",
+        "detail": "Down ~8% on the week and ~37% off the ~$126 April war-peak (a 4-year high) as an interim US-Iran framework reopened the Strait of Hormuz and restored Iranian exports; near-term range ~$75-82, still headline-sensitive after Geneva talks were postponed on 20 Jun.",
         "source": "sourced",
         "watch": "Whether the interim US-Iran framework hardens (Geneva talks resuming), OPEC+ supply signals, and any Hormuz flare-up."
       },
       "facts": [
-        { "text": "Brent ~$80.6 on 20 Jun, down ~8% on the week and ~36% off the ~$126 peak on 30 April (a 4-year high during the Iran war)", "tag": "sourced" },
+        { "text": "Brent ~$79 on 22 Jun, down ~8% on the week and ~37% off the ~$126 peak on 30 April (a 4-year high during the Iran war)", "tag": "sourced" },
         { "text": "An interim US-Iran peace framework (18 Jun) reopened the Strait of Hormuz; Geneva talks to harden it were abruptly postponed on 20 Jun, keeping a re-escalation tail", "tag": "sourced" }
       ],
       "sources": [
@@ -576,8 +576,8 @@
       "naturalExpression": "FX puts (USD/JPY)",
       "tactical": true,
       "triggered": false,
-      "trigger": "The catalyst this trade was built around has passed and resolved AGAINST it: the BoJ hiked 25bp to 1% on 17 Jun, yet USD/JPY broke UP to ~160.80 on 19 Jun (weakest yen since Jul-2024) despite ~$70bn+ of MoF intervention — the wide differential and carry trade are dominant. There is no live justification for owning yen-strength downside here; the two-sided strangle is the better way to own intervention risk. Held back.",
-      "levels": { "tenor": "4–6 weeks", "entry": "n/a — held back (spot broke through ~161)", "target": "153–154 (unwind)", "stop": "break above ~161 / premium at risk" },
+      "trigger": "Still invalid on the 22-Jun reopen: the catalyst this trade was built around has passed and resolved AGAINST it — the BoJ hiked 25bp to 1% on 17 Jun, yet USD/JPY ran UP to a 160.89 high on 19 Jun (weakest yen since Jul-2024) despite ~$70bn+ of MoF intervention, and spot is still pinned ~160.8. The wide differential and carry trade are dominant; there is no live justification for owning one-way yen-strength downside here — the two-sided strangle is the right way to own intervention risk. Held back.",
+      "levels": { "tenor": "4–6 weeks", "entry": "n/a — held back (spot pinned ~160.8, above the ~161 invalidation watch)", "target": "153–154 (unwind)", "stop": "break above ~161 / premium at risk" },
       "headline": "USD/JPY ~158 into a late-June BoJ hike — own short-dated puts for the yen snapback",
       "thesis": "USD/JPY sits around 158 — historically MoF/BoJ intervention territory — held up by a wide US-Japan differential after the hawkish 17-Jun Fed hold. But the BoJ is expected to raise rates later in June, and intervention risk rises the higher spot grinds. This is a classic tactical short-dated downside trade: buy ~156-strike puts for a few weeks, defined premium at risk, geared to a fast yen-strength snapback. Take profit into 153–154; cut if the differential wins and spot breaks back above ~161. Invalidated by a dovish BoJ hold plus a fresh hawkish-Fed leg that re-widens the gap.",
       "themeId": null,
@@ -629,7 +629,7 @@
       "naturalExpression": "FX call spread (EUR/USD)",
       "tactical": true,
       "triggered": false,
-      "trigger": "EUR/USD breaks and holds above ~1.17 on a softer dollar, confirming the post-ECB euro catch-up. Not met — moving the wrong way: a week after the 11-Jun ECB hike to 2.25%, spot has FALLEN to ~1.143 as the hawkish Fed pushed DXY above 100. The catch-up thesis is on hold until the dollar turns; no live justification.",
+      "trigger": "Still not met on the 22-Jun reopen: this bullish call spread needs EUR/USD to break and hold above ~1.17 on a softer dollar, but spot is ~1.143 — eleven days after the 11-Jun ECB hike to 2.25% the dollar melt-up (DXY > 100) has the euro pinned near the lows. The post-ECB catch-up is on hold until the dollar turns; no live justification today.",
       "levels": { "tenor": "4–6 weeks", "entry": "~1.143 (needs to reclaim 1.17+)", "target": "1.20–1.21", "stop": "max loss = ~0.7% net premium; fails below ~1.13" },
       "headline": "ECB just hiked to 2.25% — a defined-risk EUR/USD call spread for euro catch-up",
       "thesis": "The ECB raised its policy rate 25bp to 2.25% on 11 June as euro-area inflation ran near 3.0%, while the Fed's hawkish hold keeps it on pause — the Fed-ECB spread is set to narrow, the core of the post-peak-dollar / euro-recovery view. With EUR/USD around 1.17 and 2026 outlooks clustering at 1.15–1.19 (and seasonality eyeing 1.18+), express the upside cheaply and with capped risk: a 1.18/1.21 call spread for a few weeks. Max loss is the ~0.7% net premium; target 1.20–1.21. Invalidated by a hawkish-Fed-driven risk-off that re-bids the dollar and pulls EUR/USD under ~1.155.",
@@ -682,7 +682,7 @@
       "naturalExpression": "FX risk reversal (GBP/USD)",
       "tactical": true,
       "triggered": false,
-      "trigger": "Cable breaks out above ~1.345 on a soft-dollar leg. Not met — moving the wrong way: GBP/USD has slid to ~1.32 as DXY broke above 100 on the hawkish Fed. The bullish risk reversal needs a soft-dollar turn, the opposite of today's tape.",
+      "trigger": "Still not met on the 22-Jun reopen: this bullish risk reversal needs cable to break above ~1.345 on a soft-dollar leg, but GBP/USD is ~1.32 with DXY above 100 on the hawkish Fed. It needs a soft-dollar turn — the opposite of today's dollar-melt-up tape — so there is no live justification to put on geared cable upside now.",
       "levels": { "tenor": "4–6 weeks", "entry": "~1.32 (needs a break above 1.345)", "target": "1.37–1.38", "stop": "break below 1.315 (put assignment)" },
       "headline": "Cable ~1.34 with the BoE on hold at 3.75% — a near-zero-cost bullish risk reversal",
       "thesis": "GBP/USD trades around 1.34 with the Bank of England holding Bank Rate at 3.75% — a relatively high carry against a Fed that is on pause and a post-peak, range-bound dollar. With forecasts spanning ~1.33–1.40, express the bullish lean efficiently: a near-zero-cost risk reversal — sell the 1.31 put to fund the 1.37 call. You get geared upside above 1.37; the risk is real — you are long the pair at 1.31 if cable sells off, so this is for books happy to own GBP lower. Target 1.37–1.38; unwind if spot breaks 1.315. Invalidated by a hawkish-Fed dollar surge or a dovish BoE turn.",
@@ -735,7 +735,7 @@
       "naturalExpression": "FX strangle (USD/JPY)",
       "tactical": true,
       "triggered": true,
-      "trigger": "USD/JPY broke to ~160.80 on 19 Jun — the weakest yen since Jul-2024 and deep in MoF-intervention territory — even after the BoJ's 17-Jun hike to 1% and ~$70bn+ of intervention failed to hold it; with Tokyo saying it 'stands ready to act at any time', the next move is a genuinely two-sided binary (a further carry-driven melt-up vs a sharp intervention/jawbone snapback) — the live trigger to own the move either way.",
+      "trigger": "Still live on the 22-Jun reopen: USD/JPY is holding ~160.8 after printing a 160.89 high on 19 Jun — the weakest yen since 11-Jul-2024 and deep in MoF-intervention territory — even after the BoJ's 17-Jun hike to 1% and ~$70bn+ of intervention failed to arrest it; with Tokyo 'ready to act at any time', the next move is a genuinely two-sided binary (a further carry-driven melt-up vs a sharp intervention/jawbone snapback), so owning the move either way still has a live justification today.",
       "levels": { "tenor": "2–4 weeks", "entry": "~160.8", "target": "break beyond 157 or 164", "stop": "theta decay if pinned 159–162" },
       "headline": "USD/JPY ~160.8 in the intervention zone — own the two-sided move with a short-dated strangle",
       "thesis": "USD/JPY has broken to ~160.80 — the weakest yen since Jul-2024 and squarely in MoF-intervention territory — after the BoJ's 17-Jun hike to 1% and ~$70bn+ of intervention failed to arrest the slide and the wide differential keeps the carry trade dominant. The next move is genuinely two-sided: with Japan 'ready to act at any time', fresh intervention or a jawbone/policy shock could snap it sharply lower, while if the carry keeps winning it squeezes higher through 162. When you are confident in a big move but not its sign, own the volatility — a 2–4wk strangle (~157 put / ~164 call) profits on a break beyond either wing, with the two premiums as the defined max loss. Take profit on a break beyond 157 or 164; let it decay/expire if spot stays pinned 159–162.",
@@ -770,6 +770,58 @@
         { "name": "Reuters", "kind": "news" },
         { "name": "MUFG Research", "kind": "analysis" },
         { "name": "FOREX.com", "kind": "analysis" }
+      ]
+    },
+    {
+      "id": "tac-eurusd-putspread",
+      "tradeStatement": "Bearish EUR/USD via a put spread — buy the 1.14 / sell the 1.11 put, 4–6wk (~0.6% net) to ride the live dollar melt-up after DXY broke above 100 and EUR/USD broke into the 1.14 handle. Entry ~1.143, target 1.11–1.12, max loss = the ~0.6% net premium; the trade fails (and is cut) if EUR/USD reclaims ~1.155 on a softening dollar.",
+      "intent": "add",
+      "action": "Buy put spread (tactical, defined-risk)",
+      "preferredExpression": "FX put spread (EUR/USD)",
+      "name": "EUR/USD downside",
+      "ticker": "EUR/USD",
+      "sector": "FX",
+      "assetClass": "Multi-Asset",
+      "bucket": "Growth",
+      "goalType": "appreciation",
+      "riskProfile": { "vol": "high", "beta": "moderate", "structured": false },
+      "naturalExpression": "FX put spread (EUR/USD)",
+      "tactical": true,
+      "triggered": true,
+      "trigger": "Live on the 22-Jun reopen: EUR/USD has broken and held below 1.15 into the 1.14 handle (~1.143) as DXY broke above 100 on the hawkish 17-Jun Fed and the 4.2% May CPI — the dollar melt-up is the dominant near-term force and the 11-Jun ECB hike to 2.25% has already been overwhelmed, so euro momentum is to the downside. That is the live condition to own short-dated, defined-risk euro downside NOW.",
+      "levels": { "tenor": "4–6 weeks", "entry": "~1.143", "target": "1.11–1.12", "stop": "max loss = ~0.6% net premium; cut on a reclaim above ~1.155" },
+      "headline": "EUR/USD broke into the 1.14s on the dollar melt-up — ride it with a defined-risk put spread",
+      "thesis": "EUR/USD has broken below 1.15 into the 1.14 handle (~1.143) as the hawkish 17-Jun Fed hold (dots now pencilling a 2026 hike) and a 4.2% May CPI drove DXY above 100 — overwhelming the 11-Jun ECB hike to 2.25%. The strategic house view still calls a post-peak dollar and a euro recovery later in 2026; near-term, though, the melt-up is in control. Express the live downside cheaply and with capped risk: a 1.14/1.11 put spread for a few weeks. Max loss is the ~0.6% net premium; target 1.11–1.12. Invalidated by a soft-dollar reversal that reclaims ~1.155 (a dovish-Fed repricing or a risk-on turn).",
+      "themeId": null,
+      "offThemeWhy": "Tactical momentum trade WITH the near-term dollar melt-up — deliberately the opposite near-term direction to the strategic post-peak-dollar / euro-recovery house view, which plays for the later turn. A short-dated, defined-risk expression of today's tape, sized as a trade, not a tilt.",
+      "structures": ["FX put spread (EUR/USD)", "FX puts (EUR/USD)", "FX risk reversal"],
+      "variant": { "street": "2026 outlooks still call a post-peak dollar and a euro recovery later as the Fed-ECB spread narrows", "us": "Near-term the melt-up dominates — ride the dollar with a cheap, capped euro put spread rather than fight it", "gap": "The market underprices how far the hawkish-Fed dollar can extend before the eventual turn" },
+      "changeMyMind": "EUR/USD reclaiming ~1.155 on a softening dollar (a dovish-Fed repricing or a clear risk-on turn) that ends the melt-up leg — the put spread's max loss is the net premium.",
+      "conviction": {
+        "pillars": [
+          { "key": "asymmetry", "score": 1, "dq": "estimated", "note": "A capped put spread offers a defined, moderate payoff to the 1.11–1.12 target band — bounded by design." },
+          { "key": "catalyst", "score": 2, "dq": "sourced", "note": "Dated, landed catalyst — the hawkish 17-Jun Fed hold and 4.2% CPI that drove DXY above 100 and EUR/USD to ~1.143." },
+          { "key": "consensus", "score": 1, "dq": "estimated", "note": "Near-term momentum is dollar-positive, but 2026 outlooks lean euro-constructive later — alignment is timing-split." },
+          { "key": "thesis", "score": 2, "dq": "sourced", "note": "Specific drivers (a still-wide Fed-ECB spread despite the ECB hike, DXY > 100) and a clear, computable level target." },
+          { "key": "houseview", "score": 1, "dq": "sourced", "note": "Counter to the strategic post-peak-dollar lean near-term, but a coherent tactical expression of the live tape — adjacent, expressed as a trade." },
+          { "key": "positioning", "score": 1, "dq": "estimated", "note": "Dollar longs are crowded after the hawkish repricing — a near-term risk, but momentum has not yet broken; neutral fuel." },
+          { "key": "technical", "score": 2, "dq": "estimated", "note": "EUR/USD broke below 1.15 and is pinned near the lows with DXY above 100 — the downtrend confirms the bearish structure." }
+        ]
+      },
+      "macro": {
+        "metric": "EUR/USD ~1.143 · dollar melt-up",
+        "detail": "Buy a 1.14/1.11 4–6wk put spread (~0.6% net). Target 1.11–1.12; max loss = premium. Driver: DXY broke above 100 on the hawkish 17-Jun Fed and 4.2% CPI, overwhelming the 11-Jun ECB hike to 2.25%.",
+        "source": "sourced",
+        "watch": "The Fed path vs the ECB, US data (PCE on Thursday), and any soft-dollar reversal above ~1.155."
+      },
+      "facts": [
+        { "text": "EUR/USD ~1.143 on 22 Jun, pinned near the lows as DXY broke above 100 on the hawkish 17-Jun Fed and a 4.2% May CPI", "tag": "sourced" },
+        { "text": "The 11-Jun ECB hike to 2.25% has been overwhelmed by Fed hawkishness; 2026 outlooks still cluster EUR/USD at ~1.13–1.21", "tag": "sourced" }
+      ],
+      "sources": [
+        { "name": "Reuters", "kind": "news" },
+        { "name": "MUFG Research", "kind": "analysis" },
+        { "name": "FXStreet", "kind": "news" }
       ]
     }
   ]
